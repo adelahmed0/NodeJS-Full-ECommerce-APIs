@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import morgan from "morgan";
 
 import connectDB from "./config/DB.js";
+import categoryRoutes from "./routes/category.route.js";
 
 dotenv.config();
 
@@ -15,6 +16,8 @@ if (process.env.NODE_ENV === "development") {
 }
 
 connectDB();
+
+app.use("/api/categories", categoryRoutes);
 
 const PORT = process.env.PORT || 8000;
 
