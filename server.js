@@ -1,7 +1,8 @@
 import express from "express";
 import dotenv from "dotenv";
 import morgan from "morgan";
-import mongoose from "mongoose";
+
+import connectDB from "./config/DB.js";
 
 dotenv.config();
 
@@ -11,17 +12,7 @@ if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
 
-const MONGO_URI = process.env.MONGO_URI;
-
-mongoose
-  .connect(MONGO_URI)
-  .then((connection) => {
-    console.log(`MongoDB connected ${connection.connection.host}`);
-  })
-  .catch((error) => {
-    console.log(`Database connection error: ${error}`);
-    process.exit(1);
-  });
+connectDB();
 
 const PORT = process.env.PORT || 8000;
 
