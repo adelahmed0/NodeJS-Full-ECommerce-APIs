@@ -7,7 +7,7 @@ export const createCategoryService = async (name) => {
   return category;
 };
 
-export const getAllCategoriesService = async (page = 1, per_page = 5) => {
+export const getAllCategoriesService = async (page, per_page) => {
   const skip = (page - 1) * per_page;
   const categories = await Category.find().skip(skip).limit(per_page);
   const totalCategories = await Category.countDocuments();

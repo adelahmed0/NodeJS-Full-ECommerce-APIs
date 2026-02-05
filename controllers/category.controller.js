@@ -21,7 +21,8 @@ export const createCategory = asyncHandler(async (req, res) => {
  * @access  Public
  */
 export const getAllCategories = asyncHandler(async (req, res) => {
-  const { page, per_page } = req.query;
+  const page = parseInt(req.query.page) || 1;
+  const per_page = parseInt(req.query.per_page) || 5;
 
   const { categories, pagination } = await getAllCategoriesService(
     page,
