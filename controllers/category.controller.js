@@ -1,5 +1,8 @@
 import asyncHandler from "express-async-handler";
-import { createCategoryService,getAllCategoriesService } from "../services/category.service.js";
+import {
+  createCategoryService,
+  getAllCategoriesService,
+} from "../services/category.service.js";
 
 /**
  * @desc    Create category
@@ -18,6 +21,15 @@ export const createCategory = asyncHandler(async (req, res) => {
  * @access  Public
  */
 export const getAllCategories = asyncHandler(async (req, res) => {
-  const categories = await getAllCategoriesService();
-  res.status(200).json({ data: categories,results:categories.length });
+  const { page, per_page } = req.query;
+
+  const { categories, pagination } = await getAllCategoriesService(
+    page,
+    per_page,
+  );
+
+  res.status(200).json({
+    data: categories,
+    pagination,
+  });
 });
