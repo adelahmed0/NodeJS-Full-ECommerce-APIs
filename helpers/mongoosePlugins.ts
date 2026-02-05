@@ -1,7 +1,13 @@
+import { Schema, Document } from "mongoose";
+
 /**
  * Mongoose Schema Plugins
  * Reusable plugins for consistent schema behavior
  */
+
+interface PluginOptions {
+  removePassword?: boolean;
+}
 
 /**
  * Plugin to standardize JSON output
@@ -10,14 +16,13 @@
  * - Ensures 'id' is the first field in response
  *
  * @param {Schema} schema - Mongoose schema
- * @param {Object} options - Plugin options
- * @param {boolean} options.removePassword - Whether to remove password field (default: false)
+ * @param {PluginOptions} options - Plugin options
  */
-export const toJSONPlugin = (schema, options = {}) => {
+export const toJSONPlugin = (schema: Schema, options: PluginOptions = {}) => {
   const { removePassword = false } = options;
 
   // Add virtual id field
-  schema.virtual("id").get(function () {
+  schema.virtual("id").get(function (this: Document) {
     return this._id.toHexString();
   });
 

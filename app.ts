@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Application } from "express";
 import helmet from "helmet";
 import { rateLimit } from "express-rate-limit";
 import cors from "cors";
@@ -6,7 +6,7 @@ import morgan from "morgan";
 
 import categoryRouter from "./routes/category.route.js";
 
-const app = express();
+const app: Application = express();
 const api = process.env.API_PREFIX || "/api";
 
 app.use(helmet());

@@ -1,13 +1,24 @@
-import mongoose from "mongoose";
+import mongoose, { Schema, Document } from "mongoose";
 import { toJSONPlugin } from "../helpers/mongoosePlugins.js";
 
-const categorySchema = new mongoose.Schema(
+/**
+ * Category Interface
+ */
+export interface ICategory extends Document {
+  name: string;
+  slug: string;
+  image?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const categorySchema = new Schema<ICategory>(
   {
     name: {
       type: String,
       required: [true, "Category name is required"],
       trim: true,
-      unique: [true, "Category name already exists"],
+      unique: true,
       minLength: [3, "Category name must be at least 3 characters long"],
       maxLength: [32, "Category name must be at most 50 characters long"],
     },
@@ -24,6 +35,6 @@ const categorySchema = new mongoose.Schema(
 
 categorySchema.plugin(toJSONPlugin);
 
-const Category = mongoose.model("Category", categorySchema);
+const Category = mongoose.model<ICategory>("Category", categorySchema);
 
 export default Category;

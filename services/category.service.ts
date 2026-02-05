@@ -1,17 +1,29 @@
-import Category from "../models/category.model.js";
+import Category, { ICategory } from "../models/category.model.js";
 import slugify from "slugify";
 
-export const createCategoryService = async (name) => {
+/**
+ * Create a new category
+ */
+export const createCategoryService = async (
+  name: string,
+): Promise<ICategory> => {
   const slug = slugify(name, { lower: true });
   const category = await Category.create({ name, slug });
   return category;
 };
 
-export const getAllCategoriesService = async (page, per_page) => {
+/**
+ * Get all categories with pagination
+ */
+export const getAllCategoriesService = async (
+  page: number,
+  per_page: number,
+) => {
   const skip = (page - 1) * per_page;
   const categories = await Category.find().skip(skip).limit(per_page);
   const totalCategories = await Category.countDocuments();
   const totalPages = Math.ceil(totalCategories / per_page);
+
   return {
     categories,
     pagination: {
@@ -23,8 +35,12 @@ export const getAllCategoriesService = async (page, per_page) => {
   };
 };
 
-export const getCategoryByIdService = async (id) => {
+/**
+ * Get category by ID
+ */
+export const getCategoryByIdService = async (
+  id: string,
+): Promise<ICategory | null> => {
   const category = await Category.findById(id);
   return category;
 };
-
