@@ -1,11 +1,10 @@
-import express, { Application } from "express";
+import express, { Application, Request, Response, NextFunction } from "express";
 import helmet from "helmet";
 import { rateLimit } from "express-rate-limit";
 import cors from "cors";
 import morgan from "morgan";
 
 import categoryRouter from "./routes/category.route.js";
-import globalError from "./middleware/globalError.middleware.js";
 
 const app: Application = express();
 const api = process.env.API_PREFIX || "/api";
@@ -41,7 +40,18 @@ app.use(
 // Routes
 app.use(`${api}/categories`, categoryRouter);
 
+// Handle unhandled routes
+app.all(/(.*)/, (req: Request, res: Response, next: NextFunction) => {
+  const err = new Error(`Can't find this route: ${req.originalUrl}`);
+  next(err);
+});
+
 // Global error handling middleware
-app.use(globalError);
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  res.status(400).json({
+    status: "error",
+    message: err.message,
+  });
+});
 
 export default app;
