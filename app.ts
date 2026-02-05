@@ -5,6 +5,7 @@ import cors from "cors";
 import morgan from "morgan";
 
 import categoryRouter from "./routes/category.route.js";
+import globalError from "./middleware/globalError.middleware.js";
 
 const app: Application = express();
 const api = process.env.API_PREFIX || "/api";
@@ -39,5 +40,8 @@ app.use(
 
 // Routes
 app.use(`${api}/categories`, categoryRouter);
+
+// Global error handling middleware
+app.use(globalError);
 
 export default app;
