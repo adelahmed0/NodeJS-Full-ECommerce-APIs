@@ -2,6 +2,7 @@ import asyncHandler from "express-async-handler";
 import {
   createCategoryService,
   getAllCategoriesService,
+  getCategoryByIdService,
 } from "../services/category.service.js";
 
 /**
@@ -12,7 +13,7 @@ import {
 export const createCategory = asyncHandler(async (req, res) => {
   const { name } = req.body;
   const category = await createCategoryService(name);
-  res.status(201).json({ data: category });
+  res.status(201).json({ status: true, message: "Category created successfully", data: category });
 });
 
 /**
@@ -30,7 +31,24 @@ export const getAllCategories = asyncHandler(async (req, res) => {
   );
 
   res.status(200).json({
+    status: true,
+    message: "Categories fetched successfully",
     data: categories,
     pagination,
   });
 });
+
+/**
+ * @desc    Get category by ID
+ * @route   GET /api/categories/:id
+ * @access  Public
+ */
+export const getCategoryById = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const category = await getCategoryByIdService(id);
+  if (!category) {
+    res.status(404).json({ status: false, message: "Category not found" });
+  }
+  res.status(200).json({ status: true, message: "Category fetched successfully", data: category });
+});
+

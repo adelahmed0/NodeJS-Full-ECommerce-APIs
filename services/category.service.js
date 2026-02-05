@@ -22,3 +22,9 @@ export const getAllCategoriesService = async (page, per_page) => {
     },
   };
 };
+
+export const getCategoryByIdService = async (id) => {
+  const category = await Category.findById(id);
+  return category;
+};
+
