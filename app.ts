@@ -5,6 +5,8 @@ import cors from "cors";
 import morgan from "morgan";
 
 import categoryRouter from "./routes/category.route.js";
+import { ApiError } from "./utils/apiError.js";
+import globalError from "./middleware/globalError.middleware.js";
 
 const app: Application = express();
 const api = process.env.API_PREFIX || "/api";
@@ -42,16 +44,10 @@ app.use(`${api}/categories`, categoryRouter);
 
 // Handle unhandled routes
 app.all(/(.*)/, (req: Request, res: Response, next: NextFunction) => {
-  const err = new Error(`Can't find this route: ${req.originalUrl}`);
-  next(err);
+  next(new ApiError(`Can't find this route: ${req.originalUrl}`, 400));
 });
 
 // Global error handling middleware
-app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-  res.status(400).json({
-    status: "error",
-    message: err.message,
-  });
-});
+app.use(globalError);
 
 export default app;
