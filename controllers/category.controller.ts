@@ -6,6 +6,7 @@ import {
   createCategoryService,
   getAllCategoriesService,
   getCategoryByIdService,
+  updateCategoryService
 } from "../services/category.service.js";
 
 /**
@@ -74,6 +75,31 @@ export const getCategoryById: RequestHandler<
   res.status(200).json({
     status: true,
     message: "Category fetched successfully",
+    data: category,
+  });
+});
+
+/**
+ * @desc    Update category by ID
+ * @route   PUT /api/categories/:id
+ * @access  Private/Admin
+ */
+export const updateCategory: RequestHandler<
+  { id: string },
+  IApiResponse<ICategory>
+> = asyncHandler(async (req, res) => {
+  const id = req.params.id;
+  const { name } = req.body;
+  const category = await updateCategoryService(id, name);
+
+  if (!category) {
+    res.status(404).json({ status: false, message: "Category not found" });
+    return;
+  }
+
+  res.status(200).json({
+    status: true,
+    message: "Category updated successfully",
     data: category,
   });
 });

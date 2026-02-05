@@ -45,3 +45,15 @@ export const getCategoryByIdService = async (
   const category = await Category.findById(id);
   return category;
 };
+
+/**
+ * Update category by ID
+ */
+export const updateCategoryService = async (
+  id: string,
+  name: string,
+): Promise<ICategory | null> => {
+  const slug = slugify(name, { lowercase: true });
+  const category = await Category.findByIdAndUpdate(id, { name, slug }, { new: true });
+  return category;
+};
