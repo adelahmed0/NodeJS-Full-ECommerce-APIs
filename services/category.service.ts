@@ -1,5 +1,6 @@
 import Category, { ICategory } from "../models/category.model.js";
 import slugify from "slugify";
+import { IAllCategoriesResponse } from "../types/category.types.js";
 
 /**
  * Create a new category
@@ -18,7 +19,7 @@ export const createCategoryService = async (
 export const getAllCategoriesService = async (
   page: number,
   per_page: number,
-) => {
+): Promise<IAllCategoriesResponse> => {
   const skip = (page - 1) * per_page;
   const categories = await Category.find().skip(skip).limit(per_page);
   const totalCategories = await Category.countDocuments();
