@@ -12,9 +12,8 @@ const globalError = (
   if (process.env.NODE_ENV === "development") {
     res.status(err.statusCode).json({
       status: err.status,
-      error: err,
       message: err.message,
-      stack: err.stack,
+      error: err,
     });
   } else {
     res.status(err.statusCode).json({
