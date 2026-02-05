@@ -57,3 +57,12 @@ export const updateCategoryService = async (
   const category = await Category.findByIdAndUpdate(id, { name, slug }, { new: true });
   return category;
 };
+
+/**
+ * Delete category by ID
+ */
+
+export const deleteCategoryService = async (id: string): Promise<ICategory | null> => {
+  const category = await Category.findByIdAndDelete(id);
+  return category;
+};
