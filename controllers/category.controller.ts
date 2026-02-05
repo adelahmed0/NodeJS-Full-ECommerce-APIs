@@ -2,7 +2,6 @@ import { Request, Response, RequestHandler } from "express";
 import asyncHandler from "express-async-handler";
 import { IApiResponse, IPaginatedResponse } from "../types/api.types.js";
 import { ICategory } from "../models/category.model.js";
-import { IAllCategoriesResponse } from "../types/category.types.js";
 import {
   createCategoryService,
   getAllCategoriesService,
@@ -18,7 +17,7 @@ export const createCategory: RequestHandler<
   {},
   IApiResponse<ICategory>,
   { name: string }
-> = asyncHandler(async (req, res) => {
+> = asyncHandler(async (req : Request, res : Response) => {
   const { name } = req.body;
   const category = await createCategoryService(name);
   res.status(201).json({
