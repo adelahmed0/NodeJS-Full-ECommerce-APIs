@@ -1,5 +1,5 @@
 import Category, { ICategory } from "../models/category.model.js";
-import slugify from "slugify";
+import slugify from "@sindresorhus/slugify";
 import { IAllCategoriesResponse } from "../types/category.types.js";
 
 /**
@@ -8,7 +8,7 @@ import { IAllCategoriesResponse } from "../types/category.types.js";
 export const createCategoryService = async (
   name: string,
 ): Promise<ICategory> => {
-  const slug = slugify(name, { lower: true });
+  const slug = slugify(name, { lowercase: true });
   const category = await Category.create({ name, slug });
   return category;
 };
