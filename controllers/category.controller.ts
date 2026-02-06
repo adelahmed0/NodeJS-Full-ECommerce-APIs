@@ -9,6 +9,7 @@ import {
   updateCategoryService,
   deleteCategoryService,
 } from "../services/category.service.js";
+import { ApiError } from "../utils/apiError.js";
 
 /**
  * @desc    Create category
@@ -64,20 +65,19 @@ export const getAllCategories: RequestHandler<
 export const getCategoryById: RequestHandler<
   { id: string },
   IApiResponse<ICategory>
-> = asyncHandler(async (req, res) => {
+> = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
   const category = await getCategoryByIdService(id);
 
   if (!category) {
-    res.status(404).json({ status: false, message: "Category not found" });
-    return;
+    next(new ApiError("Category not found", 404));
+  } else {
+    res.status(200).json({
+      status: true,
+      message: "Category fetched successfully",
+      data: category,
+    });
   }
-
-  res.status(200).json({
-    status: true,
-    message: "Category fetched successfully",
-    data: category,
-  });
 });
 
 /**
@@ -88,38 +88,36 @@ export const getCategoryById: RequestHandler<
 export const updateCategory: RequestHandler<
   { id: string },
   IApiResponse<ICategory>
-> = asyncHandler(async (req, res) => {
+> = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
   const { name } = req.body;
   const category = await updateCategoryService(id, name);
 
   if (!category) {
-    res.status(404).json({ status: false, message: "Category not found" });
-    return;
+    next(new ApiError("Category not found", 404));
+  } else {
+    res.status(200).json({
+      status: true,
+      message: "Category updated successfully",
+      data: category,
+    });
   }
-
-  res.status(200).json({
-    status: true,
-    message: "Category updated successfully",
-    data: category,
-  });
 });
 
 export const deleteCategory: RequestHandler<
   { id: string },
   IApiResponse<ICategory>
-> = asyncHandler(async (req, res) => {
+> = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
   const category = await deleteCategoryService(id);
 
   if (!category) {
-    res.status(404).json({ status: false, message: "Category not found" });
-    return;
+    next(new ApiError("Category not found", 404));
+  } else {
+    res.status(200).json({
+      status: true,
+      message: "Category deleted successfully",
+      data: category,
+    });
   }
-
-  res.status(200).json({
-    status: true,
-    message: "Category deleted successfully",
-    data: category,
-  });
 });
