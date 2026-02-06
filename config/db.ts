@@ -16,10 +16,6 @@ const connectDB = (): void => {
     .then((connection) => {
       console.log(`MongoDB connected ${connection.connection.host}`);
     })
-    .catch((error) => {
-      console.log(`Database connection error: ${error}`);
-      process.exit(1);
-    });
 };
 
 export default connectDB;
