@@ -5,10 +5,10 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "cross-env NODE_ENV=production tsx watch index.ts",
-    "dev": "cross-env NODE_ENV=development tsx watch index.ts",
-    "build": "tsc",
-    "check-types": "tsc --noEmit"
+    "start": "npm run build && cross-env NODE_ENV=production node dist/index.js",
+    "dev": "cross-env NODE_ENV=development tsx watch src/index.ts",
+    "build": "npm run check-types && tsc && echo Build completed",
+    "check-types": "tsc --noEmit && echo Type checking completed"
   },
   "keywords": [],
   "author": "",
