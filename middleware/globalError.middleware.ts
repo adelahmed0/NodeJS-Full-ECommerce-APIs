@@ -7,7 +7,7 @@ const globalError = (
   next: NextFunction,
 ) => {
   err.statusCode = err.statusCode || 500;
-  err.status = err.status || "error";
+  err.status = err.status || false;
 
   if (process.env.NODE_ENV === "development") {
     sendErrorForDev(err, res);
