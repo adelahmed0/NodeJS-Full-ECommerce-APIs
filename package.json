@@ -5,9 +5,10 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "tsx watch index.ts",
-    "build": "tsc && echo Build Success",
-    "check-types": "tsc --noEmit && echo Types Check Success"
+    "start": "cross-env NODE_ENV=production tsx watch index.ts",
+    "dev": "cross-env NODE_ENV=development tsx watch index.ts",
+    "build": "tsc",
+    "check-types": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",
@@ -29,6 +30,7 @@
     "@types/express": "^5.0.6",
     "@types/morgan": "^1.9.10",
     "@types/node": "^25.2.0",
+    "cross-env": "^10.1.0",
     "nodemon": "^3.1.11",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
