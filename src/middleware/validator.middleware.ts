@@ -8,7 +8,17 @@ const validatorMiddleware = (
 ) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
+    // Transform errors array into a clean object: { field: "message" }
+    const formattedErrors = errors.array().reduce((acc: any, error: any) => {
+      acc[error.path] = error.msg;
+      return acc;
+    }, {});
+
+    return res.status(400).json({
+      status: false,
+      message: "Validation Error",
+      errors: formattedErrors,
+    });
   }
   next();
 };
