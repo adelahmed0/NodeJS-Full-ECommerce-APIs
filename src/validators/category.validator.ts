@@ -17,6 +17,11 @@ export const createCategoryValidator = [
   validatorMiddleware,
 ];
 
+export const getAllCategoriesValidator = [
+  query("page").optional().isInt({ min: 1 }).withMessage("Invalid page"),
+  query("per_page").optional().isInt({ min: 1 }).withMessage("Invalid per_page"),
+  validatorMiddleware,
+];
 export const updateCategoryValidator = [
   param("id").isMongoId().withMessage("Invalid Category ID"),
   body("name")

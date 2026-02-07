@@ -11,12 +11,13 @@ import {
   createCategoryValidator,
   updateCategoryValidator,
   deleteCategoryValidator,
+  getAllCategoriesValidator,
 } from "../validators/category.validator.js";
 
 const router: Router = express.Router();
 
 router.post("/", createCategoryValidator, createCategory);
-router.get("/", getAllCategories);
+router.get("/", getAllCategoriesValidator, getAllCategories);
 router.get("/:id", getCategoryByIdValidator, getCategoryById);
 router.put("/:id", updateCategoryValidator, updateCategory);
 router.delete("/:id", deleteCategoryValidator, deleteCategory);
