@@ -89,17 +89,6 @@ const productSchema = new Schema<IProduct>(
   { timestamps: true },
 );
 
-// Mongoose query middleware
-productSchema.pre(
-  /^find/,
-  function (this: mongoose.Query<any, IProduct>, next) {
-    this.populate({
-      path: "category",
-      select: "name -_id",
-    });
-    next();
-  },
-);
 
 productSchema.plugin(toJSONPlugin);
 
