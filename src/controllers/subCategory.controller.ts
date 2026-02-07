@@ -10,6 +10,10 @@ import {
   deleteSubCategoryService,
 } from "../services/subCategory.service.js";
 import { ApiError } from "../utils/apiError.js";
+import {
+  sendSuccessResponse,
+  sendPaginatedResponse,
+} from "../utils/apiResponse.js";
 import { Types } from "mongoose";
 
 /**
@@ -24,11 +28,12 @@ export const createSubCategory: RequestHandler<
 > = asyncHandler(async (req, res) => {
   const { name, category } = req.body;
   const subCategory = await createSubCategoryService(name, category);
-  res.status(201).json({
-    status: true,
-    message: "SubCategory created successfully",
-    data: subCategory,
-  });
+  sendSuccessResponse(
+    res,
+    "SubCategory created successfully",
+    subCategory,
+    201,
+  );
 });
 
 /**
@@ -50,14 +55,13 @@ export const getAllSubCategories: RequestHandler<
     per_page,
   );
 
-  res.status(200).json({
-    status: true,
-    message: "SubCategories fetched successfully",
-    data: subCategories,
+  sendPaginatedResponse(
+    res,
+    "SubCategories fetched successfully",
+    subCategories,
     pagination,
-  });
+  );
 });
-
 
 /**
  * @desc    Get subCategory by ID
@@ -74,14 +78,9 @@ export const getSubCategoryById: RequestHandler<
   if (!subCategory) {
     next(new ApiError("SubCategory not found", 404));
   } else {
-    res.status(200).json({
-      status: true,
-      message: "SubCategory fetched successfully",
-      data: subCategory,
-    });
+    sendSuccessResponse(res, "SubCategory fetched successfully", subCategory);
   }
 });
-
 
 /**
  * @desc    Update subCategory by ID
@@ -99,11 +98,7 @@ export const updateSubCategory: RequestHandler<
   if (!subCategory) {
     next(new ApiError("SubCategory not found", 404));
   } else {
-    res.status(200).json({
-      status: true,
-      message: "SubCategory updated successfully",
-      data: subCategory,
-    });
+    sendSuccessResponse(res, "SubCategory updated successfully", subCategory);
   }
 });
 
@@ -117,10 +112,6 @@ export const deleteSubCategory: RequestHandler<
   if (!subCategory) {
     next(new ApiError("SubCategory not found", 404));
   } else {
-    res.status(200).json({
-      status: true,
-      message: "SubCategory deleted successfully",
-      data: subCategory,
-    });
+    sendSuccessResponse(res, "SubCategory deleted successfully", subCategory);
   }
 });

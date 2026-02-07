@@ -10,6 +10,10 @@ import {
   deleteCategoryService,
 } from "../services/category.service.js";
 import { ApiError } from "../utils/apiError.js";
+import {
+  sendSuccessResponse,
+  sendPaginatedResponse,
+} from "../utils/apiResponse.js";
 
 /**
  * @desc    Create category
@@ -23,11 +27,7 @@ export const createCategory: RequestHandler<
 > = asyncHandler(async (req: Request, res: Response) => {
   const { name } = req.body;
   const category = await createCategoryService(name);
-  res.status(201).json({
-    status: true,
-    message: "Category created successfully",
-    data: category,
-  });
+  sendSuccessResponse(res, "Category created successfully", category, 201);
 });
 
 /**
@@ -49,12 +49,12 @@ export const getAllCategories: RequestHandler<
     per_page,
   );
 
-  res.status(200).json({
-    status: true,
-    message: "Categories fetched successfully",
-    data: categories,
+  sendPaginatedResponse(
+    res,
+    "Categories fetched successfully",
+    categories,
     pagination,
-  });
+  );
 });
 
 /**
@@ -72,11 +72,7 @@ export const getCategoryById: RequestHandler<
   if (!category) {
     next(new ApiError("Category not found", 404));
   } else {
-    res.status(200).json({
-      status: true,
-      message: "Category fetched successfully",
-      data: category,
-    });
+    sendSuccessResponse(res, "Category fetched successfully", category);
   }
 });
 
@@ -96,11 +92,7 @@ export const updateCategory: RequestHandler<
   if (!category) {
     next(new ApiError("Category not found", 404));
   } else {
-    res.status(200).json({
-      status: true,
-      message: "Category updated successfully",
-      data: category,
-    });
+    sendSuccessResponse(res, "Category updated successfully", category);
   }
 });
 
@@ -114,10 +106,6 @@ export const deleteCategory: RequestHandler<
   if (!category) {
     next(new ApiError("Category not found", 404));
   } else {
-    res.status(200).json({
-      status: true,
-      message: "Category deleted successfully",
-      data: category,
-    });
+    sendSuccessResponse(res, "Category deleted successfully", category);
   }
 });
