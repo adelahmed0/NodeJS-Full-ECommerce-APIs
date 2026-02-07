@@ -8,7 +8,9 @@
     "start": "npm run build && cross-env NODE_ENV=production node dist/index.js",
     "dev": "cross-env NODE_ENV=development tsx watch src/index.ts",
     "build": "npm run check-types && tsc && echo Build completed",
-    "check-types": "tsc --noEmit && echo Type checking completed"
+    "check-types": "tsc --noEmit && echo Type checking completed",
+    "db:seed": "tsx src/scripts/seeder.ts && echo Database seeded successfully",
+    "db:destroy": "tsx src/scripts/dbDestroy.ts && echo Database destroyed"
   },
   "keywords": [],
   "author": "",
