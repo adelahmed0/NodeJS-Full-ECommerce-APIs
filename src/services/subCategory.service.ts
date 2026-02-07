@@ -62,11 +62,12 @@ export const getSubCategoryByIdService = async (
 export const updateSubCategoryService = async (
   id: string,
   name: string,
+  category: Types.ObjectId,
 ): Promise<ISubCategory | null> => {
   const slug = slugify(name, { lowercase: true });
   const subCategory = await SubCategory.findByIdAndUpdate(
     id,
-    { name, slug },
+    { name, slug, category },
     { new: true },
   ).populate("category", "name slug");
   return subCategory;

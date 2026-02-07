@@ -92,8 +92,8 @@ export const updateSubCategory: RequestHandler<
   IApiResponse<ISubCategory>
 > = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
-  const { name } = req.body;
-  const subCategory = await updateSubCategoryService(id, name);
+  const { name, category } = req.body;
+  const subCategory = await updateSubCategoryService(id, name, category);
 
   if (!subCategory) {
     next(new ApiError("SubCategory not found", 404));
