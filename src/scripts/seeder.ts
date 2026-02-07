@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import slugify from "@sindresorhus/slugify";
 import Category from "../models/category.model.js";
 import SubCategory from "../models/subCategory.model.js";
+import Brand from "../models/brand.model.js";
 
 const categories = [
   {
@@ -46,6 +47,39 @@ const subCategories = [
   { name: "Makeup", parent: "Beauty & Health" },
 ];
 
+const brands = [
+  {
+    name: "Apple",
+    image: "https://res.cloudinary.com/demo/image/upload/v1620000000/apple.png",
+  },
+  {
+    name: "Samsung",
+    image:
+      "https://res.cloudinary.com/demo/image/upload/v1620000000/samsung.png",
+  },
+  {
+    name: "Nike",
+    image: "https://res.cloudinary.com/demo/image/upload/v1620000000/nike.png",
+  },
+  {
+    name: "Adidas",
+    image:
+      "https://res.cloudinary.com/demo/image/upload/v1620000000/adidas.png",
+  },
+  {
+    name: "Sony",
+    image: "https://res.cloudinary.com/demo/image/upload/v1620000000/sony.png",
+  },
+  {
+    name: "Canon",
+    image: "https://res.cloudinary.com/demo/image/upload/v1620000000/canon.png",
+  },
+  {
+    name: "Dell",
+    image: "https://res.cloudinary.com/demo/image/upload/v1620000000/dell.png",
+  },
+];
+
 /**
  * Seed Database
  */
@@ -65,6 +99,7 @@ const seedData = async () => {
     console.log("⚠ Deleting existing data...");
     await SubCategory.deleteMany();
     await Category.deleteMany();
+    await Brand.deleteMany();
     console.log("✓ Data deleted");
 
     // 2. Insert Categories
@@ -93,6 +128,19 @@ const seedData = async () => {
 
     const createdSubCategories = await SubCategory.insertMany(subCatsToInsert);
     console.log(`✓ Inserted ${createdSubCategories.length} subcategories`);
+
+    // 4. Insert Brands
+    console.log("Inserting brands...");
+    const createdBrands = await Promise.all(
+      brands.map((brand) =>
+        Brand.create({
+          name: brand.name,
+          slug: slugify(brand.name, { lowercase: true }),
+          image: brand.image,
+        }),
+      ),
+    );
+    console.log(`✓ Inserted ${createdBrands.length} brands`);
 
     console.log("★ Database seeded successfully! ★");
     process.exit(0);
