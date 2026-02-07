@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 import { toJSONPlugin } from "../helpers/mongoosePlugins.js";
 
-interface IProduct extends Document {
+export interface IProduct extends Document {
   title: string;
   slug: string;
   description: string;
