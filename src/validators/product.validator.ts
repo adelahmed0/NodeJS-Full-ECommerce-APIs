@@ -77,6 +77,15 @@ export const createProductValidator = [
   validatorMiddleware,
 ];
 
+export const getAllProductsValidator = [
+  query("page").optional().isInt({ min: 1 }).withMessage("Invalid page number"),
+  query("per_page")
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage("Invalid per_page number"),
+  validatorMiddleware,
+];
+
 export const getProductValidator = [
   param("id").isMongoId().withMessage("Invalid ID format"),
   validatorMiddleware,
