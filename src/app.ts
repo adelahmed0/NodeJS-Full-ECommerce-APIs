@@ -5,6 +5,7 @@ import cors from "cors";
 import morgan from "morgan";
 
 import categoryRouter from "./routes/category.route.js";
+import subCategoryRouter from "./routes/subCategory.route.js";
 import { ApiError } from "./utils/apiError.js";
 import globalError from "./middleware/globalError.middleware.js";
 
@@ -41,6 +42,7 @@ app.use(
 
 // Routes
 app.use(`${api}/categories`, categoryRouter);
+app.use(`${api}/subcategories`, subCategoryRouter);
 
 // Handle unhandled routes
 app.all(/(.*)/, (req: Request, res: Response, next: NextFunction) => {
