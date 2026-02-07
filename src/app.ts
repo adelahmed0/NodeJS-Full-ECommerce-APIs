@@ -42,7 +42,7 @@ app.use(
 
 // Routes
 app.use(`${api}/categories`, categoryRouter);
-app.use(`${api}/subcategories`, subCategoryRouter);
+app.use(`${api}/sub-categories`, subCategoryRouter);
 
 // Handle unhandled routes
 app.all(/(.*)/, (req: Request, res: Response, next: NextFunction) => {
