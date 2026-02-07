@@ -16,13 +16,18 @@ import {
 } from "../utils/apiResponse.js";
 import { Types } from "mongoose";
 
+export const setCategoryIdToBody = (req: any, res: any, next: any) => {
+  if (!req.body.category && req.params.categoryId)
+    req.body.category = req.params.categoryId;
+  next();
+};
 /**
  * @desc    Create subCategory
  * @route   POST /api/subcategories
  * @access  Private/Admin
  */
 export const createSubCategory: RequestHandler<
-  {},
+  { categoryId?: Types.ObjectId },
   IApiResponse<ISubCategory>,
   { name: string; category: Types.ObjectId }
 > = asyncHandler(async (req, res) => {
@@ -42,7 +47,7 @@ export const createSubCategory: RequestHandler<
  * @access  Public
  */
 export const getAllSubCategories: RequestHandler<
-  { categoryId?: Types.ObjectId },
+  { categoryId?: string },
   IPaginatedResponse<ISubCategory>,
   {},
   { page?: string; per_page?: string }

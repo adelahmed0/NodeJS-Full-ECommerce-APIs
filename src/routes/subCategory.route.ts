@@ -5,6 +5,7 @@ import {
   getSubCategoryById,
   updateSubCategory,
   deleteSubCategory,
+  setCategoryIdToBody,
 } from "../controllers/subCategory.controller.js";
 
 import {
@@ -18,7 +19,7 @@ import {
 // mergeParams: true allows us to access the params of the parent router
 const router: Router = express.Router({ mergeParams: true });
 
-router.post("/", createSubCategoryValidator, createSubCategory);
+router.post("/", setCategoryIdToBody, createSubCategoryValidator, createSubCategory);
 router.get("/", getAllSubCategoriesValidator, getAllSubCategories);
 router.get("/:id", getSubCategoryValidator, getSubCategoryById);
 router.put("/:id", updateSubCategoryValidator, updateSubCategory);
