@@ -15,6 +15,7 @@ import {
   sendPaginatedResponse,
 } from "../utils/apiResponse.js";
 import { Types } from "mongoose";
+import Category from "../models/category.model.js";
 
 export const setCategoryIdToBody = (req: any, res: any, next: any) => {
   if (!req.body.category && req.params.categoryId)
@@ -30,8 +31,14 @@ export const createSubCategory: RequestHandler<
   { categoryId?: Types.ObjectId },
   IApiResponse<ISubCategory>,
   { name: string; category: Types.ObjectId }
-> = asyncHandler(async (req, res) => {
+> = asyncHandler(async (req, res, next) => {
   const { name, category } = req.body;
+
+  const categoryExists = await Category.findById(category);
+  if (!categoryExists) {
+    return next(new ApiError(`Category not found with id: ${category}`, 404));
+  }
+
   const subCategory = await createSubCategoryService(name, category);
   sendSuccessResponse(
     res,
@@ -51,12 +58,21 @@ export const getAllSubCategories: RequestHandler<
   IPaginatedResponse<ISubCategory>,
   {},
   { page?: string; per_page?: string }
-> = asyncHandler(async (req, res) => {
+> = asyncHandler(async (req, res, next) => {
   const page = Math.max(1, parseInt(req.query.page || "1") || 1);
   const per_page = Math.max(1, parseInt(req.query.per_page || "5") || 5);
 
   let filter = {};
   if (req.params.categoryId) {
+    const categoryExists = await Category.findById(req.params.categoryId);
+    if (!categoryExists) {
+      return next(
+        new ApiError(
+          `Category not found with id: ${req.params.categoryId}`,
+          404,
+        ),
+      );
+    }
     filter = { category: req.params.categoryId };
   }
 
