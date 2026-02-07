@@ -22,14 +22,15 @@ export const createSubCategoryService = async (
 export const getAllSubCategoriesService = async (
   page: number,
   per_page: number,
+  filter: Record<string, unknown> = {},
 ): Promise<IAllSubCategoriesResponse> => {
   const skip = (page - 1) * per_page;
-  const subCategories = await SubCategory.find()
+  const subCategories = await SubCategory.find(filter)
     .populate("category", "name slug")
     .skip(skip)
     .limit(per_page);
 
-  const totalSubCategories = await SubCategory.countDocuments();
+  const totalSubCategories = await SubCategory.countDocuments(filter);
   const totalPages = Math.ceil(totalSubCategories / per_page);
 
   return {

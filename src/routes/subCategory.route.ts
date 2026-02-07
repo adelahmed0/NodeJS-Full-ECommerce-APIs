@@ -15,7 +15,8 @@ import {
   deleteSubCategoryValidator,
 } from "../validators/subCategory.validator.js";
 
-const router: Router = express.Router();
+// mergeParams: true allows us to access the params of the parent router
+const router: Router = express.Router({ mergeParams: true });
 
 router.post("/", createSubCategoryValidator, createSubCategory);
 router.get("/", getAllSubCategoriesValidator, getAllSubCategories);

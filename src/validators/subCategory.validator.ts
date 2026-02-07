@@ -18,8 +18,12 @@ export const createSubCategoryValidator = [
 ];
 
 export const getAllSubCategoriesValidator = [
+  param("categoryId").optional().isMongoId().withMessage("Invalid Category ID"),
   query("page").optional().isInt({ min: 1 }).withMessage("Invalid page"),
-  query("per_page").optional().isInt({ min: 1 }).withMessage("Invalid per_page"),
+  query("per_page")
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage("Invalid per_page"),
   validatorMiddleware,
 ];
 
@@ -36,10 +40,7 @@ export const updateSubCategoryValidator = [
     .withMessage("Too short subCategory name")
     .isLength({ max: 32 })
     .withMessage("Too long subCategory name"),
-  body("category")
-    .optional()
-    .isMongoId()
-    .withMessage("Invalid Category ID"),
+  body("category").optional().isMongoId().withMessage("Invalid Category ID"),
   validatorMiddleware,
 ];
 

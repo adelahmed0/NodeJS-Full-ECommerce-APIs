@@ -42,7 +42,7 @@ export const createSubCategory: RequestHandler<
  * @access  Public
  */
 export const getAllSubCategories: RequestHandler<
-  {},
+  { categoryId?: Types.ObjectId },
   IPaginatedResponse<ISubCategory>,
   {},
   { page?: string; per_page?: string }
@@ -50,9 +50,15 @@ export const getAllSubCategories: RequestHandler<
   const page = Math.max(1, parseInt(req.query.page || "1") || 1);
   const per_page = Math.max(1, parseInt(req.query.per_page || "5") || 5);
 
+  let filter = {};
+  if (req.params.categoryId) {
+    filter = { category: req.params.categoryId };
+  }
+
   const { subCategories, pagination } = await getAllSubCategoriesService(
     page,
     per_page,
+    filter,
   );
 
   sendPaginatedResponse(
