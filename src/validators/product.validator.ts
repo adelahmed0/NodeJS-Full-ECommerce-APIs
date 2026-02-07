@@ -46,52 +46,23 @@ export const createProductValidator = [
     .optional()
     .isArray()
     .withMessage("colors should be array of string"),
+  body("colors.*").optional().isString().withMessage("color must be a string"),
   body("imageCover").notEmpty().withMessage("Product imageCover is required"),
   body("images")
     .optional()
     .isArray()
     .withMessage("images should be array of string"),
+  body("images.*").optional().isURL().withMessage("images must be a valid URL"),
   body("category")
     .notEmpty()
     .withMessage("Product must be belong to a category")
     .isMongoId()
-    .withMessage("Invalid ID format")
-    .custom(async (categoryId) => {
-      const category = await Category.findById(categoryId);
-      if (!category) {
-        throw new Error(`No category for this id: ${categoryId}`);
-      }
-    }),
+    .withMessage("Invalid ID format"),
   body("subcategories")
     .optional()
-    .isMongoId()
-    .withMessage("Invalid ID format")
-    .custom(async (subcategoriesIds) => {
-      const subCategories = await SubCategory.find({
-        _id: { $exists: true, $in: subcategoriesIds },
-      });
-      if (
-        subCategories.length < 1 ||
-        subCategories.length !== subcategoriesIds.length
-      ) {
-        throw new Error(`Invalid subcategories Ids`);
-      }
-    })
-    .custom(async (val, { req }) => {
-      const subCategories = await SubCategory.find({
-        category: req.body.category,
-      });
-      const subCategoriesIdsInDB: string[] = [];
-      subCategories.forEach((subCategory) => {
-        subCategoriesIdsInDB.push(subCategory._id.toString());
-      });
-      // check if subcategories ids in body exists in db
-      const checker = (target: string[], arr: string[]) =>
-        target.every((v) => arr.includes(v));
-      if (!checker(val, subCategoriesIdsInDB)) {
-        throw new Error(`subcategories not belong to category`);
-      }
-    }),
+    .isArray()
+    .withMessage("subcategories should be an array"),
+  body("subcategories.*").isMongoId().withMessage("Invalid ID format"),
   body("brand").optional().isMongoId().withMessage("Invalid ID format"),
   body("ratingsAverage")
     .optional()

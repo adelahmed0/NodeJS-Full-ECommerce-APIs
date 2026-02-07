@@ -24,7 +24,7 @@ export const createBrand: RequestHandler<
   {},
   IApiResponse<IBrand>,
   { name: string }
-> = asyncHandler(async (req: Request, res: Response) => {
+> = asyncHandler(async (req, res) => {
   const { name } = req.body;
   const brand = await createBrandService(name);
   sendSuccessResponse(res, "Brand created successfully", brand, 201);
@@ -44,17 +44,9 @@ export const getAllBrands: RequestHandler<
   const page = Math.max(1, parseInt(req.query.page || "1") || 1);
   const per_page = Math.max(1, parseInt(req.query.per_page || "5") || 5);
 
-  const { brands, pagination } = await getAllBrandsService(
-    page,
-    per_page,
-  );
+  const { brands, pagination } = await getAllBrandsService(page, per_page);
 
-  sendPaginatedResponse(
-    res,
-    "Brands fetched successfully",
-    brands,
-    pagination,
-  );
+  sendPaginatedResponse(res, "Brands fetched successfully", brands, pagination);
 });
 
 /**
