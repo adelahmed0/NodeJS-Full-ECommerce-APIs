@@ -55,3 +55,26 @@ export const getSubCategoryByIdService = async (
   );
   return subCategory;
 };
+
+
+/**
+ * Update subCategory by ID
+ */
+export const updateSubCategoryService = async (
+  id: string,
+  name: string,
+): Promise<ISubCategory | null> => {
+  const slug = slugify(name, { lowercase: true });
+  const subCategory = await SubCategory.findByIdAndUpdate(id, { name, slug }, { new: true });
+  const updatedSubCategory = await subCategory.populate("category", "name slug");
+  return updatedSubCategory;
+};
+
+/**
+ * Delete subCategory by ID
+ */
+
+export const deleteSubCategoryService = async (id: string): Promise<ISubCategory | null> => {
+  const subCategory = await SubCategory.findByIdAndDelete(id);
+  return subCategory;
+};

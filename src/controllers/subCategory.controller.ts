@@ -6,6 +6,8 @@ import {
   createSubCategoryService,
   getAllSubCategoriesService,
   getSubCategoryByIdService,
+  updateSubCategoryService,
+  deleteSubCategoryService,
 } from "../services/subCategory.service.js";
 import { ApiError } from "../utils/apiError.js";
 import { Types } from "mongoose";
@@ -75,6 +77,49 @@ export const getSubCategoryById: RequestHandler<
     res.status(200).json({
       status: true,
       message: "SubCategory fetched successfully",
+      data: subCategory,
+    });
+  }
+});
+
+
+/**
+ * @desc    Update subCategory by ID
+ * @route   PUT /api/subcategories/:id
+ * @access  Private/Admin
+ */
+export const updateSubCategory: RequestHandler<
+  { id: string },
+  IApiResponse<ISubCategory>
+> = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+  const { name } = req.body;
+  const subCategory = await updateSubCategoryService(id, name);
+
+  if (!subCategory) {
+    next(new ApiError("SubCategory not found", 404));
+  } else {
+    res.status(200).json({
+      status: true,
+      message: "SubCategory updated successfully",
+      data: subCategory,
+    });
+  }
+});
+
+export const deleteSubCategory: RequestHandler<
+  { id: string },
+  IApiResponse<ISubCategory>
+> = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+  const subCategory = await deleteSubCategoryService(id);
+
+  if (!subCategory) {
+    next(new ApiError("SubCategory not found", 404));
+  } else {
+    res.status(200).json({
+      status: true,
+      message: "SubCategory deleted successfully",
       data: subCategory,
     });
   }
