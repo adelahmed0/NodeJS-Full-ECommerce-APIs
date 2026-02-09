@@ -2,6 +2,8 @@ import "dotenv/config";
 import mongoose from "mongoose";
 import Category from "../models/category.model.js";
 import SubCategory from "../models/subCategory.model.js";
+import Brand from "../models/brand.model.js";
+import Product from "../models/product.model.js";
 
 /**
  * Destroy Database Data
@@ -23,6 +25,8 @@ const destroyData = async () => {
     // Delete all collections
     await SubCategory.deleteMany();
     await Category.deleteMany();
+    await Brand.deleteMany();
+    await Product.deleteMany();
 
     console.log("✓ All data deleted successfully");
     console.log("★ Database is now empty ★");
