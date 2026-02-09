@@ -30,18 +30,20 @@ interface ISubCategoryData {
 const generateCategories = (): ICategoryData[] => {
   return Array.from({ length: CATEGORIES_COUNT }).map(() => ({
     name: faker.commerce.department() + " " + faker.string.alphanumeric(5), // Ensure uniqueness
-    image: faker.image.urlLoremFlickr({ category: "business" }),
+    image: faker.image.url(),
   }));
 };
 
 const generateBrands = (): IBrandData[] => {
   return Array.from({ length: BRANDS_COUNT }).map(() => ({
     name: faker.company.name(),
-    image: faker.image.urlLoremFlickr({ category: "fashion" }),
+    image: faker.image.url(),
   }));
 };
 
-const generateSubCategories = (categories: ICategoryData[]): ISubCategoryData[] => {
+const generateSubCategories = (
+  categories: ICategoryData[],
+): ISubCategoryData[] => {
   return Array.from({ length: SUBCATEGORIES_COUNT }).map(() => ({
     name: faker.commerce.productName() + " " + faker.string.alphanumeric(5),
     parent: faker.helpers.arrayElement(categories).name,
@@ -63,12 +65,21 @@ const generateProducts = (
     const brand = faker.helpers.arrayElement(brands);
     const category = faker.helpers.arrayElement(categories);
     // Find subcategories that belong to this category
-    const categorySubCats = subCategories.filter(sc => sc.parent === category.name);
-    
+    const categorySubCats = subCategories.filter(
+      (sc) => sc.parent === category.name,
+    );
+
     // Fallback if no subcats match (shouldn't happen with random selection but for safety)
-    const selectedSubCats = categorySubCats.length > 0 
-      ? faker.helpers.arrayElements(categorySubCats, faker.number.int({ min: 1, max: Math.min(3, categorySubCats.length) }))
-      : [faker.helpers.arrayElement(subCategories)];
+    const selectedSubCats =
+      categorySubCats.length > 0
+        ? faker.helpers.arrayElements(
+            categorySubCats,
+            faker.number.int({
+              min: 1,
+              max: Math.min(3, categorySubCats.length),
+            }),
+          )
+        : [faker.helpers.arrayElement(subCategories)];
 
     return {
       title: faker.commerce.productName() + " " + faker.string.alphanumeric(5),
@@ -78,13 +89,11 @@ const generateProducts = (
       price,
       priceAfterDiscount,
       colors: Array.from({ length: 3 }).map(() => faker.color.human()),
-      imageCover: faker.image.urlLoremFlickr({ category: "product" }),
-      images: Array.from({ length: 3 }).map(() =>
-        faker.image.urlLoremFlickr({ category: "product" }),
-      ),
+      imageCover: faker.image.url(),
+      images: Array.from({ length: 3 }).map(() => faker.image.url()),
       category: category.name,
       brand: brand.name,
-      subcategories: selectedSubCats.map(sc => sc.name),
+      subcategories: selectedSubCats.map((sc) => sc.name),
       ratingsAverage: faker.number.float({ min: 1, max: 5, fractionDigits: 1 }),
       ratingsQuantity: faker.number.int({ min: 0, max: 500 }),
     };
