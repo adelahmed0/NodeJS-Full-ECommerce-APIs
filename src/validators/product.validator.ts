@@ -1,8 +1,61 @@
-import { body, param, query } from "express-validator";
+import { body, param, query, Meta } from "express-validator";
 import validatorMiddleware from "../middleware/validator.middleware.js";
 import Category from "../models/category.model.js";
 import SubCategory from "../models/subCategory.model.js";
 import Product from "../models/product.model.js";
+
+const validateSubcategories = async (
+  subCategoriesIds: any[],
+  { req }: Meta,
+) => {
+  if (!Array.isArray(subCategoriesIds) || subCategoriesIds.length === 0) {
+    return true;
+  }
+
+  try {
+    const uniqueIds = [
+      ...new Set(subCategoriesIds.map((id: any) => id.toString())),
+    ];
+    const subCategories = await SubCategory.find({
+      _id: { $in: uniqueIds },
+    });
+
+    // 1. Check for missing subcategories
+    if (subCategories.length !== uniqueIds.length) {
+      const foundIds = subCategories.map((sub) => sub._id.toString());
+      const missingIds = uniqueIds.filter((id) => !foundIds.includes(id));
+      return Promise.reject(
+        `These subcategory IDs were not found: [${missingIds.join(", ")}]`,
+      );
+    }
+
+    // 2. Determine base Category ID to compare with
+    let categoryId = req.body.category;
+    if (!categoryId && req.params?.id) {
+      const product = await Product.findById(req.params!.id);
+      if (product) {
+        categoryId = product.category.toString();
+      }
+    }
+
+    // 3. Check membership
+    if (categoryId) {
+      const invalidSubCategories = subCategories
+        .filter((sub) => sub.category.toString() !== categoryId)
+        .map((sub) => sub._id);
+
+      if (invalidSubCategories.length > 0) {
+        return Promise.reject(
+          `These subcategories: [${invalidSubCategories.join(", ")}] do not belong to the selected category`,
+        );
+      }
+    }
+  } catch (error) {
+    return Promise.reject("Invalid database query or missing data");
+  }
+
+  return true;
+};
 
 export const createProductValidator = [
   body("title")
@@ -41,7 +94,7 @@ export const createProductValidator = [
     .withMessage("Discounted price must be at least 1")
     .custom((value, { req }) => {
       if (req.body.price && value >= req.body.price) {
-        throw new Error("priceAfterDiscount must be lower than price");
+        return Promise.reject("priceAfterDiscount must be lower than price");
       }
       return true;
     }),
@@ -78,32 +131,7 @@ export const createProductValidator = [
     .optional()
     .isArray()
     .withMessage("subcategories should be an array")
-    .custom(async (subCategoriesIds, { req }) => {
-      const subCategories = await SubCategory.find({
-        _id: { $in: subCategoriesIds },
-      });
-
-      if (subCategories.length !== subCategoriesIds.length) {
-        const foundIds = subCategories.map((sub) => sub._id.toString());
-        const missingIds = subCategoriesIds.filter(
-          (id: any) => !foundIds.includes(id.toString()),
-        );
-        return Promise.reject(
-          `These subcategory IDs were not found: [${missingIds.join(", ")}]`,
-        );
-      }
-
-      const invalidSubCategories = subCategories
-        .filter((sub) => sub.category.toString() !== req.body.category)
-        .map((sub) => sub._id);
-
-      if (invalidSubCategories.length > 0) {
-        return Promise.reject(
-          `These subcategories: [${invalidSubCategories.join(", ")}] do not belong to the selected category`,
-        );
-      }
-      return true;
-    }),
+    .custom(validateSubcategories),
   body("brand").optional().isMongoId().withMessage("Invalid brand ID format"),
   body("ratingsAverage")
     .optional()
@@ -169,40 +197,7 @@ export const updateProductValidator = [
     .optional()
     .isArray()
     .withMessage("subcategories should be an array")
-    .custom(async (subCategoriesIds, { req }) => {
-      if (subCategoriesIds.length > 0) {
-        const subCategories = await SubCategory.find({
-          _id: { $in: subCategoriesIds },
-        });
-
-        if (subCategories.length !== subCategoriesIds.length) {
-          const foundIds = subCategories.map((sub) => sub._id.toString());
-          const missingIds = subCategoriesIds.filter(
-            (id: any) => !foundIds.includes(id.toString()),
-          );
-          return Promise.reject(
-            `These subcategory IDs were not found: [${missingIds.join(", ")}]`,
-          );
-        }
-
-        let categoryId = req.body.category;
-        if (!categoryId) {
-          const product = await Product.findById(req.params!.id);
-          categoryId = product?.category.toString();
-        }
-
-        const invalidSubCategories = subCategories
-          .filter((sub) => sub.category.toString() !== categoryId)
-          .map((sub) => sub._id);
-
-        if (invalidSubCategories.length > 0) {
-          return Promise.reject(
-            `These subcategories: [${invalidSubCategories.join(", ")}] do not belong to the selected category`,
-          );
-        }
-      }
-      return true;
-    }),
+    .custom(validateSubcategories),
   body("brand").optional().isMongoId().withMessage("Invalid brand ID format"),
   validatorMiddleware,
 ];

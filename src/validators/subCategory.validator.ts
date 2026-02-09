@@ -1,4 +1,4 @@
-import { body, param, query, validationResult } from "express-validator";
+import { body, param, query } from "express-validator";
 import validatorMiddleware from "../middleware/validator.middleware.js";
 import Category from "../models/category.model.js";
 
@@ -18,7 +18,7 @@ export const createSubCategoryValidator = [
     .custom(async (val) => {
       const category = await Category.findById(val);
       if (!category) {
-        throw new Error(`Category not found with id: ${val}`);
+        return Promise.reject(`Category not found with id: ${val}`);
       }
       return true;
     }),
@@ -33,7 +33,7 @@ export const getAllSubCategoriesValidator = [
     .custom(async (val) => {
       const category = await Category.findById(val);
       if (!category) {
-        throw new Error(`Category not found with id: ${val}`);
+        return Promise.reject(`Category not found with id: ${val}`);
       }
       return true;
     }),
@@ -65,7 +65,7 @@ export const updateSubCategoryValidator = [
     .custom(async (val) => {
       const category = await Category.findById(val);
       if (!category) {
-        throw new Error(`Category not found with id: ${val}`);
+        return Promise.reject(`Category not found with id: ${val}`);
       }
       return true;
     }),
