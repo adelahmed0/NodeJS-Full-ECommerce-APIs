@@ -1,5 +1,6 @@
 import { body, param, query, validationResult } from "express-validator";
 import validatorMiddleware from "../middleware/validator.middleware.js";
+import Category from "../models/category.model.js";
 
 export const createSubCategoryValidator = [
   body("name")
@@ -13,7 +14,14 @@ export const createSubCategoryValidator = [
     .notEmpty()
     .withMessage("SubCategory must belong to a category")
     .isMongoId()
-    .withMessage("Invalid category ID format"),
+    .withMessage("Invalid category ID format")
+    .custom(async (val) => {
+      const category = await Category.findById(val);
+      if (!category) {
+        throw new Error(`Category not found with id: ${val}`);
+      }
+      return true;
+    }),
   validatorMiddleware,
 ];
 
@@ -21,7 +29,14 @@ export const getAllSubCategoriesValidator = [
   param("categoryId")
     .optional()
     .isMongoId()
-    .withMessage("Invalid category ID format"),
+    .withMessage("Invalid category ID format")
+    .custom(async (val) => {
+      const category = await Category.findById(val);
+      if (!category) {
+        throw new Error(`Category not found with id: ${val}`);
+      }
+      return true;
+    }),
   query("page").optional().isInt({ min: 1 }).withMessage("Invalid page number"),
   query("per_page")
     .optional()
@@ -46,7 +61,14 @@ export const updateSubCategoryValidator = [
   body("category")
     .optional()
     .isMongoId()
-    .withMessage("Invalid category ID format"),
+    .withMessage("Invalid category ID format")
+    .custom(async (val) => {
+      const category = await Category.findById(val);
+      if (!category) {
+        throw new Error(`Category not found with id: ${val}`);
+      }
+      return true;
+    }),
   validatorMiddleware,
 ];
 
