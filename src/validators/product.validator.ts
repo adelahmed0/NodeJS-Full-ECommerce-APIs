@@ -2,6 +2,7 @@ import { body, param, query } from "express-validator";
 import validatorMiddleware from "../middleware/validator.middleware.js";
 import Category from "../models/category.model.js";
 import SubCategory from "../models/subCategory.model.js";
+import Product from "../models/product.model.js";
 
 export const createProductValidator = [
   body("title")
@@ -69,25 +70,37 @@ export const createProductValidator = [
     .custom(async (val) => {
       const category = await Category.findById(val);
       if (!category) {
-        throw new Error(`Category not found with id: ${val}`);
+        return Promise.reject(`Category not found with id: ${val}`);
       }
       return true;
     }),
   body("subcategories")
     .optional()
     .isArray()
-    .withMessage("subcategories should be an array"),
-  body("subcategories.*")
-    .optional()
-    .isMongoId()
-    .withMessage("Invalid subcategory ID format")
-    .custom(async (val, { req }) => {
-      const subcategory = await SubCategory.findById(val);
-      if (!subcategory) {
-        throw new Error(`SubCategory not found with id: ${val}`);
+    .withMessage("subcategories should be an array")
+    .custom(async (subCategoriesIds, { req }) => {
+      const subCategories = await SubCategory.find({
+        _id: { $in: subCategoriesIds },
+      });
+
+      if (subCategories.length !== subCategoriesIds.length) {
+        const foundIds = subCategories.map((sub) => sub._id.toString());
+        const missingIds = subCategoriesIds.filter(
+          (id: any) => !foundIds.includes(id.toString()),
+        );
+        return Promise.reject(
+          `These subcategory IDs were not found: [${missingIds.join(", ")}]`,
+        );
       }
-      if (subcategory.category.toString() !== req.body.category) {
-        throw new Error("Subcategory does not belong to the selected category");
+
+      const invalidSubCategories = subCategories
+        .filter((sub) => sub.category.toString() !== req.body.category)
+        .map((sub) => sub._id);
+
+      if (invalidSubCategories.length > 0) {
+        return Promise.reject(
+          `These subcategories: [${invalidSubCategories.join(", ")}] do not belong to the selected category`,
+        );
       }
       return true;
     }),
@@ -148,29 +161,45 @@ export const updateProductValidator = [
     .custom(async (val) => {
       const category = await Category.findById(val);
       if (!category) {
-        throw new Error(`Category not found with id: ${val}`);
+        return Promise.reject(`Category not found with id: ${val}`);
       }
       return true;
     }),
   body("subcategories")
     .optional()
     .isArray()
-    .withMessage("subcategories should be an array"),
-  body("subcategories.*")
-    .optional()
-    .isMongoId()
-    .withMessage("Invalid subcategory ID format")
-    .custom(async (val, { req }) => {
-      const subcategory = await SubCategory.findById(val);
-      if (!subcategory) {
-        throw new Error(`SubCategory not found with id: ${val}`);
-      }
-      // In update, if category is not provided in body, we might need to fetch the product to check its category.
-      // But for simplicity, we can assume if category is in body, we check against it.
-      // If not, we'd need the product ID from params.
-      const categoryId = req.body.category;
-      if (categoryId && subcategory.category.toString() !== categoryId) {
-        throw new Error("Subcategory does not belong to the selected category");
+    .withMessage("subcategories should be an array")
+    .custom(async (subCategoriesIds, { req }) => {
+      if (subCategoriesIds.length > 0) {
+        const subCategories = await SubCategory.find({
+          _id: { $in: subCategoriesIds },
+        });
+
+        if (subCategories.length !== subCategoriesIds.length) {
+          const foundIds = subCategories.map((sub) => sub._id.toString());
+          const missingIds = subCategoriesIds.filter(
+            (id: any) => !foundIds.includes(id.toString()),
+          );
+          return Promise.reject(
+            `These subcategory IDs were not found: [${missingIds.join(", ")}]`,
+          );
+        }
+
+        let categoryId = req.body.category;
+        if (!categoryId) {
+          const product = await Product.findById(req.params!.id);
+          categoryId = product?.category.toString();
+        }
+
+        const invalidSubCategories = subCategories
+          .filter((sub) => sub.category.toString() !== categoryId)
+          .map((sub) => sub._id);
+
+        if (invalidSubCategories.length > 0) {
+          return Promise.reject(
+            `These subcategories: [${invalidSubCategories.join(", ")}] do not belong to the selected category`,
+          );
+        }
       }
       return true;
     }),
