@@ -4,6 +4,7 @@ import Category from "../models/category.model.js";
 import SubCategory from "../models/subCategory.model.js";
 import Brand from "../models/brand.model.js";
 import Product from "../models/product.model.js";
+import chalk from "chalk";
 
 /**
  * Destroy Database Data
@@ -13,14 +14,16 @@ const destroyData = async () => {
     const MONGO_URI = process.env.MONGO_URI;
 
     if (!MONGO_URI) {
-      console.error("MONGO_URI is not defined in environment variables");
+      console.error(
+        chalk.red.bold("✘ MONGO_URI is not defined in environment variables"),
+      );
       process.exit(1);
     }
 
     await mongoose.connect(MONGO_URI);
-    console.log("✓ Connected to MongoDB");
+    console.log(chalk.cyan.bold("🔌 Connected to MongoDB successfully."));
 
-    console.log("⚠ Deleting all data from database...");
+    console.log(chalk.yellow("⏳ Deleting all data from database..."));
 
     // Delete all collections
     await SubCategory.deleteMany();
@@ -28,12 +31,15 @@ const destroyData = async () => {
     await Brand.deleteMany();
     await Product.deleteMany();
 
-    console.log("✓ All data deleted successfully");
-    console.log("★ Database is now empty ★");
+    console.log(chalk.green("✅ All data deleted successfully."));
+    console.log(chalk.magenta.bold("\n★ DATABASE IS NOW EMPTY ★\n"));
 
     process.exit(0);
   } catch (error) {
-    console.error("Error destroying database:", error);
+    console.error(
+      chalk.red.bold("❌ FATAL: Error destroying database:"),
+      error,
+    );
     process.exit(1);
   }
 };

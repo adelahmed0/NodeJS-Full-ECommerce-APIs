@@ -12,6 +12,8 @@ import productRouter from "./routes/product.route.js";
 import { ApiError } from "./utils/apiError.js";
 import globalError from "./middleware/globalError.middleware.js";
 
+import chalk from "chalk";
+
 const app: Application = express();
 const api = process.env.API_PREFIX || "/api";
 
@@ -31,7 +33,39 @@ app.use(`${api}`, limiter);
 app.use(express.json());
 
 if (process.env.NODE_ENV === "development") {
-  app.use(morgan("dev"));
+  app.use(
+    morgan((tokens, req, res) => {
+      const status = Number(tokens.status(req, res));
+      const method = tokens.method(req, res);
+      const url = tokens.url(req, res);
+      const responseTime = tokens["response-time"](req, res);
+
+      // 1. Color for HTTP Method
+      const methodColors: Record<string, any> = {
+        GET: chalk.green.bold,
+        POST: chalk.yellow.bold,
+        PUT: chalk.cyan.bold,
+        DELETE: chalk.red.bold,
+        PATCH: chalk.magenta.bold,
+      };
+      const methodColor = methodColors[method || ""] || chalk.white.bold;
+
+      // 2. Color for Status Code
+      let statusColor = chalk.green;
+      if (status >= 500) statusColor = chalk.red.bold;
+      else if (status >= 400) statusColor = chalk.red;
+      else if (status >= 300) statusColor = chalk.yellow;
+
+      return [
+        chalk.gray(`[${new Date().toLocaleTimeString()}]`),
+        chalk.magenta.bold(`API »`),
+        methodColor(method?.padEnd(7)),
+        chalk.white(url),
+        statusColor(status),
+        chalk.gray(`(${responseTime} ms)`),
+      ].join(" ");
+    }),
+  );
 }
 
 app.use(

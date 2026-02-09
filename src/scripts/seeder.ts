@@ -100,6 +100,8 @@ const generateProducts = (
   });
 };
 
+import chalk from "chalk";
+
 /**
  * Seed Database
  */
@@ -108,23 +110,25 @@ const seedData = async () => {
     const MONGO_URI = process.env.MONGO_URI;
 
     if (!MONGO_URI) {
-      console.error("MONGO_URI is not defined in environment variables");
+      console.error(
+        chalk.red.bold("✘ MONGO_URI is not defined in environment variables"),
+      );
       process.exit(1);
     }
 
     await mongoose.connect(MONGO_URI);
-    console.log("✓ Connected to MongoDB");
+    console.log(chalk.cyan.bold("🔌 Connected to MongoDB successfully."));
 
     // 1. Delete existing data
-    console.log("⚠ Deleting existing data...");
+    console.log(chalk.yellow("⏳ Deleting existing data..."));
     await Product.deleteMany();
     await SubCategory.deleteMany();
     await Category.deleteMany();
     await Brand.deleteMany();
-    console.log("✓ Data deleted");
+    console.log(chalk.green("✅ Existing data cleared."));
 
     // 2. Insert Categories
-    console.log("Inserting categories...");
+    console.log(chalk.blue("📂 Inserting categories..."));
     const categoriesData = generateCategories();
     const createdCategories = await Promise.all(
       categoriesData.map((cat) =>
@@ -135,10 +139,14 @@ const seedData = async () => {
         }),
       ),
     );
-    console.log(`✓ Inserted ${createdCategories.length} categories`);
+    console.log(
+      chalk.green(
+        `✔ Success: ${createdCategories.length} categories inserted.`,
+      ),
+    );
 
     // 3. Insert SubCategories
-    console.log("Inserting subcategories...");
+    console.log(chalk.blue("📂 Inserting subcategories..."));
     const subCategoriesData = generateSubCategories(categoriesData);
     const subCatsToInsert = subCategoriesData.map((sub) => {
       const parent = createdCategories.find((cat) => cat.name === sub.parent);
@@ -150,10 +158,14 @@ const seedData = async () => {
     });
 
     const createdSubCategories = await SubCategory.insertMany(subCatsToInsert);
-    console.log(`✓ Inserted ${createdSubCategories.length} subcategories`);
+    console.log(
+      chalk.green(
+        `✔ Success: ${createdSubCategories.length} subcategories inserted.`,
+      ),
+    );
 
     // 4. Insert Brands
-    console.log("Inserting brands...");
+    console.log(chalk.blue("📂 Inserting brands..."));
     const brandsData = generateBrands();
     const createdBrands = await Promise.all(
       brandsData.map((brand) =>
@@ -164,10 +176,12 @@ const seedData = async () => {
         }),
       ),
     );
-    console.log(`✓ Inserted ${createdBrands.length} brands`);
+    console.log(
+      chalk.green(`✔ Success: ${createdBrands.length} brands inserted.`),
+    );
 
     // 5. Insert Products
-    console.log("Inserting products...");
+    console.log(chalk.blue("📂 Inserting products..."));
     const productsData = generateProducts(
       categoriesData,
       brandsData,
@@ -190,12 +204,16 @@ const seedData = async () => {
     });
 
     const createdProducts = await Product.insertMany(productsToInsert);
-    console.log(`✓ Inserted ${createdProducts.length} products`);
+    console.log(
+      chalk.green(`✔ Success: ${createdProducts.length} products inserted.`),
+    );
 
-    console.log("★ Database seeded successfully! ★");
+    console.log(
+      chalk.magenta.bold("\n🚀 ★ DATABASE SEEDED SUCCESSFULLY! ★ 🚀\n"),
+    );
     process.exit(0);
   } catch (error) {
-    console.error("Error seeding database:", error);
+    console.error(chalk.red.bold("❌ FATAL: Error seeding database:"), error);
     process.exit(1);
   }
 };
