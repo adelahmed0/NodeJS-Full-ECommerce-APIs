@@ -1,10 +1,7 @@
 import { Request, Response, RequestHandler } from "express";
-import asyncHandler from "express-async-handler";
-import { Types } from "mongoose";
 import { IApiResponse, IPaginatedResponse } from "../types/api.types.js";
+import asyncHandler from "express-async-handler";
 import Product, { IProduct } from "../models/product.model.js";
-import Category from "../models/category.model.js";
-import SubCategory from "../models/subCategory.model.js";
 import {
   createProductService,
   getAllProductsService,
@@ -27,35 +24,7 @@ export const createProduct: RequestHandler<
   {},
   IApiResponse<IProduct>,
   Partial<IProduct>
-> = asyncHandler(async (req, res, next) => {
-  const { category, subcategories } = req.body as {
-    category: Types.ObjectId;
-    subcategories?: Types.ObjectId[];
-  };
-
-  // 1. Check if category exists
-  const categoryExists = await Category.findById(category);
-  if (!categoryExists) {
-    return next(new ApiError(`Category not found with id: ${category}`, 404));
-  }
-
-  // 2. Check if subcategories exist and belong to the category
-  if (subcategories && subcategories.length > 0) {
-    const subCategoriesInDB = await SubCategory.find({
-      _id: { $in: subcategories },
-      category: category,
-    });
-
-    if (subCategoriesInDB.length !== subcategories.length) {
-      return next(
-        new ApiError(
-          "Invalid subcategories IDs or they do not belong to the selected category",
-          400,
-        ),
-      );
-    }
-  }
-
+> = asyncHandler(async (req, res) => {
   const product = await createProductService(req.body);
   sendSuccessResponse(res, "Product created successfully", product, 201);
 });
@@ -117,43 +86,11 @@ export const updateProduct: RequestHandler<
   Partial<IProduct>
 > = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
-  const { category, subcategories } = req.body as {
-    category?: Types.ObjectId;
-    subcategories?: Types.ObjectId[];
-  };
 
-  // 1. Check if product exists
+  // Check if product exists
   const product = await Product.findById(id);
   if (!product) {
     return next(new ApiError("Product not found", 404));
-  }
-
-  // 2. If category is being updated, check if it exists
-  if (category) {
-    const categoryExists = await Category.findById(category);
-    if (!categoryExists) {
-      return next(new ApiError(`Category not found with id: ${category}`, 404));
-    }
-  }
-
-  // 3. If subcategories are being updated
-  if (subcategories && subcategories.length > 0) {
-    // If category is not in body, use the existing product's category
-    const targetCategory = category || product.category;
-
-    const subCategoriesInDB = await SubCategory.find({
-      _id: { $in: subcategories },
-      category: targetCategory,
-    });
-
-    if (subCategoriesInDB.length !== subcategories.length) {
-      return next(
-        new ApiError(
-          "Invalid subcategories IDs or they do not belong to the selected category",
-          400,
-        ),
-      );
-    }
   }
 
   const updatedProduct = await updateProductService(id, req.body);

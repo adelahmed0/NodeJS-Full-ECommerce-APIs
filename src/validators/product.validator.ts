@@ -1,5 +1,7 @@
 import { body, param, query } from "express-validator";
 import validatorMiddleware from "../middleware/validator.middleware.js";
+import Category from "../models/category.model.js";
+import SubCategory from "../models/subCategory.model.js";
 
 export const createProductValidator = [
   body("title")
@@ -63,7 +65,14 @@ export const createProductValidator = [
     .notEmpty()
     .withMessage("Product category is required")
     .isMongoId()
-    .withMessage("Invalid category ID format"),
+    .withMessage("Invalid category ID format")
+    .custom(async (val) => {
+      const category = await Category.findById(val);
+      if (!category) {
+        throw new Error(`Category not found with id: ${val}`);
+      }
+      return true;
+    }),
   body("subcategories")
     .optional()
     .isArray()
@@ -71,7 +80,17 @@ export const createProductValidator = [
   body("subcategories.*")
     .optional()
     .isMongoId()
-    .withMessage("Invalid subcategory ID format"),
+    .withMessage("Invalid subcategory ID format")
+    .custom(async (val, { req }) => {
+      const subcategory = await SubCategory.findById(val);
+      if (!subcategory) {
+        throw new Error(`SubCategory not found with id: ${val}`);
+      }
+      if (subcategory.category.toString() !== req.body.category) {
+        throw new Error("Subcategory does not belong to the selected category");
+      }
+      return true;
+    }),
   body("brand").optional().isMongoId().withMessage("Invalid brand ID format"),
   body("ratingsAverage")
     .optional()
@@ -125,7 +144,36 @@ export const updateProductValidator = [
   body("category")
     .optional()
     .isMongoId()
-    .withMessage("Invalid category ID format"),
+    .withMessage("Invalid category ID format")
+    .custom(async (val) => {
+      const category = await Category.findById(val);
+      if (!category) {
+        throw new Error(`Category not found with id: ${val}`);
+      }
+      return true;
+    }),
+  body("subcategories")
+    .optional()
+    .isArray()
+    .withMessage("subcategories should be an array"),
+  body("subcategories.*")
+    .optional()
+    .isMongoId()
+    .withMessage("Invalid subcategory ID format")
+    .custom(async (val, { req }) => {
+      const subcategory = await SubCategory.findById(val);
+      if (!subcategory) {
+        throw new Error(`SubCategory not found with id: ${val}`);
+      }
+      // In update, if category is not provided in body, we might need to fetch the product to check its category.
+      // But for simplicity, we can assume if category is in body, we check against it.
+      // If not, we'd need the product ID from params.
+      const categoryId = req.body.category;
+      if (categoryId && subcategory.category.toString() !== categoryId) {
+        throw new Error("Subcategory does not belong to the selected category");
+      }
+      return true;
+    }),
   body("brand").optional().isMongoId().withMessage("Invalid brand ID format"),
   validatorMiddleware,
 ];
