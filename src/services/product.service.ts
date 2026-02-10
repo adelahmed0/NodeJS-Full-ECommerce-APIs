@@ -21,9 +21,16 @@ export const createProductService = async (
 export const getAllProductsService = async (
   page: number,
   per_page: number,
+  filter: any,
 ): Promise<IAllProductsResponse> => {
+  const queryStr = { ...filter };
+  const excludeFields = ["page", "per_page", "fields"];
+
+  excludeFields.forEach((field) => delete queryStr[field]);
+
+
   const skip = (page - 1) * per_page;
-  const products = await Product.find({})
+  const products = await Product.find(queryStr)
     .populate({ path: "category", select: "name image" })
     .populate({ path: "brand", select: "name image" })
     .populate({ path: "subcategories", select: "name" })
@@ -31,7 +38,7 @@ export const getAllProductsService = async (
     .limit(per_page)
     .sort("-createdAt"); // Newest products first
 
-  const totalProducts = await Product.countDocuments({});
+  const totalProducts = await Product.countDocuments(queryStr);
   const totalPages = Math.ceil(totalProducts / per_page);
 
   return {
