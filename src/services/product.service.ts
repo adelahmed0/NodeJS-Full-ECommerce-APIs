@@ -44,12 +44,11 @@ export const getAllProductsService = async (
   const skip = (page - 1) * per_page;
   const [products, totalProducts] = await Promise.all([
     Product.find(filterObj)
-      .populate({ path: "category", select: "name image" })
-      .populate({ path: "brand", select: "name image" })
-      .populate({ path: "subcategories", select: "name" })
+      .populate("category", "name image")
+      .populate("brand", "name image")
+      .populate("subcategories", "name")
       .skip(skip)
-      .limit(per_page)
-      .sort("-createdAt"),
+      .limit(per_page),
     Product.countDocuments(filterObj),
   ]);
   const totalPages = Math.ceil(totalProducts / per_page);
