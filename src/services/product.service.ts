@@ -40,12 +40,21 @@ export const getAllProductsService = async (
   queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
   const filterObj = JSON.parse(queryStr);
 
+  // 2) Sorting
+  let sortBy = "-createdAt";
+  if (filter.sort) {
+    sortBy = Array.isArray(filter.sort)
+      ? filter.sort.join(" ")
+      : (filter.sort as string).split(",").join(" ");
+  }
+
   const skip = (page - 1) * per_page;
   const [products, totalProducts] = await Promise.all([
     Product.find(filterObj)
       .populate("category", "name image")
       .populate("brand", "name image")
       .populate("subcategories", "name")
+      .sort(sortBy)
       .skip(skip)
       .limit(per_page),
     Product.countDocuments(filterObj),
