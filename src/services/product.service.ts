@@ -23,14 +23,26 @@ export const getAllProductsService = async (
   per_page: number,
   filter: any,
 ): Promise<IAllProductsResponse> => {
-  const queryStr = { ...filter };
-  const excludeFields = ["page", "per_page", "fields"];
+  // 1) Filteration
+  const queryStringObj = { ...filter };
+  const excludeFields = [
+    "page",
+    "per_page",
+    "limit",
+    "sort",
+    "fields",
+    "keyword",
+  ];
+  excludeFields.forEach((field) => delete queryStringObj[field]);
 
-  excludeFields.forEach((field) => delete queryStr[field]);
-
+  // Apply filtration using [gte, gt, lte, lt]
+  let queryStr = JSON.stringify(queryStringObj);
+  queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
+  const filterObj = JSON.parse(queryStr);
+  console.log("filterObj", filterObj);
 
   const skip = (page - 1) * per_page;
-  const products = await Product.find(queryStr)
+  const products = await Product.find(filterObj)
     .populate({ path: "category", select: "name image" })
     .populate({ path: "brand", select: "name image" })
     .populate({ path: "subcategories", select: "name" })
@@ -38,7 +50,7 @@ export const getAllProductsService = async (
     .limit(per_page)
     .sort("-createdAt"); // Newest products first
 
-  const totalProducts = await Product.countDocuments(queryStr);
+  const totalProducts = await Product.countDocuments(filterObj);
   const totalPages = Math.ceil(totalProducts / per_page);
 
   return {

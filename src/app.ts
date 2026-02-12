@@ -30,7 +30,9 @@ const limiter = rateLimit({
 
 app.use(`${api}`, limiter);
 
+app.set("query parser", "extended");
 app.use(express.json());
+app.use(express.urlencoded({ extended: true, limit: "10kb" }));
 
 if (process.env.NODE_ENV === "development") {
   app.use(
