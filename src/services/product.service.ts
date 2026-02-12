@@ -42,15 +42,16 @@ export const getAllProductsService = async (
   console.log("filterObj", filterObj);
 
   const skip = (page - 1) * per_page;
-  const products = await Product.find(filterObj)
-    .populate({ path: "category", select: "name image" })
-    .populate({ path: "brand", select: "name image" })
-    .populate({ path: "subcategories", select: "name" })
-    .skip(skip)
-    .limit(per_page)
-    .sort("-createdAt"); // Newest products first
-
-  const totalProducts = await Product.countDocuments(filterObj);
+  const [products, totalProducts] = await Promise.all([
+    Product.find(filterObj)
+      .populate({ path: "category", select: "name image" })
+      .populate({ path: "brand", select: "name image" })
+      .populate({ path: "subcategories", select: "name" })
+      .skip(skip)
+      .limit(per_page)
+      .sort("-createdAt"),
+    Product.countDocuments(filterObj),
+  ]);
   const totalPages = Math.ceil(totalProducts / per_page);
 
   return {
