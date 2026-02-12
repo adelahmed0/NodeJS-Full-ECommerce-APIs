@@ -39,7 +39,6 @@ export const getAllProductsService = async (
   let queryStr = JSON.stringify(queryStringObj);
   queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
   const filterObj = JSON.parse(queryStr);
-  console.log("filterObj", filterObj);
 
   const skip = (page - 1) * per_page;
   const [products, totalProducts] = await Promise.all([

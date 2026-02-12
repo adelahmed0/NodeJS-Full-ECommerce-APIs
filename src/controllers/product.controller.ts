@@ -46,7 +46,9 @@ export const getAllProducts: RequestHandler<
     parseInt(String(req.query.per_page || "10")) || 10,
   );
 
-  const { products, pagination } = await getAllProductsService(page, per_page, req.query);
+  const filer = req.query;
+
+  const { products, pagination } = await getAllProductsService(page, per_page, filer);
 
   sendPaginatedResponse(
     res,
