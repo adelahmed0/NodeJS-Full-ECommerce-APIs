@@ -38,7 +38,13 @@ export const getAllProducts: RequestHandler<
   {},
   IPaginatedResponse<IProduct>,
   {},
-  { page?: string; per_page?: string; sort?: string; [key: string]: any }
+  {
+    page?: string;
+    per_page?: string;
+    sort?: string;
+    fields?: string;
+    [key: string]: any;
+  }
 > = asyncHandler(async (req, res) => {
   const page = Math.max(1, parseInt(String(req.query.page || "1")) || 1);
   const per_page = Math.max(

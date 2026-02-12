@@ -41,12 +41,14 @@ export const getAllProductsService = async (
   const filterObj = JSON.parse(queryStr);
 
   // 2) Sorting
-  let sortBy = "-createdAt";
-  if (filter.sort) {
-    sortBy = Array.isArray(filter.sort)
-      ? filter.sort.join(" ")
-      : (filter.sort as string).split(",").join(" ");
-  }
+  const sortBy = filter.sort
+    ? (filter.sort as string).split(",").join(" ")
+    : "-createdAt";
+
+  // 3) Field Limiting
+  const selectFields = filter.fields
+    ? (filter.fields as string).split(",").join(" ")
+    : "-__v";
 
   const skip = (page - 1) * per_page;
   const [products, totalProducts] = await Promise.all([
@@ -56,6 +58,7 @@ export const getAllProductsService = async (
       .populate("subcategories", "name")
       .sort(sortBy)
       .skip(skip)
+      .select(selectFields)
       .limit(per_page),
     Product.countDocuments(filterObj),
   ]);
