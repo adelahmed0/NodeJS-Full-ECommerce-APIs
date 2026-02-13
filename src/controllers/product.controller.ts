@@ -44,6 +44,7 @@ export const getAllProducts: RequestHandler<
     sort?: string;
     fields?: string;
     [key: string]: any;
+    search?: string;
   }
 > = asyncHandler(async (req, res) => {
   const page = Math.max(1, parseInt(String(req.query.page || "1")) || 1);
@@ -53,11 +54,13 @@ export const getAllProducts: RequestHandler<
   );
 
   const filter = req.query;
+  const search = req.query.search;
 
   const { products, pagination } = await getAllProductsService(
     page,
     per_page,
     filter,
+    search,
   );
 
   sendPaginatedResponse(

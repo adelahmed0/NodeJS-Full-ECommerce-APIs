@@ -22,6 +22,7 @@ export const getAllProductsService = async (
   page: number,
   per_page: number,
   filter: any,
+  search?: string,
 ): Promise<IAllProductsResponse> => {
   // 1) Filteration
   const queryStringObj = { ...filter };
@@ -32,6 +33,7 @@ export const getAllProductsService = async (
     "sort",
     "fields",
     "keyword",
+    "search",
   ];
   excludeFields.forEach((field) => delete queryStringObj[field]);
 
@@ -49,6 +51,14 @@ export const getAllProductsService = async (
   const selectFields = filter.fields
     ? (filter.fields as string).split(",").join(" ")
     : "-__v";
+
+  // 4) Search
+  if (search) {
+    filterObj.$or = [
+      { title: { $regex: search, $options: "i" } },
+      { description: { $regex: search, $options: "i" } },
+    ];
+  }
 
   const skip = (page - 1) * per_page;
   const [products, totalProducts] = await Promise.all([
