@@ -2,6 +2,8 @@ import Brand, { IBrand } from "../models/brand.model.js";
 import slugify from "@sindresorhus/slugify";
 import { IAllBrandsResponse } from "../types/brand.types.js";
 import ApiFeatures from "../utils/apiFeatures.js";
+import * as factory from "./handlersFactory.service.js";
+
 /**
  * Create a new brand
  */
@@ -65,12 +67,6 @@ export const updateBrandService = async (
 };
 
 /**
- * Delete brand by ID
+ * Delete brand by ID - Using Factory
  */
-
-export const deleteBrandService = async (
-  id: string,
-): Promise<IBrand | null> => {
-  const brand = await Brand.findByIdAndDelete(id);
-  return brand;
-};
+export const deleteBrandService = factory.deleteOne<IBrand>(Brand);

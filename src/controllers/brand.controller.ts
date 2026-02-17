@@ -14,6 +14,7 @@ import {
   sendSuccessResponse,
   sendPaginatedResponse,
 } from "../utils/apiResponse.js";
+import * as factory from "./handlerFactory.controller.js";
 
 /**
  * @desc    Create brand
@@ -86,20 +87,11 @@ export const updateBrand: RequestHandler<
 });
 
 /**
- * @desc    Delete brand by ID
+ * @desc    Delete brand by ID - Using Factory
  * @route   DELETE /api/brands/:id
  * @access  Private/Admin
  */
-export const deleteBrand: RequestHandler<
-  { id: string },
-  IApiResponse<IBrand>
-> = asyncHandler(async (req, res, next) => {
-  const { id } = req.params;
-  const brand = await deleteBrandService(id);
-
-  if (!brand) {
-    next(new ApiError("Brand not found", 404));
-  } else {
-    sendSuccessResponse(res, "Brand deleted successfully", brand);
-  }
-});
+export const deleteBrand = factory.deleteOne<IBrand>(
+  deleteBrandService,
+  "Brand",
+);
