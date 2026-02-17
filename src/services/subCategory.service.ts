@@ -2,6 +2,7 @@ import SubCategory, { ISubCategory } from "../models/subCategory.model.js";
 import slugify from "@sindresorhus/slugify";
 import { Types } from "mongoose";
 import { IAllSubCategoriesResponse } from "../types/subCategory.types.js";
+import ApiFeatures from "../utils/apiFeatures.js";
 
 /**
  * Create a new subCategory
@@ -17,30 +18,29 @@ export const createSubCategoryService = async (
 };
 
 /**
- * Get all subCategories with pagination
+ * Get all subCategories with pagination and filter
  */
 export const getAllSubCategoriesService = async (
-  page: number,
-  per_page: number,
-  filter: Record<string, unknown> = {},
+  queryString: any,
 ): Promise<IAllSubCategoriesResponse> => {
-  const skip = (page - 1) * per_page;
-  const subCategories = await SubCategory.find(filter)
-    .populate("category", "name slug")
-    .skip(skip)
-    .limit(per_page);
+  // Build and execute query with all features
+  const { mongooseQuery, paginationResult } = await new ApiFeatures(
+    SubCategory.find(),
+    queryString,
+  )
+    .filter()
+    .search(["name"]) // Search in subcategory name
+    .sort()
+    .limitFields()
+    .paginate();
 
-  const totalSubCategories = await SubCategory.countDocuments(filter);
-  const totalPages = Math.ceil(totalSubCategories / per_page);
+  // Execute query with population
+  const subCategories = await mongooseQuery.populate("category", "name slug");
 
+  // Return subcategories with pagination metadata
   return {
     subCategories,
-    pagination: {
-      total_count: totalSubCategories,
-      current_page: page,
-      last_page: totalPages,
-      per_page: per_page,
-    },
+    pagination: paginationResult!,
   };
 };
 

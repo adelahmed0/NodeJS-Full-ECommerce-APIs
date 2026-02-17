@@ -52,21 +52,24 @@ export const getAllSubCategories: RequestHandler<
   { categoryId?: string },
   IPaginatedResponse<ISubCategory>,
   {},
-  { page?: string; per_page?: string }
+  {
+    page?: string;
+    per_page?: string;
+    search?: string;
+    sort?: string;
+    category?: string;
+  }
 > = asyncHandler(async (req, res) => {
-  const page = Math.max(1, parseInt(req.query.page || "1") || 1);
-  const per_page = Math.max(1, parseInt(req.query.per_page || "5") || 5);
+  // Build query string with category filter if provided
+  const queryString = { ...req.query };
 
-  let filter = {};
+  // If categoryId is in params (nested route), add it to query
   if (req.params.categoryId) {
-    filter = { category: req.params.categoryId };
+    queryString.category = req.params.categoryId;
   }
 
-  const { subCategories, pagination } = await getAllSubCategoriesService(
-    page,
-    per_page,
-    filter,
-  );
+  const { subCategories, pagination } =
+    await getAllSubCategoriesService(queryString);
 
   sendPaginatedResponse(
     res,
