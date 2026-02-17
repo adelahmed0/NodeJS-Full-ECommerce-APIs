@@ -22,41 +22,27 @@ export const createProductService = async (
 export const getAllProductsService = async (
   queryString: any,
 ): Promise<IAllProductsResponse> => {
-  // 1) Initialize ApiFeatures without pagination first
-  const apiFeatures = new ApiFeatures(Product.find(), queryString)
+  // Build and execute query with all features in one chain
+  const { mongooseQuery, paginationResult } = await new ApiFeatures(
+    Product.find(),
+    queryString,
+  )
     .filter()
-    .search();
+    .search()
+    .sort()
+    .limitFields()
+    .paginate(); // Automatically calculates count internally
 
-  // 2) Get the count of filtered/searched documents
-  // Using clone() because the query cannot be executed twice (Mongoose 6+)
-  const totalFilteredProducts = await apiFeatures.mongooseQuery
-    .clone()
-    .countDocuments();
-
-  // 3) Apply sorting, field limiting, and pagination
-  apiFeatures.sort().limitFields().paginate(totalFilteredProducts);
-
-  const products = await apiFeatures.mongooseQuery
+  // Execute query with population
+  const products = await mongooseQuery
     .populate("category", "name image")
     .populate("brand", "name image")
     .populate("subcategories", "name");
 
-  // 4) Calculate pagination metadata
-  const page = Math.max(1, parseInt(queryString.page) || 1);
-  const per_page = Math.max(
-    1,
-    parseInt(queryString.limit || queryString.per_page) || 10,
-  );
-  const totalPages = Math.ceil(totalFilteredProducts / per_page);
-
+  // Return products with pagination metadata
   return {
     products,
-    pagination: {
-      total_count: totalFilteredProducts,
-      current_page: page,
-      last_page: totalPages,
-      per_page: per_page,
-    },
+    pagination: paginationResult!,
   };
 };
 

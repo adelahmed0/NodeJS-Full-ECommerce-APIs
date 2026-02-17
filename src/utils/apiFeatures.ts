@@ -3,6 +3,12 @@ import { Query } from "mongoose";
 class ApiFeatures<T> {
   public mongooseQuery: Query<T[], T>;
   private queryString: any;
+  public paginationResult?: {
+    total_count: number;
+    current_page: number;
+    last_page: number;
+    per_page: number;
+  };
 
   constructor(mongooseQuery: Query<T[], T>, queryString: any) {
     this.mongooseQuery = mongooseQuery;
@@ -77,15 +83,36 @@ class ApiFeatures<T> {
   }
 
   /**
-   * 5) Pagination
+   * 5) Count Documents
+   * Get the count of filtered/searched documents
    */
-  paginate(countDocuments: number) {
+  async countDocuments(): Promise<number> {
+    const count = await this.mongooseQuery.clone().countDocuments();
+    return count;
+  }
+
+  /**
+   * 6) Pagination
+   */
+  async paginate(countDocuments?: number) {
+    // If count not provided, calculate it automatically
+    const totalCount = countDocuments ?? (await this.countDocuments());
+
     const page = Math.max(1, parseInt(this.queryString.page) || 1);
     const limit = Math.max(
       1,
       parseInt(this.queryString.limit || this.queryString.per_page) || 10,
     );
     const skip = (page - 1) * limit;
+    const totalPages = Math.ceil(totalCount / limit);
+
+    // Calculate pagination metadata
+    this.paginationResult = {
+      total_count: totalCount,
+      current_page: page,
+      last_page: totalPages,
+      per_page: limit,
+    };
 
     this.mongooseQuery = this.mongooseQuery.skip(skip).limit(limit);
 
