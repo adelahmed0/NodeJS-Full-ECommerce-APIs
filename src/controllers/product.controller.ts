@@ -47,21 +47,7 @@ export const getAllProducts: RequestHandler<
     search?: string;
   }
 > = asyncHandler(async (req, res) => {
-  const page = Math.max(1, parseInt(String(req.query.page || "1")) || 1);
-  const per_page = Math.max(
-    1,
-    parseInt(String(req.query.per_page || "10")) || 10,
-  );
-
-  const filter = req.query;
-  const search = req.query.search;
-
-  const { products, pagination } = await getAllProductsService(
-    page,
-    per_page,
-    filter,
-    search,
-  );
+  const { products, pagination } = await getAllProductsService(req.query);
 
   sendPaginatedResponse(
     res,
