@@ -9,8 +9,8 @@
     "dev": "cross-env NODE_ENV=development tsx watch src/index.ts",
     "build": "npm run check-types && tsc && echo Build completed",
     "check-types": "tsc --noEmit && echo Type checking completed",
-    "db:seed": "tsx src/scripts/seeder.ts && echo Database seeded successfully",
-    "db:destroy": "tsx src/scripts/dbDestroy.ts && echo Database destroyed"
+    "db:seed": "cross-env NODE_ENV=development tsx src/scripts/seeder.ts && echo Database seeded successfully",
+    "db:destroy": "cross-env NODE_ENV=development tsx src/scripts/dbDestroy.ts && echo Database destroyed"
   },
   "keywords": [],
   "author": "",

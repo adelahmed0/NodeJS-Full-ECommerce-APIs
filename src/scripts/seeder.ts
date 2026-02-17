@@ -8,9 +8,9 @@ import Product from "../models/product.model.js";
 import { faker } from "@faker-js/faker";
 
 const CATEGORIES_COUNT = 5;
-const SUBCATEGORIES_COUNT = 15;
-const BRANDS_COUNT = 10;
-const PRODUCTS_COUNT = 50;
+const SUBCATEGORIES_COUNT = 5;
+const BRANDS_COUNT = 5;
+const PRODUCTS_COUNT = 5;
 
 interface ICategoryData {
   name: string;
