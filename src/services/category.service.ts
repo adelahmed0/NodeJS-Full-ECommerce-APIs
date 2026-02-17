@@ -2,6 +2,7 @@ import Category, { ICategory } from "../models/category.model.js";
 import slugify from "@sindresorhus/slugify";
 import { IAllCategoriesResponse } from "../types/category.types.js";
 import ApiFeatures from "../utils/apiFeatures.js";
+import * as factory from "./handlersFactory.service.js";
 
 /**
  * Create a new category
@@ -71,9 +72,6 @@ export const updateCategoryService = async (
  * Delete category by ID
  */
 
-export const deleteCategoryService = async (
-  id: string,
-): Promise<ICategory | null> => {
-  const category = await Category.findByIdAndDelete(id);
-  return category;
-};
+
+export const deleteCategoryService = factory.deleteOne(Category);
+

@@ -15,7 +15,7 @@ import {
   sendPaginatedResponse,
 } from "../utils/apiResponse.js";
 import { Types } from "mongoose";
-import Category from "../models/category.model.js";
+import * as factory from "./handlerFactory.controller.js";
 
 export const setCategoryIdToBody = (req: any, res: any, next: any) => {
   if (!req.body.category && req.params.categoryId)
@@ -118,16 +118,7 @@ export const updateSubCategory: RequestHandler<
   }
 });
 
-export const deleteSubCategory: RequestHandler<
-  { id: string },
-  IApiResponse<ISubCategory>
-> = asyncHandler(async (req, res, next) => {
-  const { id } = req.params;
-  const subCategory = await deleteSubCategoryService(id);
-
-  if (!subCategory) {
-    next(new ApiError("SubCategory not found", 404));
-  } else {
-    sendSuccessResponse(res, "SubCategory deleted successfully", subCategory);
-  }
-});
+export const deleteSubCategory = factory.deleteOne<ISubCategory>(
+  deleteSubCategoryService,
+  "SubCategory",
+);

@@ -2,6 +2,7 @@ import Product, { IProduct } from "../models/product.model.js";
 import slugify from "@sindresorhus/slugify";
 import { IAllProductsResponse } from "../types/product.types.js";
 import ApiFeatures from "../utils/apiFeatures.js";
+import * as factory from "./handlersFactory.service.js";
 
 /**
  * Create a new product
@@ -83,9 +84,4 @@ export const updateProductService = async (
 /**
  * Delete product by ID
  */
-export const deleteProductService = async (
-  id: string,
-): Promise<IProduct | null> => {
-  const product = await Product.findByIdAndDelete(id);
-  return product;
-};
+export const deleteProductService = factory.deleteOne(Product);

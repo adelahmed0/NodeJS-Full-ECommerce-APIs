@@ -14,6 +14,7 @@ import {
   sendSuccessResponse,
   sendPaginatedResponse,
 } from "../utils/apiResponse.js";
+import * as factory from "./handlerFactory.controller.js";
 
 /**
  * @desc    Create product
@@ -103,16 +104,7 @@ export const updateProduct: RequestHandler<
  * @route   DELETE /api/products/:id
  * @access  Private/Admin
  */
-export const deleteProduct: RequestHandler<
-  { id: string },
-  IApiResponse<IProduct>
-> = asyncHandler(async (req, res, next) => {
-  const { id } = req.params;
-  const product = await deleteProductService(id);
-
-  if (!product) {
-    return next(new ApiError("Product not found", 404));
-  }
-
-  sendSuccessResponse(res, "Product deleted successfully", product);
-});
+export const deleteProduct = factory.deleteOne<IProduct>(
+  deleteProductService,
+  "Product",
+);

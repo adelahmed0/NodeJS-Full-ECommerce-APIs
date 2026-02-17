@@ -3,6 +3,7 @@ import slugify from "@sindresorhus/slugify";
 import { Types } from "mongoose";
 import { IAllSubCategoriesResponse } from "../types/subCategory.types.js";
 import ApiFeatures from "../utils/apiFeatures.js";
+import * as factory from "./handlersFactory.service.js";
 
 /**
  * Create a new subCategory
@@ -78,9 +79,4 @@ export const updateSubCategoryService = async (
  * Delete subCategory by ID
  */
 
-export const deleteSubCategoryService = async (
-  id: string,
-): Promise<ISubCategory | null> => {
-  const subCategory = await SubCategory.findByIdAndDelete(id);
-  return subCategory;
-};
+export const deleteSubCategoryService = factory.deleteOne(SubCategory);

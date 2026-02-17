@@ -14,6 +14,7 @@ import {
   sendSuccessResponse,
   sendPaginatedResponse,
 } from "../utils/apiResponse.js";
+import * as factory from "./handlerFactory.controller.js";
 
 /**
  * @desc    Create category
@@ -90,16 +91,8 @@ export const updateCategory: RequestHandler<
   }
 });
 
-export const deleteCategory: RequestHandler<
-  { id: string },
-  IApiResponse<ICategory>
-> = asyncHandler(async (req, res, next) => {
-  const { id } = req.params;
-  const category = await deleteCategoryService(id);
 
-  if (!category) {
-    next(new ApiError("Category not found", 404));
-  } else {
-    sendSuccessResponse(res, "Category deleted successfully", category);
-  }
-});
+export const deleteCategory = factory.deleteOne<ICategory>(
+  deleteCategoryService,
+  "Category",
+);
