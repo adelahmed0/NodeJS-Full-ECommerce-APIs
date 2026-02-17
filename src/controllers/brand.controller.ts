@@ -39,12 +39,9 @@ export const getAllBrands: RequestHandler<
   {},
   IPaginatedResponse<IBrand>,
   {},
-  { page?: string; per_page?: string }
+  { page?: string; per_page?: string; search?: string; sort?: string }
 > = asyncHandler(async (req, res) => {
-  const page = Math.max(1, parseInt(req.query.page || "1") || 1);
-  const per_page = Math.max(1, parseInt(req.query.per_page || "5") || 5);
-
-  const { brands, pagination } = await getAllBrandsService(page, per_page);
+  const { brands, pagination } = await getAllBrandsService(req.query);
 
   sendPaginatedResponse(res, "Brands fetched successfully", brands, pagination);
 });
