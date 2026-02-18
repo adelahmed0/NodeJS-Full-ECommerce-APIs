@@ -2,7 +2,7 @@ import { body, param, query, validationResult } from "express-validator";
 import validatorMiddleware from "../middleware/validator.middleware.js";
 
 export const getBrandByIdValidator = [
-  param("id").isMongoId().withMessage("Invalid brand ID format"),
+  param("id").isMongoId().withMessage("Invalid brand ID format").bail(),
   validatorMiddleware,
 ];
 
@@ -22,16 +22,21 @@ export const createBrandValidator = [
 ];
 
 export const getAllBrandsValidator = [
-  query("page").optional().isInt({ min: 1 }).withMessage("Invalid page number"),
+  query("page")
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage("Invalid page number")
+    .bail(),
   query("per_page")
     .optional()
     .isInt({ min: 1 })
-    .withMessage("Invalid per_page number"),
+    .withMessage("Invalid per_page number")
+    .bail(),
   validatorMiddleware,
 ];
 
 export const updateBrandValidator = [
-  param("id").isMongoId().withMessage("Invalid brand ID format"),
+  param("id").isMongoId().withMessage("Invalid brand ID format").bail(),
   body("name")
     .optional()
     .isLength({ min: 3 })
@@ -46,6 +51,6 @@ export const updateBrandValidator = [
 ];
 
 export const deleteBrandValidator = [
-  param("id").isMongoId().withMessage("Invalid brand ID format"),
+  param("id").isMongoId().withMessage("Invalid brand ID format").bail(),
   validatorMiddleware,
 ];

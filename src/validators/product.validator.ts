@@ -160,21 +160,26 @@ export const createProductValidator = [
 ];
 
 export const getAllProductsValidator = [
-  query("page").optional().isInt({ min: 1 }).withMessage("Invalid page number"),
+  query("page")
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage("Invalid page number")
+    .bail(),
   query("per_page")
     .optional()
     .isInt({ min: 1 })
-    .withMessage("Invalid per_page number"),
+    .withMessage("Invalid per_page number")
+    .bail(),
   validatorMiddleware,
 ];
 
 export const getProductValidator = [
-  param("id").isMongoId().withMessage("Invalid product ID format"),
+  param("id").isMongoId().withMessage("Invalid product ID format").bail(),
   validatorMiddleware,
 ];
 
 export const updateProductValidator = [
-  param("id").isMongoId().withMessage("Invalid product ID format"),
+  param("id").isMongoId().withMessage("Invalid product ID format").bail(),
   body("title")
     .optional()
     .isLength({ min: 3 })
@@ -228,6 +233,6 @@ export const updateProductValidator = [
 ];
 
 export const deleteProductValidator = [
-  param("id").isMongoId().withMessage("Invalid product ID format"),
+  param("id").isMongoId().withMessage("Invalid product ID format").bail(),
   validatorMiddleware,
 ];
