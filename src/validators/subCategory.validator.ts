@@ -15,6 +15,7 @@ export const createSubCategoryValidator = [
     .withMessage("SubCategory must belong to a category")
     .isMongoId()
     .withMessage("Invalid category ID format")
+    .bail()
     .custom(async (val) => {
       const category = await Category.findById(val);
       if (!category) {
@@ -30,6 +31,7 @@ export const getAllSubCategoriesValidator = [
     .optional()
     .isMongoId()
     .withMessage("Invalid category ID format")
+    .bail()
     .custom(async (val) => {
       const category = await Category.findById(val);
       if (!category) {
@@ -62,6 +64,7 @@ export const updateSubCategoryValidator = [
     .optional()
     .isMongoId()
     .withMessage("Invalid category ID format")
+    .bail()
     .custom(async (val) => {
       const category = await Category.findById(val);
       if (!category) {

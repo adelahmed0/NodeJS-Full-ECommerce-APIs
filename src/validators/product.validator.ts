@@ -2,6 +2,7 @@ import { body, param, query, Meta } from "express-validator";
 import validatorMiddleware from "../middleware/validator.middleware.js";
 import Category from "../models/category.model.js";
 import SubCategory from "../models/subCategory.model.js";
+import Brand from "../models/brand.model.js";
 import Product from "../models/product.model.js";
 
 const validateSubcategories = async (
@@ -120,6 +121,7 @@ export const createProductValidator = [
     .withMessage("Product category is required")
     .isMongoId()
     .withMessage("Invalid category ID format")
+    .bail()
     .custom(async (val) => {
       const category = await Category.findById(val);
       if (!category) {
@@ -132,7 +134,18 @@ export const createProductValidator = [
     .isArray()
     .withMessage("subcategories should be an array")
     .custom(validateSubcategories),
-  body("brand").optional().isMongoId().withMessage("Invalid brand ID format"),
+  body("brand")
+    .optional()
+    .isMongoId()
+    .withMessage("Invalid brand ID format")
+    .bail()
+    .custom(async (val) => {
+      const brand = await Brand.findById(val);
+      if (!brand) {
+        return Promise.reject(`Brand not found with id: ${val}`);
+      }
+      return true;
+    }),
   body("ratingsAverage")
     .optional()
     .isNumeric()
@@ -186,6 +199,7 @@ export const updateProductValidator = [
     .optional()
     .isMongoId()
     .withMessage("Invalid category ID format")
+    .bail()
     .custom(async (val) => {
       const category = await Category.findById(val);
       if (!category) {
@@ -198,7 +212,18 @@ export const updateProductValidator = [
     .isArray()
     .withMessage("subcategories should be an array")
     .custom(validateSubcategories),
-  body("brand").optional().isMongoId().withMessage("Invalid brand ID format"),
+  body("brand")
+    .optional()
+    .isMongoId()
+    .withMessage("Invalid brand ID format")
+    .bail()
+    .custom(async (val) => {
+      const brand = await Brand.findById(val);
+      if (!brand) {
+        return Promise.reject(`Brand not found with id: ${val}`);
+      }
+      return true;
+    }),
   validatorMiddleware,
 ];
 
