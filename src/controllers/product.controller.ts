@@ -21,14 +21,10 @@ import * as factory from "./handlersFactory.controller.js";
  * @route   POST /api/products
  * @access  Private/Admin
  */
-export const createProduct: RequestHandler<
-  {},
-  IApiResponse<IProduct>,
-  Partial<IProduct>
-> = asyncHandler(async (req, res) => {
-  const product = await createProductService(req.body);
-  sendSuccessResponse(res, "Product created successfully", product, 201);
-});
+export const createProduct = factory.createOne<IProduct, Partial<IProduct>>(
+  createProductService,
+  "Product",
+);
 
 /**
  * @desc    Get all products

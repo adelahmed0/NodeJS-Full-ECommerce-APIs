@@ -5,6 +5,26 @@ import { ApiError } from "../utils/apiError.js";
 import { sendSuccessResponse } from "../utils/apiResponse.js";
 
 /**
+ * Factory function to create a new document
+ * @param serviceFunction - Service function that creates a document
+ * @param modelName - Name of the model (for response message)
+ */
+export const createOne = <T, B = any>(
+  serviceFunction: (body: B) => Promise<T>,
+  modelName: string,
+): RequestHandler<{}, IApiResponse<T>, B> => {
+  return asyncHandler(async (req, res) => {
+    const document = await serviceFunction(req.body);
+    sendSuccessResponse(
+      res,
+      `${modelName} created successfully`,
+      document,
+      201,
+    );
+  });
+};
+
+/**
  * Factory function to delete a document by ID
  * @param serviceFunction - Service function that deletes a document
  * @param modelName - Name of the model (for response message)

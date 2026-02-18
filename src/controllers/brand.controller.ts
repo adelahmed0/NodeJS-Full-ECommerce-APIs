@@ -21,15 +21,10 @@ import * as factory from "./handlersFactory.controller.js";
  * @route   POST /api/brands
  * @access  Private/Admin
  */
-export const createBrand: RequestHandler<
-  {},
-  IApiResponse<IBrand>,
-  { name: string }
-> = asyncHandler(async (req, res) => {
-  const { name } = req.body;
-  const brand = await createBrandService(name);
-  sendSuccessResponse(res, "Brand created successfully", brand, 201);
-});
+export const createBrand = factory.createOne<
+  IBrand,
+  { name: string } & Partial<IBrand>
+>(createBrandService, "Brand");
 
 /**
  * @desc    Get all brands

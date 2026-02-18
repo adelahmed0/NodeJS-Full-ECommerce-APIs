@@ -13,8 +13,7 @@ export const createProductService = async (
   if (productData.title) {
     productData.slug = slugify(productData.title, { lowercase: true });
   }
-  const product = await Product.create(productData);
-  return product;
+  return factory.createOne(Product)(productData);
 };
 
 /**

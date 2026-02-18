@@ -21,15 +21,10 @@ import * as factory from "./handlersFactory.controller.js";
  * @route   POST /api/categories
  * @access  Private/Admin
  */
-export const createCategory: RequestHandler<
-  {},
-  IApiResponse<ICategory>,
-  { name: string }
-> = asyncHandler(async (req: Request, res: Response) => {
-  const { name } = req.body;
-  const category = await createCategoryService(name);
-  sendSuccessResponse(res, "Category created successfully", category, 201);
-});
+export const createCategory = factory.createOne<
+  ICategory,
+  { name: string } & Partial<ICategory>
+>(createCategoryService, "Category");
 
 /**
  * @desc    Get all categories

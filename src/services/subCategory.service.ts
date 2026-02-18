@@ -9,11 +9,12 @@ import * as factory from "./handlersFactory.service.js";
  * Create a new subCategory
  */
 export const createSubCategoryService = async (
-  name: string,
-  category: Types.ObjectId,
+  body: { name: string; category: Types.ObjectId } & Partial<ISubCategory>,
 ): Promise<ISubCategory> => {
-  const slug = slugify(name, { lowercase: true });
-  const subCategory = await SubCategory.create({ name, slug, category });
+  if (body.name) {
+    body.slug = slugify(body.name, { lowercase: true });
+  }
+  const subCategory = await factory.createOne(SubCategory)(body);
   await subCategory.populate("category", "name slug");
   return subCategory;
 };

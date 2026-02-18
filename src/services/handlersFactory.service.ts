@@ -1,6 +1,17 @@
 import { Model, UpdateQuery, PopulateOptions } from "mongoose";
 
 /**
+ * Factory function to create a new document
+ * @param Model - Mongoose model
+ */
+export const createOne = <T>(Model: Model<T>) => {
+  return async (body: any) => {
+    const document = await Model.create(body);
+    return document;
+  };
+};
+
+/**
  * Factory function to delete a document by ID
  * @param Model - Mongoose model
  */

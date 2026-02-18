@@ -8,11 +8,12 @@ import * as factory from "./handlersFactory.service.js";
  * Create a new category
  */
 export const createCategoryService = async (
-  name: string,
+  body: { name: string } & Partial<ICategory>,
 ): Promise<ICategory> => {
-  const slug = slugify(name, { lowercase: true });
-  const category = await Category.create({ name, slug });
-  return category;
+  if (body.name) {
+    body.slug = slugify(body.name, { lowercase: true });
+  }
+  return factory.createOne(Category)(body);
 };
 
 /**

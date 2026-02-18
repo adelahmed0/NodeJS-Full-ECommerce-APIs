@@ -27,21 +27,10 @@ export const setCategoryIdToBody = (req: any, res: any, next: any) => {
  * @route   POST /api/subcategories
  * @access  Private/Admin
  */
-export const createSubCategory: RequestHandler<
-  { categoryId?: Types.ObjectId },
-  IApiResponse<ISubCategory>,
-  { name: string; category: Types.ObjectId }
-> = asyncHandler(async (req, res) => {
-  const { name, category } = req.body;
-
-  const subCategory = await createSubCategoryService(name, category);
-  sendSuccessResponse(
-    res,
-    "SubCategory created successfully",
-    subCategory,
-    201,
-  );
-});
+export const createSubCategory = factory.createOne<
+  ISubCategory,
+  { name: string; category: Types.ObjectId } & Partial<ISubCategory>
+>(createSubCategoryService, "SubCategory");
 
 /**
  * @desc    Get all subCategories

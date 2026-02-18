@@ -7,10 +7,13 @@ import * as factory from "./handlersFactory.service.js";
 /**
  * Create a new brand
  */
-export const createBrandService = async (name: string): Promise<IBrand> => {
-  const slug = slugify(name, { lowercase: true });
-  const brand = await Brand.create({ name, slug });
-  return brand;
+export const createBrandService = async (
+  body: { name: string } & Partial<IBrand>,
+): Promise<IBrand> => {
+  if (body.name) {
+    body.slug = slugify(body.name, { lowercase: true });
+  }
+  return factory.createOne(Brand)(body);
 };
 
 /**
