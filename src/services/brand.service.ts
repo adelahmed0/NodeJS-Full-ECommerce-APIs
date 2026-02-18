@@ -55,15 +55,12 @@ export const getBrandByIdService = async (
  */
 export const updateBrandService = async (
   id: string,
-  name: string,
+  body: Partial<IBrand>,
 ): Promise<IBrand | null> => {
-  const slug = slugify(name, { lowercase: true });
-  const brand = await Brand.findByIdAndUpdate(
-    id,
-    { name, slug },
-    { new: true },
-  );
-  return brand;
+  if (body.name) {
+    body.slug = slugify(body.name, { lowercase: true });
+  }
+  return factory.updateOne(Brand)(id, body);
 };
 
 /**

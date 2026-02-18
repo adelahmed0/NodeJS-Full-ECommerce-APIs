@@ -57,21 +57,16 @@ export const getCategoryByIdService = async (
  */
 export const updateCategoryService = async (
   id: string,
-  name: string,
+  body: Partial<ICategory>,
 ): Promise<ICategory | null> => {
-  const slug = slugify(name, { lowercase: true });
-  const category = await Category.findByIdAndUpdate(
-    id,
-    { name, slug },
-    { new: true },
-  );
-  return category;
+  if (body.name) {
+    body.slug = slugify(body.name, { lowercase: true });
+  }
+  return factory.updateOne(Category)(id, body);
 };
 
 /**
  * Delete category by ID
  */
 
-
 export const deleteCategoryService = factory.deleteOne(Category);
-

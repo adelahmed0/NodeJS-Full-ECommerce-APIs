@@ -70,15 +70,12 @@ export const updateProductService = async (
   if (updateData.title) {
     updateData.slug = slugify(updateData.title, { lowercase: true });
   }
-  const product = await Product.findByIdAndUpdate(id, updateData, {
-    new: true,
-    runValidators: true,
-  })
-    .populate({ path: "category", select: "name image" })
-    .populate({ path: "brand", select: "name image" })
-    .populate({ path: "subcategories", select: "name" });
 
-  return product;
+  return factory.updateOne(Product, [
+    { path: "category", select: "name image" },
+    { path: "brand", select: "name image" },
+    { path: "subcategories", select: "name" },
+  ])(id, updateData);
 };
 
 /**

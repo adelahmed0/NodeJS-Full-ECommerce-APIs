@@ -14,7 +14,7 @@ import {
   sendSuccessResponse,
   sendPaginatedResponse,
 } from "../utils/apiResponse.js";
-import * as factory from "./handlerFactory.controller.js";
+import * as factory from "./handlersFactory.controller.js";
 
 /**
  * @desc    Create product
@@ -82,22 +82,10 @@ export const getProductById: RequestHandler<
  * @route   PUT /api/products/:id
  * @access  Private/Admin
  */
-export const updateProduct: RequestHandler<
-  { id: string },
-  IApiResponse<IProduct>,
-  Partial<IProduct>
-> = asyncHandler(async (req, res, next) => {
-  const { id } = req.params;
-
-  // Check if product exists
-  const product = await Product.findById(id);
-  if (!product) {
-    return next(new ApiError("Product not found", 404));
-  }
-
-  const updatedProduct = await updateProductService(id, req.body);
-  sendSuccessResponse(res, "Product updated successfully", updatedProduct);
-});
+export const updateProduct = factory.updateOne<IProduct, Partial<IProduct>>(
+  updateProductService,
+  "Product",
+);
 
 /**
  * @desc    Delete product by ID

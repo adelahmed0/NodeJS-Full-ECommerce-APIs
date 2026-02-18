@@ -14,7 +14,7 @@ import {
   sendSuccessResponse,
   sendPaginatedResponse,
 } from "../utils/apiResponse.js";
-import * as factory from "./handlerFactory.controller.js";
+import * as factory from "./handlersFactory.controller.js";
 
 /**
  * @desc    Create brand
@@ -71,20 +71,10 @@ export const getBrandById: RequestHandler<
  * @route   PUT /api/brands/:id
  * @access  Private/Admin
  */
-export const updateBrand: RequestHandler<
-  { id: string },
-  IApiResponse<IBrand>
-> = asyncHandler(async (req, res, next) => {
-  const { id } = req.params;
-  const { name } = req.body;
-  const brand = await updateBrandService(id, name);
-
-  if (!brand) {
-    next(new ApiError("Brand not found", 404));
-  } else {
-    sendSuccessResponse(res, "Brand updated successfully", brand);
-  }
-});
+export const updateBrand = factory.updateOne<IBrand, Partial<IBrand>>(
+  updateBrandService,
+  "Brand",
+);
 
 /**
  * @desc    Delete brand by ID - Using Factory

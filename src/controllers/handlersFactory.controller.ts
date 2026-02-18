@@ -24,3 +24,24 @@ export const deleteOne = <T>(
     sendSuccessResponse(res, `${modelName} deleted successfully`, document);
   });
 };
+
+/**
+ * Factory function to update a document by ID
+ * @param serviceFunction - Service function that updates a document
+ * @param modelName - Name of the model (for response message)
+ */
+export const updateOne = <T, B = any>(
+  serviceFunction: (id: string, body: B) => Promise<T | null>,
+  modelName: string,
+): RequestHandler<{ id: string }, IApiResponse<T>, B> => {
+  return asyncHandler(async (req, res, next) => {
+    const { id } = req.params;
+    const document = await serviceFunction(id, req.body);
+
+    if (!document) {
+      return next(new ApiError(`${modelName} not found`, 404));
+    }
+
+    sendSuccessResponse(res, `${modelName} updated successfully`, document);
+  });
+};
