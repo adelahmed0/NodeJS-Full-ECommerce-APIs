@@ -19,29 +19,7 @@ export const createCategoryService = async (
 /**
  * Get all categories with pagination and filter
  */
-export const getAllCategoriesService = async (
-  queryString: any,
-): Promise<IAllCategoriesResponse> => {
-  // Build and execute query with all features
-  const { mongooseQuery, paginationResult } = await new ApiFeatures(
-    Category.find(),
-    queryString,
-  )
-    .filter()
-    .search(["name"]) // Search in category name
-    .sort()
-    .limitFields()
-    .paginate();
-
-  // Execute query
-  const categories = await mongooseQuery;
-
-  // Return categories with pagination metadata
-  return {
-    categories,
-    pagination: paginationResult!,
-  };
-};
+export const getAllCategoriesService = factory.getAll(Category, ["name"]);
 
 /**
  * Get category by ID

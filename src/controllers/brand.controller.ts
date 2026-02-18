@@ -31,16 +31,10 @@ export const createBrand = factory.createOne<
  * @route   GET /api/brands
  * @access  Public
  */
-export const getAllBrands: RequestHandler<
-  {},
-  IPaginatedResponse<IBrand>,
-  {},
-  { page?: string; per_page?: string; search?: string; sort?: string }
-> = asyncHandler(async (req, res) => {
-  const { brands, pagination } = await getAllBrandsService(req.query);
-
-  sendPaginatedResponse(res, "Brands fetched successfully", brands, pagination);
-});
+export const getAllBrands = factory.getAll<IBrand>(
+  getAllBrandsService,
+  "Brand",
+);
 
 /**
  * @desc    Get brand by ID

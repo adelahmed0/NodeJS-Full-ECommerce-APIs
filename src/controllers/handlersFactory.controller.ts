@@ -2,7 +2,10 @@ import { RequestHandler } from "express";
 import asyncHandler from "express-async-handler";
 import { IApiResponse } from "../types/api.types.js";
 import { ApiError } from "../utils/apiError.js";
-import { sendSuccessResponse } from "../utils/apiResponse.js";
+import {
+  sendSuccessResponse,
+  sendPaginatedResponse,
+} from "../utils/apiResponse.js";
 
 /**
  * Factory function to create a new document
@@ -84,5 +87,35 @@ export const getOne = <T>(
     }
 
     sendSuccessResponse(res, `${modelName} fetched successfully`, document);
+  });
+};
+
+/**
+ * Factory function to get all documents
+ * @param serviceFunction - Service function that fetches all documents
+ * @param modelName - Name of the model (for response message)
+ */
+export const getAll = <T>(
+  serviceFunction: (
+    queryString: any,
+    filterObj?: any,
+  ) => Promise<{ documents: T[]; pagination: any }>,
+  modelName: string,
+): RequestHandler<any, any, any> => {
+  return asyncHandler(async (req, res) => {
+    // Nested router filter
+    let filterObj = {};
+    if (req.params.categoryId) filterObj = { category: req.params.categoryId };
+
+    const { documents, pagination } = await serviceFunction(
+      req.query,
+      filterObj,
+    );
+    sendPaginatedResponse(
+      res,
+      `${modelName} fetched successfully`,
+      documents,
+      pagination,
+    );
   });
 };

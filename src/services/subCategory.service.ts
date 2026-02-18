@@ -22,29 +22,11 @@ export const createSubCategoryService = async (
 /**
  * Get all subCategories with pagination and filter
  */
-export const getAllSubCategoriesService = async (
-  queryString: any,
-): Promise<IAllSubCategoriesResponse> => {
-  // Build and execute query with all features
-  const { mongooseQuery, paginationResult } = await new ApiFeatures(
-    SubCategory.find(),
-    queryString,
-  )
-    .filter()
-    .search(["name"]) // Search in subcategory name
-    .sort()
-    .limitFields()
-    .paginate();
-
-  // Execute query with population
-  const subCategories = await mongooseQuery.populate("category", "name slug");
-
-  // Return subcategories with pagination metadata
-  return {
-    subCategories,
-    pagination: paginationResult!,
-  };
-};
+export const getAllSubCategoriesService = factory.getAll(
+  SubCategory,
+  ["name"],
+  { path: "category", select: "name slug" },
+);
 
 /**
  * Get subcategory by ID

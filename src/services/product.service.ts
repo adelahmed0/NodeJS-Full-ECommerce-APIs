@@ -19,32 +19,15 @@ export const createProductService = async (
 /**
  * Get all products with pagination and filter
  */
-export const getAllProductsService = async (
-  queryString: any,
-): Promise<IAllProductsResponse> => {
-  // Build and execute query with all features in one chain
-  const { mongooseQuery, paginationResult } = await new ApiFeatures(
-    Product.find(),
-    queryString,
-  )
-    .filter()
-    .search()
-    .sort()
-    .limitFields()
-    .paginate(); // Automatically calculates count internally
-
-  // Execute query with population
-  const products = await mongooseQuery
-    .populate("category", "name image")
-    .populate("brand", "name image")
-    .populate("subcategories", "name");
-
-  // Return products with pagination metadata
-  return {
-    products,
-    pagination: paginationResult!,
-  };
-};
+export const getAllProductsService = factory.getAll(
+  Product,
+  ["title", "description"],
+  [
+    { path: "category", select: "name image" },
+    { path: "brand", select: "name image" },
+    { path: "subcategories", select: "name" },
+  ],
+);
 
 /**
  * Get product by ID

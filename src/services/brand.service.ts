@@ -19,29 +19,7 @@ export const createBrandService = async (
 /**
  * Get all brands with pagination and filter
  */
-export const getAllBrandsService = async (
-  queryString: any,
-): Promise<IAllBrandsResponse> => {
-  // Build and execute query with all features
-  const { mongooseQuery, paginationResult } = await new ApiFeatures(
-    Brand.find(),
-    queryString,
-  )
-    .filter()
-    .search(["name"]) // Search in brand name
-    .sort()
-    .limitFields()
-    .paginate();
-
-  // Execute query
-  const brands = await mongooseQuery;
-
-  // Return brands with pagination metadata
-  return {
-    brands,
-    pagination: paginationResult!,
-  };
-};
+export const getAllBrandsService = factory.getAll(Brand, ["name"]);
 
 /**
  * Get brand by ID

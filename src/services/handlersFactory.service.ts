@@ -1,4 +1,5 @@
 import { Model, UpdateQuery, PopulateOptions } from "mongoose";
+import ApiFeatures from "../utils/apiFeatures.js";
 
 /**
  * Factory function to create a new document
@@ -64,5 +65,42 @@ export const getOne = <T>(
 
     const document = await query;
     return document;
+  };
+};
+
+/**
+ * Factory function to get all documents
+ * @param Model - Mongoose model
+ * @param searchFields - Optional search fields
+ * @param populationOpts - Optional population options
+ */
+export const getAll = <T>(
+  Model: Model<T>,
+  searchFields: string[] = ["name", "title"],
+  populationOpts?: string | PopulateOptions | (string | PopulateOptions)[],
+) => {
+  return async (queryString: any, filterObj: any = {}) => {
+    // Build query with all features
+    const apiFeatures = new ApiFeatures(Model.find(filterObj), queryString)
+      .filter()
+      .search(searchFields)
+      .sort()
+      .limitFields();
+
+    // Execute pagination separately to get total count
+    await apiFeatures.paginate();
+
+    let query = apiFeatures.mongooseQuery;
+
+    if (populationOpts) {
+      query = query.populate(populationOpts as any);
+    }
+
+    const documents = await query;
+
+    return {
+      documents,
+      pagination: apiFeatures.paginationResult!,
+    };
   };
 };

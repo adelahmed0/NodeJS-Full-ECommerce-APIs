@@ -37,36 +37,10 @@ export const createSubCategory = factory.createOne<
  * @route   GET /api/subcategories
  * @access  Public
  */
-export const getAllSubCategories: RequestHandler<
-  { categoryId?: string },
-  IPaginatedResponse<ISubCategory>,
-  {},
-  {
-    page?: string;
-    per_page?: string;
-    search?: string;
-    sort?: string;
-    category?: string;
-  }
-> = asyncHandler(async (req, res) => {
-  // Build query string with category filter if provided
-  const queryString = { ...req.query };
-
-  // If categoryId is in params (nested route), add it to query
-  if (req.params.categoryId) {
-    queryString.category = req.params.categoryId;
-  }
-
-  const { subCategories, pagination } =
-    await getAllSubCategoriesService(queryString);
-
-  sendPaginatedResponse(
-    res,
-    "SubCategories fetched successfully",
-    subCategories,
-    pagination,
-  );
-});
+export const getAllSubCategories = factory.getAll<ISubCategory>(
+  getAllSubCategoriesService,
+  "SubCategory",
+);
 
 /**
  * @desc    Get subCategory by ID

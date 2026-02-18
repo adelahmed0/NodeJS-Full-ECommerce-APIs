@@ -31,21 +31,10 @@ export const createCategory = factory.createOne<
  * @route   GET /api/categories
  * @access  Public
  */
-export const getAllCategories: RequestHandler<
-  {},
-  IPaginatedResponse<ICategory>,
-  {},
-  { page?: string; per_page?: string; search?: string; sort?: string }
-> = asyncHandler(async (req, res) => {
-  const { categories, pagination } = await getAllCategoriesService(req.query);
-
-  sendPaginatedResponse(
-    res,
-    "Categories fetched successfully",
-    categories,
-    pagination,
-  );
-});
+export const getAllCategories = factory.getAll<ICategory>(
+  getAllCategoriesService,
+  "Category",
+);
 
 /**
  * @desc    Get category by ID

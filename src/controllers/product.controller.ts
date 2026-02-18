@@ -31,28 +31,10 @@ export const createProduct = factory.createOne<IProduct, Partial<IProduct>>(
  * @route   GET /api/products
  * @access  Public
  */
-export const getAllProducts: RequestHandler<
-  {},
-  IPaginatedResponse<IProduct>,
-  {},
-  {
-    page?: string;
-    per_page?: string;
-    sort?: string;
-    fields?: string;
-    [key: string]: any;
-    search?: string;
-  }
-> = asyncHandler(async (req, res) => {
-  const { products, pagination } = await getAllProductsService(req.query);
-
-  sendPaginatedResponse(
-    res,
-    "Products fetched successfully",
-    products,
-    pagination,
-  );
-});
+export const getAllProducts = factory.getAll<IProduct>(
+  getAllProductsService,
+  "Product",
+);
 
 /**
  * @desc    Get product by ID
