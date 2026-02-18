@@ -19,24 +19,15 @@ export const createProductService = async (
 /**
  * Get all products with pagination and filter
  */
-export const getAllProductsService = factory.getAll(
-  Product,
-  ["title", "description"],
-  [
-    { path: "category", select: "name image" },
-    { path: "brand", select: "name image" },
-    { path: "subcategories", select: "name" },
-  ],
-);
+export const getAllProductsService = factory.getAll(Product, [
+  "title",
+  "description",
+]);
 
 /**
  * Get product by ID
  */
-export const getProductByIdService = factory.getOne(Product, [
-  { path: "category", select: "name image" },
-  { path: "brand", select: "name image" },
-  { path: "subcategories", select: "name" },
-]);
+export const getProductByIdService = factory.getOne(Product);
 
 /**
  * Update product by ID
@@ -49,11 +40,7 @@ export const updateProductService = async (
     updateData.slug = slugify(updateData.title, { lowercase: true });
   }
 
-  return factory.updateOne(Product, [
-    { path: "category", select: "name image" },
-    { path: "brand", select: "name image" },
-    { path: "subcategories", select: "name" },
-  ])(id, updateData);
+  return factory.updateOne(Product)(id, updateData);
 };
 
 /**

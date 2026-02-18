@@ -89,6 +89,12 @@ const productSchema = new Schema<IProduct>(
   { timestamps: true },
 );
 
+productSchema.pre<mongoose.Query<any, IProduct>>(/^find/, function (next: any) {
+  this.populate({ path: "category", select: "name image" })
+    .populate({ path: "brand", select: "name image" })
+    .populate({ path: "subcategories", select: "name" });
+  next();
+});
 
 productSchema.plugin(toJSONPlugin);
 
