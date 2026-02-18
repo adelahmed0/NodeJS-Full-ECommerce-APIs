@@ -47,19 +47,10 @@ export const getAllBrands: RequestHandler<
  * @route   GET /api/brands/:id
  * @access  Public
  */
-export const getBrandById: RequestHandler<
-  { id: string },
-  IApiResponse<IBrand>
-> = asyncHandler(async (req, res, next) => {
-  const { id } = req.params;
-  const brand = await getBrandByIdService(id);
-
-  if (!brand) {
-    next(new ApiError("Brand not found", 404));
-  } else {
-    sendSuccessResponse(res, "Brand fetched successfully", brand);
-  }
-});
+export const getBrandById = factory.getOne<IBrand>(
+  getBrandByIdService,
+  "Brand",
+);
 
 /**
  * @desc    Update brand by ID

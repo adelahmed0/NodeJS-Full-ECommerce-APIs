@@ -49,15 +49,10 @@ export const getAllSubCategoriesService = async (
 /**
  * Get subcategory by ID
  */
-export const getSubCategoryByIdService = async (
-  id: string,
-): Promise<ISubCategory | null> => {
-  const subCategory = await SubCategory.findById(id).populate(
-    "category",
-    "name slug",
-  );
-  return subCategory;
-};
+export const getSubCategoryByIdService = factory.getOne(SubCategory, {
+  path: "category",
+  select: "name slug",
+});
 
 /**
  * Update subCategory by ID

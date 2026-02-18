@@ -46,12 +46,7 @@ export const getAllBrandsService = async (
 /**
  * Get brand by ID
  */
-export const getBrandByIdService = async (
-  id: string,
-): Promise<IBrand | null> => {
-  const brand = await Brand.findById(id);
-  return brand;
-};
+export const getBrandByIdService = factory.getOne(Brand);
 
 /**
  * Update brand by ID

@@ -59,19 +59,10 @@ export const getAllProducts: RequestHandler<
  * @route   GET /api/products/:id
  * @access  Public
  */
-export const getProductById: RequestHandler<
-  { id: string },
-  IApiResponse<IProduct>
-> = asyncHandler(async (req, res, next) => {
-  const { id } = req.params;
-  const product = await getProductByIdService(id);
-
-  if (!product) {
-    return next(new ApiError("Product not found", 404));
-  }
-
-  sendSuccessResponse(res, "Product fetched successfully", product);
-});
+export const getProductById = factory.getOne<IProduct>(
+  getProductByIdService,
+  "Product",
+);
 
 /**
  * @desc    Update product by ID

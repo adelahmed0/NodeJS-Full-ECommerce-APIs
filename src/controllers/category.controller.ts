@@ -52,19 +52,10 @@ export const getAllCategories: RequestHandler<
  * @route   GET /api/categories/:id
  * @access  Public
  */
-export const getCategoryById: RequestHandler<
-  { id: string },
-  IApiResponse<ICategory>
-> = asyncHandler(async (req, res, next) => {
-  const { id } = req.params;
-  const category = await getCategoryByIdService(id);
-
-  if (!category) {
-    next(new ApiError("Category not found", 404));
-  } else {
-    sendSuccessResponse(res, "Category fetched successfully", category);
-  }
-});
+export const getCategoryById = factory.getOne<ICategory>(
+  getCategoryByIdService,
+  "Category",
+);
 
 /**
  * @desc    Update category by ID

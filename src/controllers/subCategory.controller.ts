@@ -73,19 +73,10 @@ export const getAllSubCategories: RequestHandler<
  * @route   GET /api/subcategories/:id
  * @access  Public
  */
-export const getSubCategoryById: RequestHandler<
-  { id: string },
-  IApiResponse<ISubCategory>
-> = asyncHandler(async (req, res, next) => {
-  const { id } = req.params;
-  const subCategory = await getSubCategoryByIdService(id);
-
-  if (!subCategory) {
-    next(new ApiError("SubCategory not found", 404));
-  } else {
-    sendSuccessResponse(res, "SubCategory fetched successfully", subCategory);
-  }
-});
+export const getSubCategoryById = factory.getOne<ISubCategory>(
+  getSubCategoryByIdService,
+  "SubCategory",
+);
 
 /**
  * @desc    Update subCategory by ID

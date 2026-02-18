@@ -46,12 +46,7 @@ export const getAllCategoriesService = async (
 /**
  * Get category by ID
  */
-export const getCategoryByIdService = async (
-  id: string,
-): Promise<ICategory | null> => {
-  const category = await Category.findById(id);
-  return category;
-};
+export const getCategoryByIdService = factory.getOne(Category);
 
 /**
  * Update category by ID

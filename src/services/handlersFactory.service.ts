@@ -45,3 +45,24 @@ export const updateOne = <T>(
     return document;
   };
 };
+
+/**
+ * Factory function to get a document by ID
+ * @param Model - Mongoose model
+ * @param populationOpts - Optional population options
+ */
+export const getOne = <T>(
+  Model: Model<T>,
+  populationOpts?: string | PopulateOptions | (string | PopulateOptions)[],
+) => {
+  return async (id: string) => {
+    let query = Model.findById(id);
+
+    if (populationOpts) {
+      query = query.populate(populationOpts as any);
+    }
+
+    const document = await query;
+    return document;
+  };
+};

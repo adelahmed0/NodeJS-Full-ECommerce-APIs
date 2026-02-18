@@ -49,15 +49,11 @@ export const getAllProductsService = async (
 /**
  * Get product by ID
  */
-export const getProductByIdService = async (
-  id: string,
-): Promise<IProduct | null> => {
-  const product = await Product.findById(id)
-    .populate({ path: "category", select: "name image" })
-    .populate({ path: "brand", select: "name image" })
-    .populate({ path: "subcategories", select: "name" });
-  return product;
-};
+export const getProductByIdService = factory.getOne(Product, [
+  { path: "category", select: "name image" },
+  { path: "brand", select: "name image" },
+  { path: "subcategories", select: "name" },
+]);
 
 /**
  * Update product by ID

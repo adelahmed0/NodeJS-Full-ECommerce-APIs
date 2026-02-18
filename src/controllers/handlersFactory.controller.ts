@@ -65,3 +65,24 @@ export const updateOne = <T, B = any>(
     sendSuccessResponse(res, `${modelName} updated successfully`, document);
   });
 };
+
+/**
+ * Factory function to get a document by ID
+ * @param serviceFunction - Service function that fetches a document
+ * @param modelName - Name of the model (for response message)
+ */
+export const getOne = <T>(
+  serviceFunction: (id: string) => Promise<T | null>,
+  modelName: string,
+): RequestHandler<{ id: string }, IApiResponse<T>> => {
+  return asyncHandler(async (req, res, next) => {
+    const { id } = req.params;
+    const document = await serviceFunction(id);
+
+    if (!document) {
+      return next(new ApiError(`${modelName} not found`, 404));
+    }
+
+    sendSuccessResponse(res, `${modelName} fetched successfully`, document);
+  });
+};
