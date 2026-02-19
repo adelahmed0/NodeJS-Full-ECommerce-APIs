@@ -14,12 +14,21 @@ import {
   getAllCategoriesValidator,
 } from "../validators/category.validator.js";
 import subCategoryRouter from "./subCategory.route.js";
+import multer from "multer";
+import { Request, Response, NextFunction } from "express";
+
+const upload = multer({
+  dest: "uploads/categories",
+});
 
 const router: Router = express.Router();
 
 router.use("/:categoryId/sub-categories", subCategoryRouter);
 
-router.post("/", createCategoryValidator, createCategory);
+router.post("/", upload.single("image"), (req: Request, res: Response, next: NextFunction) => {
+  console.log(req.file);
+  next();
+}, createCategoryValidator, createCategory);
 router.get("/", getAllCategoriesValidator, getAllCategories);
 router.get("/:id", getCategoryByIdValidator, getCategoryById);
 router.put("/:id", updateCategoryValidator, updateCategory);
