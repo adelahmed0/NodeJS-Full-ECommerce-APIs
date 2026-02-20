@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document } from "mongoose";
-import { toJSONPlugin } from "../helpers/mongoosePlugins.js";
+import { toJSONPlugin, imageURLPlugin } from "../helpers/mongoosePlugins.js";
 
 /**
  * Category Interface
@@ -34,6 +34,10 @@ const categorySchema = new Schema<ICategory>(
 );
 
 categorySchema.plugin(toJSONPlugin);
+categorySchema.plugin(imageURLPlugin, {
+  folderName: "categories",
+  fields: ["image"],
+});
 
 const Category = mongoose.model<ICategory>("Category", categorySchema);
 

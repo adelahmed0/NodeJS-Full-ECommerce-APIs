@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document } from "mongoose";
-import { toJSONPlugin } from "../helpers/mongoosePlugins.js";
+import { toJSONPlugin, imageURLPlugin } from "../helpers/mongoosePlugins.js";
 
 /**
  * Brand Interface
@@ -34,6 +34,10 @@ const brandSchema = new Schema<IBrand>(
 );
 
 brandSchema.plugin(toJSONPlugin);
+brandSchema.plugin(imageURLPlugin, {
+  folderName: "brands",
+  fields: ["image"],
+});
 
 const Brand = mongoose.model<IBrand>("Brand", brandSchema);
 

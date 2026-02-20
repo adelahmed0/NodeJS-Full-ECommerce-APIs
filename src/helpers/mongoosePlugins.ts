@@ -1,6 +1,42 @@
 import { Schema, Document } from "mongoose";
 
 /**
+ * Plugin to automatically prepend base URL to image fields
+ * Handles single strings and arrays of strings
+ * Supports both http and https check
+ */
+export const imageURLPlugin = (
+  schema: Schema,
+  options: { folderName: string; fields: string[] },
+) => {
+  const { folderName, fields } = options;
+
+  const setImageURL = (doc: any) => {
+    if (!doc) return;
+    const baseUrl =
+      process.env.BASE_URL || `http://localhost:${process.env.PORT || 8000}`;
+
+    fields.forEach((field) => {
+      if (doc[field] && typeof doc[field] === "string") {
+        if (!doc[field].startsWith("http") && !doc[field].startsWith("https")) {
+          doc[field] = `${baseUrl}/${folderName}/${doc[field]}`;
+        }
+      }
+    });
+  };
+
+  // بعد جلب البيانات من الداتا بيز
+  schema.post("init", (doc) => {
+    setImageURL(doc);
+  });
+
+  // بعد حفظ بيانات جديدة
+  schema.post("save", (doc) => {
+    setImageURL(doc);
+  });
+};
+
+/**
  * Mongoose Schema Plugins
  * Reusable plugins for consistent schema behavior
  */
