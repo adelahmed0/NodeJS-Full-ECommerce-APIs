@@ -38,6 +38,21 @@ const multerOptions = () => {
 export const uploadSingleImage = (fieldName: string) =>
   multerOptions().single(fieldName);
 
+const deleteOldImage = async <T>(
+  model: Model<T>,
+  id: string,
+  uploadPath: string,
+  fieldName: string,
+) => {
+  const document = (await model.findById(id)) as Record<string, unknown> | null;
+  if (document && typeof document[fieldName] === "string") {
+    const filePath = path.join(uploadPath, document[fieldName] as string);
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+  }
+};
+
 export const resizeImage = <T>(
   model: Model<T>,
   namePrefix: string,
@@ -57,19 +72,12 @@ export const resizeImage = <T>(
 
       // If we are updating (id is present in params), delete the old image
       if (req.params.id) {
-        const document = (await model.findById(req.params.id)) as Record<
-          string,
-          unknown
-        > | null;
-        if (document && typeof document[fieldName] === "string") {
-          const oldImagePath = path.join(
-            uploadPath,
-            document[fieldName] as string,
-          );
-          if (fs.existsSync(oldImagePath)) {
-            fs.unlinkSync(oldImagePath);
-          }
-        }
+        await deleteOldImage(
+          model,
+          req.params.id as string,
+          uploadPath,
+          fieldName,
+        );
       }
 
       const fileName = `${namePrefix}-${uuidv4()}-${Date.now()}.jpeg`;
@@ -80,6 +88,24 @@ export const resizeImage = <T>(
         .toFile(`${uploadPath}/${fileName}`);
 
       (req.body as Record<string, string>)[fieldName] = fileName;
+    }
+    next();
+  });
+
+export const deleteImage = <T>(
+  model: Model<T>,
+  folderName: string,
+  fieldName: string = "image",
+) =>
+  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    if (req.params.id) {
+      const uploadPath = `src/uploads/${folderName}`;
+      await deleteOldImage(
+        model,
+        req.params.id as string,
+        uploadPath,
+        fieldName,
+      );
     }
     next();
   });

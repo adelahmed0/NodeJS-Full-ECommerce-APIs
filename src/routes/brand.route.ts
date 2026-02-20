@@ -16,6 +16,7 @@ import {
 import {
   uploadSingleImage,
   resizeImage,
+  deleteImage,
 } from "../middleware/uploadImage.middleware.js";
 import Brand, { IBrand } from "../models/brand.model.js";
 
@@ -40,6 +41,11 @@ router.put(
   updateBrand,
 );
 
-router.delete("/:id", deleteBrandValidator, deleteBrand);
+router.delete(
+  "/:id",
+  deleteBrandValidator,
+  deleteImage(Brand, "brands"),
+  deleteBrand,
+);
 
 export default router;

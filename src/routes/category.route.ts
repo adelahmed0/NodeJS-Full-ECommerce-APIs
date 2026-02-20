@@ -17,6 +17,7 @@ import subCategoryRouter from "./subCategory.route.js";
 import {
   uploadSingleImage,
   resizeImage,
+  deleteImage,
 } from "../middleware/uploadImage.middleware.js";
 import Category, { ICategory } from "../models/category.model.js";
 
@@ -42,6 +43,11 @@ router.put(
   resizeImage<ICategory>(Category, "category", "categories", "image", 600, 600),
   updateCategory,
 );
-router.delete("/:id", deleteCategoryValidator, deleteCategory);
+router.delete(
+  "/:id",
+  deleteCategoryValidator,
+  deleteImage(Category, "categories"),
+  deleteCategory,
+);
 
 export default router;
