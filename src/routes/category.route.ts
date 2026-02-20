@@ -19,6 +19,7 @@ import { Request, Response, NextFunction } from "express";
 import { v4 as uuidv4 } from "uuid";
 import { ApiError } from "../utils/apiError.js";
 import sharp from "sharp";
+import asyncHandler from "express-async-handler";
 
 // const multerStorage = multer.diskStorage({
 //   destination: "uploads/categories",
@@ -48,18 +49,20 @@ const upload = multer({
   fileFilter: multerFilter,
 });
 
-const resizeImage = (req: Request, res: Response, next: NextFunction) => {
-  if (req.file) {
-    const fileName = `category-${uuidv4()}-${Date.now()}.jpeg`;
-    sharp(req.file.buffer)
-      .resize(600, 600)
-      .toFormat("jpeg")
-      .jpeg({ quality: 90 })
-      .toFile(`uploads/categories/${fileName}`);
-    req.file.filename = fileName;
-  }
-  next();
-};
+const resizeImage = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    if (req.file) {
+      const fileName = `category-${uuidv4()}-${Date.now()}.jpeg`;
+      await sharp(req.file.buffer)
+        .resize(600, 600)
+        .toFormat("jpeg")
+        .jpeg({ quality: 90 })
+        .toFile(`uploads/categories/${fileName}`);
+      req.file.filename = fileName;
+    }
+    next();
+  },
+);
 
 const router: Router = express.Router();
 
