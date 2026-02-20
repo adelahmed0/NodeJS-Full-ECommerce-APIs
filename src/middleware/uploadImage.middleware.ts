@@ -38,13 +38,13 @@ const multerOptions = () => {
 export const uploadSingleImage = (fieldName: string) =>
   multerOptions().single(fieldName);
 
-export const uploadMixOfImages = (arrayOfFields: multer.Field[]) =>
-  multerOptions().fields(arrayOfFields);
-
-export const resizeImage = <T extends DocumentWithImage>(
+export const resizeImage = <T>(
   model: Model<T>,
   namePrefix: string,
   folderName: string,
+  fieldName: string = "image",
+  width: number = 600,
+  height: number = 600,
 ) =>
   asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     if (req.file) {
@@ -57,9 +57,15 @@ export const resizeImage = <T extends DocumentWithImage>(
 
       // If we are updating (id is present in params), delete the old image
       if (req.params.id) {
-        const document = (await model.findById(req.params.id)) as T | null;
-        if (document && document.image) {
-          const oldImagePath = path.join(uploadPath, document.image);
+        const document = (await model.findById(req.params.id)) as Record<
+          string,
+          unknown
+        > | null;
+        if (document && typeof document[fieldName] === "string") {
+          const oldImagePath = path.join(
+            uploadPath,
+            document[fieldName] as string,
+          );
           if (fs.existsSync(oldImagePath)) {
             fs.unlinkSync(oldImagePath);
           }
@@ -68,12 +74,12 @@ export const resizeImage = <T extends DocumentWithImage>(
 
       const fileName = `${namePrefix}-${uuidv4()}-${Date.now()}.jpeg`;
       await sharp(req.file.buffer)
-        .resize(600, 600)
+        .resize(width, height)
         .toFormat("jpeg")
         .jpeg({ quality: 90 })
         .toFile(`${uploadPath}/${fileName}`);
 
-      req.body.image = fileName;
+      (req.body as Record<string, string>)[fieldName] = fileName;
     }
     next();
   });

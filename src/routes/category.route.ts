@@ -28,7 +28,7 @@ router.post(
   "/",
   uploadSingleImage("image"),
   createCategoryValidator,
-  resizeImage<ICategory>(Category, "category", "categories"),
+  resizeImage<ICategory>(Category, "category", "categories", "image", 600, 600),
   createCategory,
 );
 
@@ -39,7 +39,7 @@ router.put(
   "/:id",
   uploadSingleImage("image"),
   updateCategoryValidator,
-  resizeImage<ICategory>(Category, "category", "categories"),
+  resizeImage<ICategory>(Category, "category", "categories", "image", 600, 600),
   updateCategory,
 );
 router.delete("/:id", deleteCategoryValidator, deleteCategory);

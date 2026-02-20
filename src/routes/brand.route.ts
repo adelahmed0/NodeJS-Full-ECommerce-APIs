@@ -25,7 +25,7 @@ router.post(
   "/",
   uploadSingleImage("image"),
   createBrandValidator,
-  resizeImage<IBrand>(Brand, "brand", "brands"),
+  resizeImage<IBrand>(Brand, "brand", "brands", "image", 600, 600),
   createBrand,
 );
 
@@ -36,7 +36,7 @@ router.put(
   "/:id",
   uploadSingleImage("image"),
   updateBrandValidator,
-  resizeImage<IBrand>(Brand, "brand", "brands"),
+  resizeImage<IBrand>(Brand, "brand", "brands", "image", 600, 600),
   updateBrand,
 );
 
