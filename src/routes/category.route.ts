@@ -71,8 +71,8 @@ router.use("/:categoryId/sub-categories", subCategoryRouter);
 router.post(
   "/",
   upload.single("image"),
-  resizeImage,
   createCategoryValidator,
+  resizeImage,
   createCategory,
 );
 router.get("/", getAllCategoriesValidator, getAllCategories);

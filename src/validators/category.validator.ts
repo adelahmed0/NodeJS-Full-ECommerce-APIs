@@ -1,5 +1,6 @@
-import { body, param, query, validationResult } from "express-validator";
+import { body, param, query } from "express-validator";
 import validatorMiddleware from "../middleware/validator.middleware.js";
+import Category from "../models/category.model.js";
 
 export const getCategoryByIdValidator = [
   param("id").isMongoId().withMessage("Invalid Category ID format").bail(),
@@ -13,7 +14,14 @@ export const createCategoryValidator = [
     .isLength({ min: 3 })
     .withMessage("Category name must be at least 3 characters")
     .isLength({ max: 32 })
-    .withMessage("Category name must be at most 32 characters"),
+    .withMessage("Category name must be at most 32 characters")
+    .custom(async (val) => {
+      const category = await Category.findOne({ name: val });
+      if (category) {
+        throw new Error("Category name already exists");
+      }
+      return true;
+    }),
   body("image")
     .optional()
     .isURL()
