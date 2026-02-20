@@ -20,6 +20,9 @@ import { v4 as uuidv4 } from "uuid";
 import { ApiError } from "../utils/apiError.js";
 import sharp from "sharp";
 import asyncHandler from "express-async-handler";
+import Category from "../models/category.model.js";
+import fs from "fs";
+import path from "path";
 
 // const multerStorage = multer.diskStorage({
 //   destination: "uploads/categories",
@@ -52,6 +55,20 @@ const upload = multer({
 const resizeImage = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     if (req.file) {
+      // If we are updating (id is present in params), delete the old image
+      if (req.params.id) {
+        const category = await Category.findById(req.params.id);
+        if (category && category.image) {
+          const oldImagePath = path.join(
+            "src/uploads/categories",
+            category.image,
+          );
+          if (fs.existsSync(oldImagePath)) {
+            fs.unlinkSync(oldImagePath);
+          }
+        }
+      }
+
       const fileName = `category-${uuidv4()}-${Date.now()}.jpeg`;
       await sharp(req.file.buffer)
         .resize(600, 600)
