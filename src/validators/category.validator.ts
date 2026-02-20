@@ -50,7 +50,14 @@ export const updateCategoryValidator = [
     .isLength({ min: 3 })
     .withMessage("Category name must be at least 3 characters")
     .isLength({ max: 32 })
-    .withMessage("Category name must be at most 32 characters"),
+    .withMessage("Category name must be at most 32 characters")
+    .custom(async (val) => {
+      const category = await Category.findOne({ name: val });
+      if (category) {
+        throw new Error("Category name already exists");
+      }
+      return true;
+    }),
   body("image")
     .optional()
     .isURL()

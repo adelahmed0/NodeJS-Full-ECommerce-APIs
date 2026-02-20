@@ -77,7 +77,13 @@ router.post(
 );
 router.get("/", getAllCategoriesValidator, getAllCategories);
 router.get("/:id", getCategoryByIdValidator, getCategoryById);
-router.put("/:id", updateCategoryValidator, updateCategory);
+router.put(
+  "/:id",
+  upload.single("image"),
+  updateCategoryValidator,
+  resizeImage,
+  updateCategory,
+);
 router.delete("/:id", deleteCategoryValidator, deleteCategory);
 
 export default router;
