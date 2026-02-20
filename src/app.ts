@@ -3,6 +3,11 @@ import helmet from "helmet";
 import { rateLimit } from "express-rate-limit";
 import cors from "cors";
 import morgan from "morgan";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 import categoryRouter from "./routes/category.route.js";
 import subCategoryRouter from "./routes/subCategory.route.js";
@@ -32,6 +37,7 @@ app.use(`${api}`, limiter);
 
 app.set("query parser", "extended");
 app.use(express.json());
+app.use(express.static(path.join(__dirname, "uploads")));
 app.use(express.urlencoded({ extended: true, limit: "10kb" }));
 
 if (process.env.NODE_ENV === "development") {

@@ -57,8 +57,8 @@ const resizeImage = asyncHandler(
         .resize(600, 600)
         .toFormat("jpeg")
         .jpeg({ quality: 90 })
-        .toFile(`uploads/categories/${fileName}`);
-      req.file.filename = fileName;
+        .toFile(`src/uploads/categories/${fileName}`);
+      req.body.image = fileName;
     }
     next();
   },
