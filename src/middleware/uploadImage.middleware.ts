@@ -38,6 +38,9 @@ const multerOptions = () => {
 export const uploadSingleImage = (fieldName: string) =>
   multerOptions().single(fieldName);
 
+export const uploadMixOfImages = (fields: multer.Field[]) =>
+  multerOptions().fields(fields);
+
 const deleteOldImage = async <T>(
   model: Model<T>,
   id: string,
@@ -45,12 +48,23 @@ const deleteOldImage = async <T>(
   fieldName: string,
 ) => {
   const document = (await model.findById(id)) as Record<string, unknown> | null;
-  const fileName = document?.[fieldName];
-  if (fileName && typeof fileName === "string") {
+  const fieldValue = document?.[fieldName];
+
+  if (!fieldValue) return;
+
+  const deleteFile = (fileName: string) => {
     const filePath = path.join(uploadPath, fileName);
     if (fs.existsSync(filePath) && fs.lstatSync(filePath).isFile()) {
       fs.unlinkSync(filePath);
     }
+  };
+
+  if (typeof fieldValue === "string") {
+    deleteFile(fieldValue);
+  } else if (Array.isArray(fieldValue)) {
+    fieldValue.forEach((val) => {
+      if (typeof val === "string") deleteFile(val);
+    });
   }
 };
 
@@ -90,6 +104,78 @@ export const resizeImage = <T>(
 
       (req.body as Record<string, string>)[fieldName] = fileName;
     }
+    next();
+  });
+
+export interface IFieldConfig {
+  fieldName: string;
+  width: number;
+  height: number;
+  namePrefix: string;
+  isArray?: boolean;
+}
+
+export const resizeMixedImages = <T>(
+  model: Model<T>,
+  folderName: string,
+  fieldsConfigs: IFieldConfig[],
+) =>
+  asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    const files = req.files as
+      | { [fieldName: string]: Express.Multer.File[] }
+      | undefined;
+
+    if (!files) return next();
+
+    const uploadPath = `src/uploads/${folderName}`;
+
+    // Ensure directory exists
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+
+    await Promise.all(
+      fieldsConfigs.map(async (config) => {
+        const fieldFiles = files[config.fieldName];
+        if (!fieldFiles || fieldFiles.length === 0) return;
+
+        // If we are updating (id is present in params), delete old image(s) for this field
+        if (req.params.id) {
+          await deleteOldImage(
+            model,
+            req.params.id as string,
+            uploadPath,
+            config.fieldName,
+          );
+        }
+
+        if (config.isArray) {
+          req.body[config.fieldName] = [];
+          await Promise.all(
+            fieldFiles.map(async (file, index) => {
+              const fileName = `${config.namePrefix}-${uuidv4()}-${Date.now()}-${index + 1}.jpeg`;
+              await sharp(file.buffer)
+                .resize(config.width, config.height)
+                .toFormat("jpeg")
+                .jpeg({ quality: 90 })
+                .toFile(`${uploadPath}/${fileName}`);
+
+              (req.body[config.fieldName] as string[]).push(fileName);
+            }),
+          );
+        } else {
+          const fileName = `${config.namePrefix}-${uuidv4()}-${Date.now()}.jpeg`;
+          await sharp(fieldFiles[0].buffer)
+            .resize(config.width, config.height)
+            .toFormat("jpeg")
+            .jpeg({ quality: 90 })
+            .toFile(`${uploadPath}/${fileName}`);
+
+          req.body[config.fieldName] = fileName;
+        }
+      }),
+    );
+
     next();
   });
 

@@ -1,4 +1,4 @@
-import express, { Router, Request, Response, NextFunction } from "express";
+import express, { Router } from "express";
 import {
   createProduct,
   getAllProducts,
@@ -13,82 +13,40 @@ import {
   deleteProductValidator,
   getAllProductsValidator,
 } from "../validators/product.validator.js";
-import multer from "multer";
-import { ApiError } from "../utils/apiError.js";
-import sharp from "sharp";
-import { v4 as uuidv4 } from "uuid";
-import asyncHandler from "express-async-handler";
-import fs from "fs";
+import {
+  uploadMixOfImages,
+  resizeMixedImages,
+} from "../middleware/uploadImage.middleware.js";
+import Product from "../models/product.model.js";
 
 const router: Router = express.Router();
 
-const multerStorage = multer.memoryStorage();
-
-const multerFilter = (_req: Request, file: Express.Multer.File, cb: any) => {
-  if (file.mimetype.startsWith("image/")) {
-    cb(null, true);
-  } else {
-    cb(new ApiError("Only images are allowed", 400), false);
-  }
-};
-
-const upload = multer({
-  storage: multerStorage,
-  fileFilter: multerFilter,
-});
-
-const uploadMixOfImages = upload.fields([
+const productUpload = uploadMixOfImages([
   { name: "imageCover", maxCount: 1 },
   { name: "images", maxCount: 5 },
 ]);
 
-const resizeProductImages = asyncHandler(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const files = req.files as
-      | { [fieldName: string]: Express.Multer.File[] }
-      | undefined;
-
-    const uploadPath = "src/uploads/products";
-    if (!fs.existsSync(uploadPath)) {
-      fs.mkdirSync(uploadPath, { recursive: true });
-    }
-
-    // image processing for imageCover
-    if (files?.imageCover) {
-      const imageCoverFileName = `product-${uuidv4()}-${Date.now()}-cover.jpeg`;
-      await sharp(files.imageCover[0].buffer)
-        .resize(2000, 1333)
-        .toFormat("jpeg")
-        .jpeg({ quality: 90 })
-        .toFile(`src/uploads/products/${imageCoverFileName}`);
-
-      req.body.imageCover = imageCoverFileName;
-    }
-
-    // image processing for images
-    if (files?.images) {
-      req.body.images = [];
-      await Promise.all(
-        files.images.map(async (img, index) => {
-          const imageName = `product-${uuidv4()}-${Date.now()}-${index + 1}.jpeg`;
-          await sharp(img.buffer)
-            .resize(2000, 1333)
-            .toFormat("jpeg")
-            .jpeg({ quality: 90 })
-            .toFile(`src/uploads/products/${imageName}`);
-          req.body.images.push(imageName);
-        }),
-      );
-    }
-    next();
+const resizeProductImages = resizeMixedImages(Product, "products", [
+  {
+    fieldName: "imageCover",
+    width: 2000,
+    height: 1333,
+    namePrefix: "product",
   },
-);
+  {
+    fieldName: "images",
+    width: 2000,
+    height: 1333,
+    namePrefix: "product",
+    isArray: true,
+  },
+]);
 
 router
   .route("/")
   .get(getAllProductsValidator, getAllProducts)
   .post(
-    uploadMixOfImages,
+    productUpload,
     createProductValidator,
     resizeProductImages,
     createProduct,
@@ -98,7 +56,7 @@ router
   .route("/:id")
   .get(getProductValidator, getProductById)
   .put(
-    uploadMixOfImages,
+    productUpload,
     updateProductValidator,
     resizeProductImages,
     updateProduct,
