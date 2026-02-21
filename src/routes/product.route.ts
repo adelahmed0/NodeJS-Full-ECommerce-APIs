@@ -32,6 +32,7 @@ const resizeProductImages = resizeMixedImages(Product, "products", [
     width: 2000,
     height: 1333,
     namePrefix: "product",
+    suffix: "cover",
   },
   {
     fieldName: "images",

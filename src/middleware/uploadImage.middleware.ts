@@ -47,13 +47,21 @@ const deleteOldImage = async <T>(
   uploadPath: string,
   fieldName: string,
 ) => {
-  const document = (await model.findById(id)) as Record<string, unknown> | null;
+  // Use .lean() to avoid imageURLPlugin transformation
+  const document = (await model.findById(id).lean()) as Record<
+    string,
+    unknown
+  > | null;
   const fieldValue = document?.[fieldName];
 
   if (!fieldValue) return;
 
   const deleteFile = (fileName: string) => {
-    const filePath = path.join(uploadPath, fileName);
+    // If the fileName is a URL, extract the actual file name
+    const actualFileName = fileName.split("/").pop();
+    if (!actualFileName) return;
+
+    const filePath = path.join(uploadPath, actualFileName);
     if (fs.existsSync(filePath) && fs.lstatSync(filePath).isFile()) {
       fs.unlinkSync(filePath);
     }
@@ -113,6 +121,7 @@ export interface IFieldConfig {
   height: number;
   namePrefix: string;
   isArray?: boolean;
+  suffix?: string;
 }
 
 export const resizeMixedImages = <T>(
@@ -153,7 +162,9 @@ export const resizeMixedImages = <T>(
           req.body[config.fieldName] = [];
           await Promise.all(
             fieldFiles.map(async (file, index) => {
-              const fileName = `${config.namePrefix}-${uuidv4()}-${Date.now()}-${index + 1}.jpeg`;
+              const fileName = `${config.namePrefix}-${uuidv4()}-${Date.now()}-${index + 1}${
+                config.suffix ? `-${config.suffix}` : ""
+              }.jpeg`;
               await sharp(file.buffer)
                 .resize(config.width, config.height)
                 .toFormat("jpeg")
@@ -164,7 +175,9 @@ export const resizeMixedImages = <T>(
             }),
           );
         } else {
-          const fileName = `${config.namePrefix}-${uuidv4()}-${Date.now()}.jpeg`;
+          const fileName = `${config.namePrefix}-${uuidv4()}-${Date.now()}${
+            config.suffix ? `-${config.suffix}` : ""
+          }.jpeg`;
           await sharp(fieldFiles[0].buffer)
             .resize(config.width, config.height)
             .toFormat("jpeg")

@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
-import { toJSONPlugin } from "../helpers/mongoosePlugins.js";
+import { toJSONPlugin, imageURLPlugin } from "../helpers/mongoosePlugins.js";
 
 export interface IProduct extends Document {
   title: string;
@@ -96,5 +96,9 @@ productSchema.pre(/^find/, function (this: mongoose.Query<any, IProduct>) {
 });
 
 productSchema.plugin(toJSONPlugin);
+productSchema.plugin(imageURLPlugin, {
+  folderName: "products",
+  fields: ["imageCover", "images"],
+});
 
 export default mongoose.model("Product", productSchema);
