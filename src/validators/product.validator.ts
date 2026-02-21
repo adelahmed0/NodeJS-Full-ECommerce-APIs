@@ -108,7 +108,7 @@ export const createProductValidator = [
     .isString()
     .withMessage("each color must be a string"),
   check("imageCover").custom((_val, { req }) => {
-    if (!req.files || !req.files.imageCover) {
+    if (!req.files || !(req.files as any).imageCover) {
       throw new Error("Product imageCover is required");
     }
     return true;
@@ -205,6 +205,19 @@ export const updateProductValidator = [
     .withMessage("Product price must be a number")
     .isFloat({ max: 200000 })
     .withMessage("Product price is too high"),
+  body("priceAfterDiscount")
+    .optional()
+    .isNumeric()
+    .withMessage("Product priceAfterDiscount must be a number")
+    .isFloat({ min: 1 })
+    .withMessage("Discounted price must be at least 1")
+    .custom((value, { req }) => {
+      // If price is also provided in the body, compare them
+      if (req.body.price && value >= req.body.price) {
+        return Promise.reject("priceAfterDiscount must be lower than price");
+      }
+      return true;
+    }),
   body("category")
     .optional()
     .isMongoId()
@@ -237,10 +250,8 @@ export const updateProductValidator = [
   check("imageCover")
     .optional()
     .custom((_val, { req }) => {
-      if (
-        req.body.imageCover !== undefined &&
-        (!req.files || !req.files.imageCover)
-      ) {
+      const files = req.files as any;
+      if (req.body.imageCover !== undefined && (!files || !files.imageCover)) {
         throw new Error("Product imageCover must be a file upload");
       }
       return true;
@@ -248,7 +259,8 @@ export const updateProductValidator = [
   check("images")
     .optional()
     .custom((_val, { req }) => {
-      if (req.body.images !== undefined && (!req.files || !req.files.images)) {
+      const files = req.files as any;
+      if (req.body.images !== undefined && (!files || !files.images)) {
         throw new Error("Product images must be a file upload");
       }
       return true;
