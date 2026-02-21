@@ -26,6 +26,9 @@ export const createCategoryValidator = [
     if (!req.file) {
       throw new Error("Category image is required");
     }
+    if (!req.file.mimetype.startsWith("image/")) {
+      throw new Error("Only images are allowed");
+    }
     return true;
   }),
   validatorMiddleware,
@@ -63,8 +66,13 @@ export const updateCategoryValidator = [
   check("image")
     .optional()
     .custom((_val, { req }) => {
+      // If image field exists in body but no file was uploaded
       if (req.body.image !== undefined && !req.file) {
         throw new Error("Category image must be a file upload");
+      }
+      // If a file was uploaded, check its mimetype
+      if (req.file && !req.file.mimetype.startsWith("image/")) {
+        throw new Error("Only images are allowed");
       }
       return true;
     }),
