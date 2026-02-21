@@ -18,6 +18,7 @@ import { ApiError } from "../utils/apiError.js";
 import sharp from "sharp";
 import { v4 as uuidv4 } from "uuid";
 import asyncHandler from "express-async-handler";
+import fs from "fs";
 
 const router: Router = express.Router();
 
@@ -43,10 +44,19 @@ const uploadMixOfImages = upload.fields([
 
 const resizeProductImages = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
+    const files = req.files as
+      | { [fieldName: string]: Express.Multer.File[] }
+      | undefined;
+
+    const uploadPath = "src/uploads/products";
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+
     // image processing for imageCover
-    if (req.files.imageCover) {
+    if (files?.imageCover) {
       const imageCoverFileName = `product-${uuidv4()}-${Date.now()}-cover.jpeg`;
-      await sharp(req.files.imageCover[0].buffer)
+      await sharp(files.imageCover[0].buffer)
         .resize(2000, 1333)
         .toFormat("jpeg")
         .jpeg({ quality: 90 })
@@ -56,10 +66,10 @@ const resizeProductImages = asyncHandler(
     }
 
     // image processing for images
-    if (req.files.images) {
+    if (files?.images) {
       req.body.images = [];
       await Promise.all(
-        req.files.images.map(async (img, index) => {
+        files.images.map(async (img, index) => {
           const imageName = `product-${uuidv4()}-${Date.now()}-${index + 1}.jpeg`;
           await sharp(img.buffer)
             .resize(2000, 1333)
