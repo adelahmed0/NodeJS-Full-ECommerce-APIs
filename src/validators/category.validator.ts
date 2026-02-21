@@ -1,4 +1,4 @@
-import { body, param, query } from "express-validator";
+import { body, param, query, check } from "express-validator";
 import validatorMiddleware from "../middleware/validator.middleware.js";
 import Category from "../models/category.model.js";
 
@@ -22,10 +22,12 @@ export const createCategoryValidator = [
       }
       return true;
     }),
-  body("image")
-    .optional()
-    .isURL()
-    .withMessage("Category image must be a valid URL"),
+  check("image").custom((_val, { req }) => {
+    if (!req.file) {
+      throw new Error("Category image is required");
+    }
+    return true;
+  }),
   validatorMiddleware,
 ];
 
@@ -58,10 +60,14 @@ export const updateCategoryValidator = [
       }
       return true;
     }),
-  body("image")
+  check("image")
     .optional()
-    .isURL()
-    .withMessage("Category image must be a valid URL"),
+    .custom((_val, { req }) => {
+      if (req.body.image !== undefined && !req.file) {
+        throw new Error("Category image must be a file upload");
+      }
+      return true;
+    }),
   validatorMiddleware,
 ];
 

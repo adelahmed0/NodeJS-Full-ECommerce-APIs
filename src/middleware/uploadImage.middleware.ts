@@ -45,9 +45,10 @@ const deleteOldImage = async <T>(
   fieldName: string,
 ) => {
   const document = (await model.findById(id)) as Record<string, unknown> | null;
-  if (document && typeof document[fieldName] === "string") {
-    const filePath = path.join(uploadPath, document[fieldName] as string);
-    if (fs.existsSync(filePath)) {
+  const fileName = document?.[fieldName];
+  if (fileName && typeof fileName === "string") {
+    const filePath = path.join(uploadPath, fileName);
+    if (fs.existsSync(filePath) && fs.lstatSync(filePath).isFile()) {
       fs.unlinkSync(filePath);
     }
   }
