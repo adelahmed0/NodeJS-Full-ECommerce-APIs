@@ -1,4 +1,4 @@
-import { body, param, query, Meta } from "express-validator";
+import { body, param, query, check, Meta } from "express-validator";
 import validatorMiddleware from "../middleware/validator.middleware.js";
 import Category from "../models/category.model.js";
 import SubCategory from "../models/subCategory.model.js";
@@ -107,15 +107,20 @@ export const createProductValidator = [
     .optional()
     .isString()
     .withMessage("each color must be a string"),
-  body("imageCover").notEmpty().withMessage("Product imageCover is required"),
-  body("images")
+  check("imageCover").custom((_val, { req }) => {
+    if (!req.files || !req.files.imageCover) {
+      throw new Error("Product imageCover is required");
+    }
+    return true;
+  }),
+  check("images")
     .optional()
-    .isArray()
-    .withMessage("images should be an array of strings"),
-  body("images.*")
-    .optional()
-    .isURL()
-    .withMessage("each image must be a valid URL"),
+    .custom((_val, { req }) => {
+      if (req.files && req.files.images && !Array.isArray(req.files.images)) {
+        throw new Error("images must be an array of files");
+      }
+      return true;
+    }),
   body("category")
     .notEmpty()
     .withMessage("Product category is required")
@@ -226,6 +231,25 @@ export const updateProductValidator = [
       const brand = await Brand.findById(val);
       if (!brand) {
         return Promise.reject(`Brand not found with id: ${val}`);
+      }
+      return true;
+    }),
+  check("imageCover")
+    .optional()
+    .custom((_val, { req }) => {
+      if (
+        req.body.imageCover !== undefined &&
+        (!req.files || !req.files.imageCover)
+      ) {
+        throw new Error("Product imageCover must be a file upload");
+      }
+      return true;
+    }),
+  check("images")
+    .optional()
+    .custom((_val, { req }) => {
+      if (req.body.images !== undefined && (!req.files || !req.files.images)) {
+        throw new Error("Product images must be a file upload");
       }
       return true;
     }),
