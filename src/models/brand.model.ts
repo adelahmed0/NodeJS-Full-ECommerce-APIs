@@ -20,7 +20,7 @@ const brandSchema = new Schema<IBrand>(
       trim: true,
       unique: true,
       minLength: [3, "Brand name must be at least 3 characters long"],
-      maxLength: [32, "Brand name must be at most 50 characters long"],
+      maxLength: [100, "Brand name must be at most 100 characters long"],
     },
     slug: {
       type: String,
