@@ -6,7 +6,7 @@ import Brand from "../models/brand.model.js";
 import Product from "../models/product.model.js";
 
 const validateSubcategories = async (
-  subCategoriesIds: any[],
+  subCategoriesIds: string[],
   { req }: Meta,
 ) => {
   if (!Array.isArray(subCategoriesIds) || subCategoriesIds.length === 0) {
@@ -15,7 +15,7 @@ const validateSubcategories = async (
 
   try {
     const uniqueIds = [
-      ...new Set(subCategoriesIds.map((id: any) => id.toString())),
+      ...new Set(subCategoriesIds.map((id: string) => id.toString())),
     ];
     const subCategories = await SubCategory.find({
       _id: { $in: uniqueIds },
@@ -108,7 +108,10 @@ export const createProductValidator = [
     .isString()
     .withMessage("each color must be a string"),
   check("imageCover").custom((_val, { req }) => {
-    if (!req.files || !(req.files as any).imageCover) {
+    const files = req.files as
+      | { [fieldName: string]: Express.Multer.File[] }
+      | undefined;
+    if (!files || !files.imageCover) {
       throw new Error("Product imageCover is required");
     }
     return true;
@@ -250,7 +253,9 @@ export const updateProductValidator = [
   check("imageCover")
     .optional()
     .custom((_val, { req }) => {
-      const files = req.files as any;
+      const files = req.files as
+        | { [fieldName: string]: Express.Multer.File[] }
+        | undefined;
       if (req.body.imageCover !== undefined && (!files || !files.imageCover)) {
         throw new Error("Product imageCover must be a file upload");
       }
@@ -259,7 +264,9 @@ export const updateProductValidator = [
   check("images")
     .optional()
     .custom((_val, { req }) => {
-      const files = req.files as any;
+      const files = req.files as
+        | { [fieldName: string]: Express.Multer.File[] }
+        | undefined;
       if (req.body.images !== undefined && (!files || !files.images)) {
         throw new Error("Product images must be a file upload");
       }
