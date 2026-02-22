@@ -1,5 +1,6 @@
 import mongoose, { Schema, Document } from "mongoose";
 import { toJSONPlugin, imageURLPlugin } from "../helpers/mongoosePlugins.js";
+import bcrypt from "bcryptjs";
 
 enum UserRole {
   ADMIN = "admin",
@@ -59,6 +60,11 @@ const userSchema = new Schema<IUser>(
     timestamps: true,
   },
 );
+
+userSchema.pre<IUser>("save", async function () {
+  if (!this.isModified("password")) return;
+  this.password = await bcrypt.hash(this.password, 12);
+});
 
 userSchema.plugin(toJSONPlugin);
 userSchema.plugin(imageURLPlugin, {
