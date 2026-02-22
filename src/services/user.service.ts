@@ -1,0 +1,43 @@
+import User, { IUser } from "../models/user.model.js";
+import slugify from "@sindresorhus/slugify";
+import * as factory from "./handlersFactory.service.js";
+
+/**
+ * Create a new user
+ */
+export const createUserService = async (
+  body: Partial<IUser>,
+): Promise<IUser> => {
+  if (body.name) {
+    body.slug = slugify(body.name, { lowercase: true });
+  }
+  return factory.createOne(User)(body);
+};
+
+/**
+ * Get all users with pagination and filter
+ */
+export const getAllUsersService = factory.getAll(User, ["name", "email"]);
+
+/**
+ * Get user by ID
+ */
+export const getUserByIdService = factory.getOne(User);
+
+/**
+ * Update user by ID
+ */
+export const updateUserService = async (
+  id: string,
+  body: Partial<IUser>,
+): Promise<IUser | null> => {
+  if (body.name) {
+    body.slug = slugify(body.name, { lowercase: true });
+  }
+  return factory.updateOne(User)(id, body);
+};
+
+/**
+ * Delete user by ID
+ */
+export const deleteUserService = factory.deleteOne(User);

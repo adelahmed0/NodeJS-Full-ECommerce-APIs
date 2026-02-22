@@ -1,0 +1,90 @@
+import { body, param } from "express-validator";
+import validatorMiddleware from "../middleware/validator.middleware.js";
+import User from "../models/user.model.js";
+
+export const createUserValidator = [
+  body("name")
+    .notEmpty()
+    .withMessage("User name is required")
+    .bail()
+    .isLength({ min: 3 })
+    .withMessage("Too short user name"),
+  body("email")
+    .notEmpty()
+    .withMessage("Email is required")
+    .bail()
+    .isEmail()
+    .withMessage("Invalid email address")
+    .bail()
+    .custom(async (val) => {
+      const user = await User.findOne({ email: val });
+      if (user) {
+        return Promise.reject("E-mail already in use");
+      }
+    }),
+  body("password")
+    .notEmpty()
+    .withMessage("Password is required")
+    .bail()
+    .isLength({ min: 6 })
+    .withMessage("Password must be at least 6 characters"),
+  body("phone")
+    .optional()
+    .isMobilePhone(["ar-EG", "ar-SA"])
+    .withMessage(
+      "Invalid phone number only Egyptian and Saudi phone numbers are accepted",
+    ),
+  body("type")
+    .optional()
+    .isIn(["admin", "user"])
+    .withMessage("Invalid user type"),
+  body("active")
+    .optional()
+    .isIn(["active", "inactive"])
+    .withMessage("Status must be active or inactive"),
+  validatorMiddleware,
+];
+
+export const getUserValidator = [
+  param("id").isMongoId().withMessage("Invalid User ID format"),
+  validatorMiddleware,
+];
+
+export const updateUserValidator = [
+  param("id").isMongoId().withMessage("Invalid User ID format"),
+  body("name")
+    .optional()
+    .isLength({ min: 3 })
+    .withMessage("Too short user name"),
+  body("email")
+    .optional()
+    .isEmail()
+    .withMessage("Invalid email address")
+    .bail()
+    .custom(async (val, { req }) => {
+      const user = await User.findOne({ email: val });
+      if (user && user._id.toString() !== req.params?.id) {
+        return Promise.reject("E-mail already in use");
+      }
+    }),
+  body("phone")
+    .optional()
+    .isMobilePhone(["ar-EG", "ar-SA"])
+    .withMessage(
+      "Invalid phone number only Egyptian and Saudi phone numbers are accepted",
+    ),
+  body("type")
+    .optional()
+    .isIn(["admin", "user"])
+    .withMessage("Invalid user type"),
+  body("active")
+    .optional()
+    .isIn(["active", "inactive"])
+    .withMessage("Status must be active or inactive"),
+  validatorMiddleware,
+];
+
+export const deleteUserValidator = [
+  param("id").isMongoId().withMessage("Invalid User ID format"),
+  validatorMiddleware,
+];

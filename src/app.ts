@@ -13,6 +13,7 @@ import categoryRouter from "./routes/category.route.js";
 import subCategoryRouter from "./routes/subCategory.route.js";
 import brandRouter from "./routes/brand.route.js";
 import productRouter from "./routes/product.route.js";
+import userRouter from "./routes/user.route.js";
 
 import { ApiError } from "./utils/apiError.js";
 import globalError from "./middleware/globalError.middleware.js";
@@ -90,6 +91,7 @@ app.use(`${api}/categories`, categoryRouter);
 app.use(`${api}/sub-categories`, subCategoryRouter);
 app.use(`${api}/brands`, brandRouter);
 app.use(`${api}/products`, productRouter);
+app.use(`${api}/users`, userRouter);
 
 // Handle unhandled routes
 app.all(/(.*)/, (req: Request, res: Response, next: NextFunction) => {

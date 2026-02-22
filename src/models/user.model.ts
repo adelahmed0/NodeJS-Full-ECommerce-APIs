@@ -1,9 +1,13 @@
 import mongoose, { Schema, Document } from "mongoose";
-import { toJSONPlugin } from "../helpers/mongoosePlugins.js";
+import { toJSONPlugin, imageURLPlugin } from "../helpers/mongoosePlugins.js";
 
 enum UserRole {
   ADMIN = "admin",
   USER = "user",
+}
+enum UserActive {
+  ACTIVE = "active",
+  INACTIVE = "inactive",
 }
 
 export interface IUser extends Document {
@@ -16,6 +20,7 @@ export interface IUser extends Document {
   createdAt: Date;
   updatedAt: Date;
   type: UserRole;
+  active: UserActive;
 }
 
 const userSchema = new Schema<IUser>(
@@ -44,6 +49,11 @@ const userSchema = new Schema<IUser>(
       enum: Object.values(UserRole),
       default: UserRole.USER,
     },
+    active: {
+      type: String,
+      enum: Object.values(UserActive),
+      default: UserActive.ACTIVE,
+    },
   },
   {
     timestamps: true,
@@ -51,7 +61,10 @@ const userSchema = new Schema<IUser>(
 );
 
 userSchema.plugin(toJSONPlugin);
-
+userSchema.plugin(imageURLPlugin, {
+  folderName: "users",
+  fields: ["avatar"],
+});
 const User = mongoose.model<IUser>("User", userSchema);
 
 export default User;
