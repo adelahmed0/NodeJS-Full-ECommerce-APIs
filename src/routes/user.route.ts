@@ -5,12 +5,14 @@ import {
   getUserById,
   updateUser,
   deleteUser,
+  updateUserPassword,
 } from "../controllers/user.controller.js";
 import {
   createUserValidator,
   getUserValidator,
   updateUserValidator,
   deleteUserValidator,
+  updateUserPasswordValidator,
 } from "../validators/user.validator.js";
 import {
   uploadSingleImage,
@@ -27,6 +29,12 @@ router
   .route("/")
   .get(getAllUsers)
   .post(userAvatarUpload, createUserValidator, resizeUserAvatar, createUser);
+
+router.put(
+  "/change-password/:id",
+  updateUserPasswordValidator,
+  updateUserPassword,
+);
 
 router
   .route("/:id")

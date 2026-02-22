@@ -126,3 +126,24 @@ export const deleteUserValidator = [
   param("id").isMongoId().withMessage("Invalid User ID format").bail(),
   validatorMiddleware,
 ];
+
+export const updateUserPasswordValidator = [
+  param("id").isMongoId().withMessage("Invalid User ID format").bail(),
+  body("password")
+    .notEmpty()
+    .withMessage("Password is required")
+    .bail()
+    .isLength({ min: 6 })
+    .withMessage("Password must be at least 6 characters"),
+  body("passwordConfirm")
+    .notEmpty()
+    .withMessage("Password confirmation is required")
+    .bail()
+    .custom((val, { req }) => {
+      if (val !== req.body.password) {
+        throw new Error("Password confirmation does not match password");
+      }
+      return true;
+    }),
+  validatorMiddleware,
+];

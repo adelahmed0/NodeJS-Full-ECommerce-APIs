@@ -1,3 +1,5 @@
+import { Request, Response, NextFunction } from "express";
+import asyncHandler from "express-async-handler";
 import { IUser } from "../models/user.model.js";
 import {
   createUserService,
@@ -5,8 +7,25 @@ import {
   getUserByIdService,
   updateUserService,
   deleteUserService,
+  updateUserPasswordService,
 } from "../services/user.service.js";
 import * as factory from "./handlersFactory.controller.js";
+import { ApiError } from "../utils/apiError.js";
+
+/**
+ * @desc    Update user password
+ * @route   PUT /api/users/:id/change-password
+ * @access  Private/Admin
+ */
+export const updateUserPassword = asyncHandler(
+  async (req: Request<{ id: string }>, res: Response, next: NextFunction) => {
+    const user = await updateUserPasswordService(req.params.id, req.body);
+    if (!user) {
+      return next(new ApiError(`No user for this id ${req.params.id}`, 404));
+    }
+    res.status(200).json({ data: user });
+  },
+);
 
 /**
  * @desc    Create user

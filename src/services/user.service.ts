@@ -1,5 +1,6 @@
 import User, { IUser } from "../models/user.model.js";
 import slugify from "@sindresorhus/slugify";
+import bcrypt from "bcryptjs";
 import * as factory from "./handlersFactory.service.js";
 
 /**
@@ -32,6 +33,18 @@ export const updateUserService = async (
   delete body.password;
 
   return factory.updateOne(User)(id, body);
+};
+
+/**
+ * Update user password
+ */
+export const updateUserPasswordService = async (
+  id: string,
+  body: any,
+): Promise<IUser | null> => {
+  return factory.updateOne(User)(id, {
+    password: await bcrypt.hash(body.password, 12),
+  });
 };
 
 /**
