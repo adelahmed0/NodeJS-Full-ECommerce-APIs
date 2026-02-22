@@ -2,6 +2,7 @@ import { body, param } from "express-validator";
 import validatorMiddleware from "../middleware/validator.middleware.js";
 import User from "../models/user.model.js";
 import slugify from "@sindresorhus/slugify";
+import bcrypt from "bcryptjs";
 
 export const createUserValidator = [
   body("name")
@@ -129,9 +130,29 @@ export const deleteUserValidator = [
 
 export const updateUserPasswordValidator = [
   param("id").isMongoId().withMessage("Invalid User ID format").bail(),
+  body("currentPassword")
+    .notEmpty()
+    .withMessage("Current password is required")
+    .bail()
+    .custom(async (val, { req }) => {
+      // 1) Get user by id
+      const user = await User.findById(req.params?.id);
+      if (!user) {
+        throw new Error("No user found for this id");
+      }
+      // 2) Check if current password is correct
+      const isCorrectPassword = await bcrypt.compare(
+        val,
+        user.password as string,
+      );
+      if (!isCorrectPassword) {
+        throw new Error("Incorrect current password");
+      }
+      return true;
+    }),
   body("password")
     .notEmpty()
-    .withMessage("Password is required")
+    .withMessage("New password is required")
     .bail()
     .isLength({ min: 6 })
     .withMessage("Password must be at least 6 characters"),
@@ -141,7 +162,7 @@ export const updateUserPasswordValidator = [
     .bail()
     .custom((val, { req }) => {
       if (val !== req.body.password) {
-        throw new Error("Password confirmation does not match password");
+        throw new Error("Password confirmation does not match new password");
       }
       return true;
     }),
