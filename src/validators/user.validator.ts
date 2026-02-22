@@ -33,6 +33,16 @@ export const createUserValidator = [
     .bail()
     .isLength({ min: 6 })
     .withMessage("Password must be at least 6 characters"),
+  body("passwordConfirm")
+    .notEmpty()
+    .withMessage("Password confirmation is required")
+    .bail()
+    .custom((val, { req }) => {
+      if (val !== req.body.password) {
+        throw new Error("Password confirmation does not match password");
+      }
+      return true;
+    }),
   body("phone")
     .optional()
     .isMobilePhone(["ar-EG", "ar-SA"])
