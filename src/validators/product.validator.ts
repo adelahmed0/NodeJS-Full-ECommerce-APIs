@@ -4,6 +4,7 @@ import Category from "../models/category.model.js";
 import SubCategory from "../models/subCategory.model.js";
 import Brand from "../models/brand.model.js";
 import Product from "../models/product.model.js";
+import slugify from "@sindresorhus/slugify";
 
 const validateSubcategories = async (
   subCategoriesIds: string[],
@@ -62,18 +63,25 @@ export const createProductValidator = [
   body("title")
     .notEmpty()
     .withMessage("Product title is required")
+    .bail()
     .isLength({ min: 3 })
     .withMessage("Product title must be at least 3 characters")
     .isLength({ max: 100 })
-    .withMessage("Product title must be at most 100 characters"),
+    .withMessage("Product title must be at most 100 characters")
+    .custom((val, { req }) => {
+      req.body.slug = slugify(val, { lowercase: true });
+      return true;
+    }),
   body("description")
     .notEmpty()
     .withMessage("Product description is required")
+    .bail()
     .isLength({ min: 20 })
     .withMessage("Product description must be at least 20 characters"),
   body("quantity")
     .notEmpty()
     .withMessage("Product quantity is required")
+    .bail()
     .isNumeric()
     .withMessage("Product quantity must be a number"),
   body("sold")
@@ -83,6 +91,7 @@ export const createProductValidator = [
   body("price")
     .notEmpty()
     .withMessage("Product price is required")
+    .bail()
     .isNumeric()
     .withMessage("Product price must be a number")
     .isFloat({ max: 200000 })
@@ -193,7 +202,13 @@ export const updateProductValidator = [
     .isLength({ min: 3 })
     .withMessage("Product title must be at least 3 characters")
     .isLength({ max: 100 })
-    .withMessage("Product title must be at most 100 characters"),
+    .withMessage("Product title must be at most 100 characters")
+    .custom((val, { req }) => {
+      if (val) {
+        req.body.slug = slugify(val, { lowercase: true });
+      }
+      return true;
+    }),
   body("description")
     .optional()
     .isLength({ min: 20 })

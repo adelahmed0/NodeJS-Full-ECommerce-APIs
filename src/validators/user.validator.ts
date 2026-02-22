@@ -1,6 +1,7 @@
 import { body, param } from "express-validator";
 import validatorMiddleware from "../middleware/validator.middleware.js";
 import User from "../models/user.model.js";
+import slugify from "@sindresorhus/slugify";
 
 export const createUserValidator = [
   body("name")
@@ -8,7 +9,11 @@ export const createUserValidator = [
     .withMessage("User name is required")
     .bail()
     .isLength({ min: 3 })
-    .withMessage("Too short user name"),
+    .withMessage("Too short user name")
+    .custom((val, { req }) => {
+      req.body.slug = slugify(val, { lowercase: true });
+      return true;
+    }),
   body("email")
     .notEmpty()
     .withMessage("Email is required")
@@ -55,7 +60,13 @@ export const updateUserValidator = [
   body("name")
     .optional()
     .isLength({ min: 3 })
-    .withMessage("Too short user name"),
+    .withMessage("Too short user name")
+    .custom((val, { req }) => {
+      if (val) {
+        req.body.slug = slugify(val, { lowercase: true });
+      }
+      return true;
+    }),
   body("email")
     .optional()
     .isEmail()

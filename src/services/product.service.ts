@@ -1,7 +1,4 @@
 import Product, { IProduct } from "../models/product.model.js";
-import slugify from "@sindresorhus/slugify";
-import { IAllProductsResponse } from "../types/product.types.js";
-import ApiFeatures from "../utils/apiFeatures.js";
 import * as factory from "./handlersFactory.service.js";
 
 /**
@@ -10,9 +7,6 @@ import * as factory from "./handlersFactory.service.js";
 export const createProductService = async (
   productData: Partial<IProduct>,
 ): Promise<IProduct> => {
-  if (productData.title) {
-    productData.slug = slugify(productData.title, { lowercase: true });
-  }
   return factory.createOne(Product)(productData);
 };
 
@@ -36,10 +30,6 @@ export const updateProductService = async (
   id: string,
   updateData: Partial<IProduct>,
 ): Promise<IProduct | null> => {
-  if (updateData.title) {
-    updateData.slug = slugify(updateData.title, { lowercase: true });
-  }
-
   return factory.updateOne(Product)(id, updateData);
 };
 

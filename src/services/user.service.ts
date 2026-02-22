@@ -8,9 +8,6 @@ import * as factory from "./handlersFactory.service.js";
 export const createUserService = async (
   body: Partial<IUser>,
 ): Promise<IUser> => {
-  if (body.name) {
-    body.slug = slugify(body.name, { lowercase: true });
-  }
   return factory.createOne(User)(body);
 };
 
@@ -31,9 +28,6 @@ export const updateUserService = async (
   id: string,
   body: Partial<IUser>,
 ): Promise<IUser | null> => {
-  if (body.name) {
-    body.slug = slugify(body.name, { lowercase: true });
-  }
   return factory.updateOne(User)(id, body);
 };
 

@@ -1,18 +1,12 @@
 import Category, { ICategory } from "../models/category.model.js";
-import slugify from "@sindresorhus/slugify";
-import { IAllCategoriesResponse } from "../types/category.types.js";
-import ApiFeatures from "../utils/apiFeatures.js";
 import * as factory from "./handlersFactory.service.js";
 
 /**
  * Create a new category
  */
 export const createCategoryService = async (
-  body: { name: string } & Partial<ICategory>,
+  body: Partial<ICategory>,
 ): Promise<ICategory> => {
-  if (body.name) {
-    body.slug = slugify(body.name, { lowercase: true });
-  }
   return factory.createOne(Category)(body);
 };
 
@@ -33,14 +27,10 @@ export const updateCategoryService = async (
   id: string,
   body: Partial<ICategory>,
 ): Promise<ICategory | null> => {
-  if (body.name) {
-    body.slug = slugify(body.name, { lowercase: true });
-  }
   return factory.updateOne(Category)(id, body);
 };
 
 /**
  * Delete category by ID
  */
-
 export const deleteCategoryService = factory.deleteOne(Category);

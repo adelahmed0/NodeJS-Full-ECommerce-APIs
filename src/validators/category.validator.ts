@@ -1,6 +1,7 @@
 import { body, param, query, check } from "express-validator";
 import validatorMiddleware from "../middleware/validator.middleware.js";
 import Category from "../models/category.model.js";
+import slugify from "@sindresorhus/slugify";
 
 export const getCategoryByIdValidator = [
   param("id").isMongoId().withMessage("Invalid Category ID format").bail(),
@@ -11,15 +12,17 @@ export const createCategoryValidator = [
   body("name")
     .notEmpty()
     .withMessage("Category name is required")
+    .bail()
     .isLength({ min: 3 })
     .withMessage("Category name must be at least 3 characters")
     .isLength({ max: 32 })
     .withMessage("Category name must be at most 32 characters")
-    .custom(async (val) => {
+    .custom(async (val, { req }) => {
       const category = await Category.findOne({ name: val });
       if (category) {
         throw new Error("Category name already exists");
       }
+      req.body.slug = slugify(val, { lowercase: true });
       return true;
     }),
   check("image").custom((_val, { req }) => {
@@ -56,10 +59,13 @@ export const updateCategoryValidator = [
     .withMessage("Category name must be at least 3 characters")
     .isLength({ max: 32 })
     .withMessage("Category name must be at most 32 characters")
-    .custom(async (val) => {
-      const category = await Category.findOne({ name: val });
-      if (category) {
-        throw new Error("Category name already exists");
+    .custom(async (val, { req }) => {
+      if (val) {
+        const category = await Category.findOne({ name: val });
+        if (category && category._id.toString() !== req.params?.id) {
+          throw new Error("Category name already exists");
+        }
+        req.body.slug = slugify(val, { lowercase: true });
       }
       return true;
     }),

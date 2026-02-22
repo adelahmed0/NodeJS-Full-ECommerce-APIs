@@ -1,6 +1,7 @@
 import { body, param, query, check } from "express-validator";
 import validatorMiddleware from "../middleware/validator.middleware.js";
 import Brand from "../models/brand.model.js";
+import slugify from "@sindresorhus/slugify";
 
 export const getBrandByIdValidator = [
   param("id").isMongoId().withMessage("Invalid brand ID format").bail(),
@@ -11,15 +12,17 @@ export const createBrandValidator = [
   body("name")
     .notEmpty()
     .withMessage("Brand name is required")
+    .bail()
     .isLength({ min: 3 })
     .withMessage("Brand name must be at least 3 characters")
     .isLength({ max: 32 })
     .withMessage("Brand name must be at most 32 characters")
-    .custom(async (val) => {
+    .custom(async (val, { req }) => {
       const brand = await Brand.findOne({ name: val });
       if (brand) {
         throw new Error("Brand name already exists");
       }
+      req.body.slug = slugify(val, { lowercase: true });
       return true;
     }),
   check("image").custom((_val, { req }) => {
@@ -56,10 +59,13 @@ export const updateBrandValidator = [
     .withMessage("Brand name must be at least 3 characters")
     .isLength({ max: 32 })
     .withMessage("Brand name must be at most 32 characters")
-    .custom(async (val) => {
-      const brand = await Brand.findOne({ name: val });
-      if (brand) {
-        throw new Error("Brand name already exists");
+    .custom(async (val, { req }) => {
+      if (val) {
+        const brand = await Brand.findOne({ name: val });
+        if (brand && brand._id.toString() !== req.params?.id) {
+          throw new Error("Brand name already exists");
+        }
+        req.body.slug = slugify(val, { lowercase: true });
       }
       return true;
     }),
