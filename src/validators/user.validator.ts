@@ -88,12 +88,29 @@ export const updateUserValidator = [
         return Promise.reject("E-mail already in use");
       }
     }),
+  body("password")
+    .optional()
+    .custom((val) => {
+      if (val) {
+        throw new Error("This endpoint is not for password updates");
+      }
+      return true;
+    }),
+  body("passwordConfirm")
+    .optional()
+    .custom((val) => {
+      if (val) {
+        throw new Error("This endpoint is not for password updates");
+      }
+      return true;
+    }),
   body("phone")
     .optional()
     .isMobilePhone(["ar-EG", "ar-SA"])
     .withMessage(
       "Invalid phone number only Egyptian and Saudi phone numbers are accepted",
     ),
+  body("avatar").optional(),
   body("type")
     .optional()
     .isIn(["admin", "user"])

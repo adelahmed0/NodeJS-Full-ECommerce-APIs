@@ -28,6 +28,9 @@ export const updateUserService = async (
   id: string,
   body: Partial<IUser>,
 ): Promise<IUser | null> => {
+  // 1- Delete password if exists
+  delete body.password;
+
   return factory.updateOne(User)(id, body);
 };
 
