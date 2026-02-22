@@ -19,7 +19,7 @@ export const createUserValidator = [
     .custom(async (val) => {
       const user = await User.findOne({ email: val });
       if (user) {
-        return Promise.reject("E-mail already in use");
+        return Promise.reject("E-mail is already exists");
       }
     }),
   body("password")
