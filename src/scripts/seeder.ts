@@ -5,6 +5,7 @@ import Category from "../models/category.model.js";
 import SubCategory from "../models/subCategory.model.js";
 import Brand from "../models/brand.model.js";
 import Product from "../models/product.model.js";
+import User from "../models/user.model.js";
 import { faker } from "@faker-js/faker";
 import chalk from "chalk";
 
@@ -14,6 +15,7 @@ const SUBCATEGORIES_COUNT = 20; // إجمالي الفئات الفرعية
 const SUBCATEGORIES_PER_CATEGORY = 5; // الحد الأقصى لكل فئة
 const BRANDS_COUNT = 10;
 const PRODUCTS_COUNT = 50;
+const USERS_COUNT = 5;
 
 /**
  * دالة لتوزيع الفئات الفرعية على الكاتيجوريز مع احترام الماكس
@@ -102,6 +104,7 @@ const seedData = async () => {
       SubCategory.deleteMany(),
       Brand.deleteMany(),
       Product.deleteMany(),
+      User.deleteMany(),
     ]);
 
     // 2. إنشاء الفئات الرئيسية
@@ -143,6 +146,41 @@ const seedData = async () => {
       createdSubCategories,
     );
     await Product.insertMany(productsToCreate);
+
+    // 6. إنشاء المستخدمين
+    console.log(chalk.blue("📂 Inserting Users..."));
+    const usersToCreate = Array.from({ length: USERS_COUNT }).map(() => {
+      const name = faker.person.fullName();
+      return {
+        name,
+        slug: slugify(name, { lowercase: true }),
+        email: faker.internet.email(),
+        password: "password123",
+        phone: faker.phone.number(),
+        avatar: faker.image.avatar(),
+        type: "user",
+        active: "active",
+      };
+    });
+
+    // إضافة مستخدم أدمن للتجربة
+    usersToCreate.push({
+      name: "Admin User",
+      slug: "admin-user",
+      email: "admin@gmail.com",
+      password: "password123",
+      phone: "01012345678",
+      avatar: faker.image.avatar(),
+      type: "admin",
+      active: "active",
+    });
+
+    // ملاحظة: الـ pre-save hook في المودل سيعمل مع الـ save()
+    // لكن insertMany لا تشغل الـ hooks بشكل افتراضي إلا لو فعلنا خيار معين
+    // لذا سنستخدم حلقة بسيطة لضمان تشفير الباسورد لكل يوزر
+    for (const userData of usersToCreate) {
+      await User.create(userData);
+    }
 
     console.log(
       chalk.magenta.bold("\n🚀 ★ DATABASE SEEDED SUCCESSFULLY! ★ 🚀\n"),
