@@ -15,7 +15,7 @@ export interface IUser extends Document {
   password: string;
   createdAt: Date;
   updatedAt: Date;
-  role: UserRole;
+  type: UserRole;
 }
 
 const userSchema = new Schema<IUser>(
@@ -39,7 +39,7 @@ const userSchema = new Schema<IUser>(
       required: [true, "Password is required"],
       minlength: [6, "Password must be at least 6 characters"],
     },
-    role: {
+    type: {
       type: String,
       enum: Object.values(UserRole),
       default: UserRole.USER,
