@@ -51,12 +51,12 @@ export const createUserValidator = [
 ];
 
 export const getUserValidator = [
-  param("id").isMongoId().withMessage("Invalid User ID format"),
+  param("id").isMongoId().withMessage("Invalid User ID format").bail(),
   validatorMiddleware,
 ];
 
 export const updateUserValidator = [
-  param("id").isMongoId().withMessage("Invalid User ID format"),
+  param("id").isMongoId().withMessage("Invalid User ID format").bail(),
   body("name")
     .optional()
     .isLength({ min: 3 })
@@ -96,6 +96,6 @@ export const updateUserValidator = [
 ];
 
 export const deleteUserValidator = [
-  param("id").isMongoId().withMessage("Invalid User ID format"),
+  param("id").isMongoId().withMessage("Invalid User ID format").bail(),
   validatorMiddleware,
 ];

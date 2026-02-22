@@ -94,12 +94,14 @@ export const createProductValidator = [
     .bail()
     .isNumeric()
     .withMessage("Product price must be a number")
+    .bail()
     .isFloat({ max: 200000 })
     .withMessage("Product price is too high"),
   body("priceAfterDiscount")
     .optional()
     .isNumeric()
     .withMessage("Product priceAfterDiscount must be a number")
+    .bail()
     .isFloat({ min: 1 })
     .withMessage("Discounted price must be at least 1")
     .custom((value, { req }) => {
@@ -136,6 +138,7 @@ export const createProductValidator = [
   body("category")
     .notEmpty()
     .withMessage("Product category is required")
+    .bail()
     .isMongoId()
     .withMessage("Invalid category ID format")
     .bail()
@@ -150,6 +153,7 @@ export const createProductValidator = [
     .optional()
     .isArray()
     .withMessage("subcategories should be an array")
+    .bail()
     .custom(validateSubcategories),
   body("brand")
     .optional()
@@ -167,6 +171,7 @@ export const createProductValidator = [
     .optional()
     .isNumeric()
     .withMessage("ratingsAverage must be a number")
+    .bail()
     .isFloat({ min: 1, max: 5 })
     .withMessage("Rating must be between 1.0 and 5.0"),
   body("ratingsQuantity")
@@ -221,12 +226,14 @@ export const updateProductValidator = [
     .optional()
     .isNumeric()
     .withMessage("Product price must be a number")
+    .bail()
     .isFloat({ max: 200000 })
     .withMessage("Product price is too high"),
   body("priceAfterDiscount")
     .optional()
     .isNumeric()
     .withMessage("Product priceAfterDiscount must be a number")
+    .bail()
     .isFloat({ min: 1 })
     .withMessage("Discounted price must be at least 1")
     .custom((value, { req }) => {
@@ -252,6 +259,7 @@ export const updateProductValidator = [
     .optional()
     .isArray()
     .withMessage("subcategories should be an array")
+    .bail()
     .custom(validateSubcategories),
   body("brand")
     .optional()
@@ -265,6 +273,7 @@ export const updateProductValidator = [
       }
       return true;
     }),
+
   check("imageCover")
     .optional()
     .custom((_val, { req }) => {
