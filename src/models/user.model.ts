@@ -66,7 +66,7 @@ userSchema.pre<IUser>("save", async function () {
   this.password = await bcrypt.hash(this.password, 12);
 });
 
-userSchema.plugin(toJSONPlugin);
+userSchema.plugin(toJSONPlugin, { removePassword: true });
 userSchema.plugin(imageURLPlugin, {
   folderName: "users",
   fields: ["avatar"],
