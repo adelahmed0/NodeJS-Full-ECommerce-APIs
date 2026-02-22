@@ -1,6 +1,6 @@
 import User, { IUser } from "../models/user.model.js";
 import slugify from "@sindresorhus/slugify";
-import bcrypt from "bcryptjs";
+import { hashPassword } from "../utils/password.js";
 import * as factory from "./handlersFactory.service.js";
 
 /**
@@ -43,7 +43,7 @@ export const updateUserPasswordService = async (
   body: any,
 ): Promise<IUser | null> => {
   return factory.updateOne(User)(id, {
-    password: await bcrypt.hash(body.password, 12),
+    password: await hashPassword(body.password),
   });
 };
 

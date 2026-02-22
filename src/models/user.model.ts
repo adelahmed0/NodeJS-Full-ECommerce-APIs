@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from "mongoose";
 import { toJSONPlugin, imageURLPlugin } from "../helpers/mongoosePlugins.js";
-import bcrypt from "bcryptjs";
+import { hashPassword } from "../utils/password.js";
 
 enum UserRole {
   ADMIN = "admin",
@@ -63,7 +63,7 @@ const userSchema = new Schema<IUser>(
 
 userSchema.pre<IUser>("save", async function () {
   if (!this.isModified("password")) return;
-  this.password = await bcrypt.hash(this.password, 12);
+  this.password = await hashPassword(this.password);
 });
 
 userSchema.plugin(toJSONPlugin, { removePassword: true });

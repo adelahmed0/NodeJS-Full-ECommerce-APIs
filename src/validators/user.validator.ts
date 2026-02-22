@@ -2,7 +2,7 @@ import { body, param } from "express-validator";
 import validatorMiddleware from "../middleware/validator.middleware.js";
 import User from "../models/user.model.js";
 import slugify from "@sindresorhus/slugify";
-import bcrypt from "bcryptjs";
+import { comparePassword } from "../utils/password.js";
 
 export const createUserValidator = [
   body("name")
@@ -141,7 +141,7 @@ export const updateUserPasswordValidator = [
         throw new Error("No user found for this id");
       }
       // 2) Check if current password is correct
-      const isCorrectPassword = await bcrypt.compare(
+      const isCorrectPassword = await comparePassword(
         val,
         user.password as string,
       );
