@@ -18,6 +18,7 @@ export interface IUser extends Document {
   phone?: string;
   avatar?: string;
   password: string;
+  passwordChangedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
   type: UserRole;
@@ -45,6 +46,7 @@ const userSchema = new Schema<IUser>(
       required: [true, "Password is required"],
       minlength: [6, "Password must be at least 6 characters"],
     },
+    passwordChangedAt: Date,
     type: {
       type: String,
       enum: Object.values(UserRole),
@@ -64,6 +66,10 @@ const userSchema = new Schema<IUser>(
 userSchema.pre<IUser>("save", async function () {
   if (!this.isModified("password")) return;
   this.password = await hashPassword(this.password);
+
+  if (!this.isNew) {
+    this.passwordChangedAt = new Date(Date.now() - 1000); // Subtract 1s to ensure token iat is after passwordChangedAt
+  }
 });
 
 userSchema.plugin(toJSONPlugin, { removePassword: true });

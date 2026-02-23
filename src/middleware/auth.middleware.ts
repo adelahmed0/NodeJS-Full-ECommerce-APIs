@@ -48,12 +48,22 @@ export const protect = asyncHandler(
       );
     }
 
-    // 4) Check if user is active
-    if (currentUser.status === "inactive") {
-      return next(new ApiError("Your account is deactivated", 401));
+    // 5) Check if user changed password after token was created
+    if (currentUser.passwordChangedAt) {
+      const changedTimestamp = Math.floor(
+        currentUser.passwordChangedAt.getTime() / 1000,
+      );
+      if (changedTimestamp > decoded.iat) {
+        return next(
+          new ApiError(
+            "User recently changed password. please login again",
+            401,
+          ),
+        );
+      }
     }
 
-    // 5) Grant access to protected route
+    // 6) Grant access to protected route
     req.user = currentUser;
     next();
   },

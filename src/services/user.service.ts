@@ -44,6 +44,7 @@ export const updateUserPasswordService = async (
 ): Promise<IUser | null> => {
   return factory.updateOne(User)(id, {
     password: await hashPassword(body.password),
+    passwordChangedAt: new Date(Date.now() - 1000),
   });
 };
 
