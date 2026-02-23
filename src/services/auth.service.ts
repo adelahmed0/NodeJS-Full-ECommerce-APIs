@@ -2,6 +2,7 @@ import { NextFunction } from "express";
 import User, { IUser } from "../models/user.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { createToken } from "../utils/token.js";
+import { comparePassword } from "../utils/password.js";
 
 // @desc    Signup
 // @route   POST /api/auth/signup
@@ -19,14 +20,20 @@ export const signupService = async (body: IUser) => {
 // @desc    Login
 // @route   POST /api/auth/login
 // @access  Public
-export const loginService = async (body: IUser, next: NextFunction) => {
-  // 1-check if password and email are provided
-  // 2-check if user exists
+export const loginService = async (body: IUser) => {
+  // 1-check if user exists & check if password is correct
   const user = await User.findOne({ email: body.email });
-  if (!user) {
-    return next(new ApiError("Invalid email or password", 400));
+  if (!user || !(await comparePassword(body.password, user.password))) {
+    throw new ApiError("Invalid email or password", 401);
   }
-  // 3-check if password is correct
-  // 4-create token
-  // 5-return user and token
+
+  // 2-create token
+  const token = createToken({
+    userId: user._id.toString(),
+    email: user.email,
+    type: user.type,
+  });
+
+  // 3-return user and token
+  return { user, token };
 };
