@@ -49,7 +49,7 @@ export const protect = asyncHandler(
     }
 
     // 4) Check if user is active
-    if (currentUser.active === "inactive") {
+    if (currentUser.status === "inactive") {
       return next(new ApiError("Your account is deactivated", 401));
     }
 

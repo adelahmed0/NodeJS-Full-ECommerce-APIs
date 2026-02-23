@@ -6,7 +6,7 @@ enum UserRole {
   ADMIN = "admin",
   USER = "user",
 }
-enum UserActive {
+enum UserStatus {
   ACTIVE = "active",
   INACTIVE = "inactive",
 }
@@ -21,7 +21,7 @@ export interface IUser extends Document {
   createdAt: Date;
   updatedAt: Date;
   type: UserRole;
-  active: UserActive;
+  status: UserStatus;
 }
 
 const userSchema = new Schema<IUser>(
@@ -50,10 +50,10 @@ const userSchema = new Schema<IUser>(
       enum: Object.values(UserRole),
       default: UserRole.USER,
     },
-    active: {
+    status: {
       type: String,
-      enum: Object.values(UserActive),
-      default: UserActive.ACTIVE,
+      enum: Object.values(UserStatus),
+      default: UserStatus.ACTIVE,
     },
   },
   {

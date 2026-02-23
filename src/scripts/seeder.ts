@@ -159,7 +159,7 @@ const seedData = async () => {
         phone: faker.phone.number(),
         avatar: faker.image.avatar(),
         type: "user",
-        active: "active",
+        status: "active",
       };
     });
 
@@ -172,7 +172,7 @@ const seedData = async () => {
       phone: "01012345678",
       avatar: faker.image.avatar(),
       type: "admin",
-      active: "active",
+      status: "active",
     });
 
     // ملاحظة: الـ pre-save hook في المودل سيعمل مع الـ save()

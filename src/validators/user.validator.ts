@@ -54,7 +54,7 @@ export const createUserValidator = [
     .optional()
     .isIn(["admin", "user"])
     .withMessage("Invalid user type"),
-  body("active")
+  body("status")
     .optional()
     .isIn(["active", "inactive"])
     .withMessage("Status must be active or inactive"),
@@ -116,7 +116,7 @@ export const updateUserValidator = [
     .optional()
     .isIn(["admin", "user"])
     .withMessage("Invalid user type"),
-  body("active")
+  body("status")
     .optional()
     .isIn(["active", "inactive"])
     .withMessage("Status must be active or inactive"),
