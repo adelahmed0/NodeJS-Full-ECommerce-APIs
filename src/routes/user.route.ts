@@ -17,6 +17,7 @@ import {
 import {
   uploadSingleImage,
   resizeImage,
+  parseFormData,
 } from "../middleware/uploadImage.middleware.js";
 import User from "../models/user.model.js";
 
@@ -32,6 +33,7 @@ router
 
 router.put(
   "/change-password/:id",
+  parseFormData(),
   updateUserPasswordValidator,
   updateUserPassword,
 );

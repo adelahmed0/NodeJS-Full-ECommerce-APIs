@@ -41,6 +41,8 @@ export const uploadSingleImage = (fieldName: string) =>
 export const uploadMixOfImages = (fields: multer.Field[]) =>
   multerOptions().fields(fields);
 
+export const parseFormData = () => multerOptions().none();
+
 const deleteOldImage = async <T>(
   model: Model<T>,
   id: string,

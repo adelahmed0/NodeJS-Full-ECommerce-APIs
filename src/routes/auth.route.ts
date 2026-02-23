@@ -4,10 +4,11 @@ import {
   loginValidator,
 } from "../validators/auth.validator.js";
 import { signup, login } from "../controllers/auth.controller.js";
+import { parseFormData } from "../middleware/uploadImage.middleware.js";
 
 const router: Router = express.Router();
 
-router.post("/signup", signupValidator, signup);
-router.post("/login", loginValidator, login);
+router.post("/signup", parseFormData(), signupValidator, signup);
+router.post("/login", parseFormData(), loginValidator, login);
 
 export default router;
