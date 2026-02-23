@@ -10,3 +10,11 @@ export const createToken = (
     expiresIn: process.env.JWT_EXPIRES_IN as SignOptions["expiresIn"],
   },
 ) => jwt.sign(payload, secret, options);
+
+/**
+ * Generic function to verify any JWT token
+ */
+export const verifyToken = (
+  token: string,
+  secret: string = process.env.JWT_SECRET!,
+) => jwt.verify(token, secret);
