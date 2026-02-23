@@ -48,7 +48,7 @@ export const protect = asyncHandler(
       );
     }
 
-    // 5) Check if user changed password after token was created
+    // 4) Check if user changed password after token was created
     if (currentUser.passwordChangedAt) {
       const changedTimestamp = Math.floor(
         currentUser.passwordChangedAt.getTime() / 1000,
@@ -63,7 +63,7 @@ export const protect = asyncHandler(
       }
     }
 
-    // 6) Grant access to protected route
+    // 5) Grant access to protected route
     req.user = currentUser;
     next();
   },
