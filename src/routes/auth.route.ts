@@ -10,6 +10,7 @@ import {
   login,
   forgotPassword,
   verifyResetCode,
+  resetPassword,
 } from "../controllers/auth.controller.js";
 import { parseFormData } from "../middleware/uploadImage.middleware.js";
 
@@ -28,6 +29,11 @@ router.post(
   parseFormData(),
   verifyResetCodeValidator,
   verifyResetCode,
+);
+router.put(
+  "/reset-password",
+  parseFormData(),
+  resetPassword,
 );
 
 export default router;

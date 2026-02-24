@@ -122,3 +122,27 @@ export const verifyResetCodeService = async (resetCode: string) => {
   user.passwordResetCodeExpires = undefined;
   await user.save();
 };
+
+export const resetPasswordService = async (email: string, newPassword: string) => {
+  // 1) get user based on email
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new ApiError("There is no account with this email", 404);
+  }
+  // 2) check if reset code is verified
+  if(!user.passwordResetVerified){
+    throw new ApiError("Reset code not verified", 401);
+  }
+user.password = newPassword;
+user.passwordResetVerified = undefined;
+user.passwordResetCode = undefined;
+user.passwordResetCodeExpires = undefined;
+  await user.save();
+  // 3) create token
+  const token = createToken({
+    userId: user._id.toString(),
+    email: user.email,
+    type: user.type,
+  });
+  return { user, token };
+};

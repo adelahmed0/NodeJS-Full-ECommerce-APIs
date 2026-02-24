@@ -5,6 +5,7 @@ import {
   loginService,
   forgotPasswordService,
   verifyResetCodeService,
+  resetPasswordService,
 } from "../services/auth.service.js";
 import { sendSuccessResponse } from "../utils/apiResponse.js";
 
@@ -59,6 +60,17 @@ export const verifyResetCode = asyncHandler(
     await verifyResetCodeService(req.body.resetCode);
     sendSuccessResponse(res, {
       message: "Code verified successfully",
+      statusCode: 200,
+    });
+  },
+);
+
+export const resetPassword = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { user, token } = await resetPasswordService(req.body.email, req.body.newPassword);
+    sendSuccessResponse(res, {
+      message: "Password reset successfully",
+      data: { user, token },
       statusCode: 200,
     });
   },
