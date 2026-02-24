@@ -113,7 +113,7 @@ export const getAll = <T>(
     );
     sendPaginatedResponse(
       res,
-      `${modelName} fetched successfully`,
+      `${modelName}s fetched successfully`,
       documents,
       pagination,
     );
