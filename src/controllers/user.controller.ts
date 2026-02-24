@@ -9,6 +9,11 @@ import {
   deleteUserService,
   updateUserPasswordService,
 } from "../services/user.service.js";
+import {
+  sendSuccessResponse,
+  sendPaginatedResponse,
+} from "../utils/apiResponse.js";
+import { Types } from "mongoose";
 import * as factory from "./handlersFactory.controller.js";
 import { ApiError } from "../utils/apiError.js";
 
@@ -23,7 +28,10 @@ export const updateUserPassword = asyncHandler(
     if (!user) {
       return next(new ApiError(`No user for this id ${req.params.id}`, 404));
     }
-    res.status(200).json({ data: user });
+    sendSuccessResponse(res, {
+      message: "Password updated successfully",
+      data: user,
+    });
   },
 );
 

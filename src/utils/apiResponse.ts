@@ -6,9 +6,15 @@ import { IApiResponse, IPaginatedResponse } from "../types/api.types.js";
  */
 export const sendSuccessResponse = <T>(
   res: Response,
-  message: string,
-  data: T | null = null,
-  statusCode: number = 200,
+  {
+    message,
+    data = null,
+    statusCode = 200,
+  }: {
+    message: string;
+    data?: T | null;
+    statusCode?: number;
+  },
 ): Response<IApiResponse<T>> => {
   return res.status(statusCode).json({
     status: true,
@@ -22,10 +28,17 @@ export const sendSuccessResponse = <T>(
  */
 export const sendPaginatedResponse = <T>(
   res: Response,
-  message: string,
-  data: T[],
-  pagination: IPaginatedResponse<T>["pagination"],
-  statusCode: number = 200,
+  {
+    message,
+    data,
+    pagination,
+    statusCode = 200,
+  }: {
+    message: string;
+    data: T[];
+    pagination: IPaginatedResponse<T>["pagination"];
+    statusCode?: number;
+  },
 ): Response<IPaginatedResponse<T>> => {
   return res.status(statusCode).json({
     status: true,

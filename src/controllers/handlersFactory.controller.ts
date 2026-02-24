@@ -18,12 +18,11 @@ export const createOne = <T, B = any>(
 ): RequestHandler<{}, IApiResponse<T>, B> => {
   return asyncHandler(async (req, res) => {
     const document = await serviceFunction(req.body);
-    sendSuccessResponse(
-      res,
-      `${modelName} created successfully`,
-      document,
-      201,
-    );
+    sendSuccessResponse(res, {
+      message: `${modelName} created successfully`,
+      data: document,
+      statusCode: 201,
+    });
   });
 };
 
@@ -44,7 +43,10 @@ export const deleteOne = <T>(
       return next(new ApiError(`${modelName} not found`, 404));
     }
 
-    sendSuccessResponse(res, `${modelName} deleted successfully`, document);
+    sendSuccessResponse(res, {
+      message: `${modelName} deleted successfully`,
+      data: document,
+    });
   });
 };
 
@@ -65,7 +67,10 @@ export const updateOne = <T, B = any>(
       return next(new ApiError(`${modelName} not found`, 404));
     }
 
-    sendSuccessResponse(res, `${modelName} updated successfully`, document);
+    sendSuccessResponse(res, {
+      message: `${modelName} updated successfully`,
+      data: document,
+    });
   });
 };
 
@@ -86,7 +91,10 @@ export const getOne = <T>(
       return next(new ApiError(`${modelName} not found`, 404));
     }
 
-    sendSuccessResponse(res, `${modelName} fetched successfully`, document);
+    sendSuccessResponse(res, {
+      message: `${modelName} fetched successfully`,
+      data: document,
+    });
   });
 };
 
@@ -111,11 +119,10 @@ export const getAll = <T>(
       req.query,
       filterObj,
     );
-    sendPaginatedResponse(
-      res,
-      `${modelName}s fetched successfully`,
-      documents,
+    sendPaginatedResponse(res, {
+      message: `${modelName}s fetched successfully`,
+      data: documents,
       pagination,
-    );
+    });
   });
 };
