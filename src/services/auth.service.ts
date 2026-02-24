@@ -3,6 +3,7 @@ import { ApiError } from "../utils/apiError.js";
 import { createToken } from "../utils/token.js";
 import { comparePassword } from "../utils/password.js";
 import crypto from "crypto";
+import sendEmail from "../utils/sendEmail.js";
 
 // @desc    Signup
 // @route   POST /api/auth/signup
@@ -49,11 +50,43 @@ export const forgotPasswordService = async (body: IUser) => {
   }
   // 2-generate hash random 6-digit code and save it in database
   const resetCode = Math.floor(100000 + Math.random() * 999999).toString();
-  const hashedResetCode = crypto.createHash("sha256").update(resetCode).digest("hex");
+  const hashedResetCode = crypto
+    .createHash("sha256")
+    .update(resetCode)
+    .digest("hex");
   // save hash
   user.passwordResetCode = hashedResetCode;
   user.passwordResetCodeExpires = new Date(Date.now() + 10 * 60 * 1000);
   user.passwordResetVerified = false;
   await user.save();
   // 3-send code to user's email
+  const html = `
+    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px; background-color: #ffffff;">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <h1 style="color: #2d3436; margin-bottom: 10px;">Reset Your Password</h1>
+        <p style="color: #636e72; font-size: 16px;">Hello <strong>${user.name}</strong>,</p>
+        <p style="color: #636e72; font-size: 16px;">We received a request to reset the password for your account. No changes have been made yet.</p>
+      </div>
+      
+      <div style="background-color: #f9f9f9; padding: 30px; border-radius: 8px; text-align: center; margin-bottom: 30px;">
+        <span style="display: block; font-size: 14px; text-transform: uppercase; color: #b2bec3; letter-spacing: 2px; margin-bottom: 10px;">Verification Code</span>
+        <div style="font-size: 42px; font-weight: bold; color: #0984e3; letter-spacing: 5px;">${resetCode}</div>
+        <p style="color: #a29bfe; font-size: 13px; margin-top: 15px;">Enter this code in the app to complete the reset process.</p>
+      </div>
+      
+      <div style="color: #636e72; font-size: 14px; line-height: 1.6;">
+        <p>For your security, this code will expire in <strong>10 minutes</strong>. If you did not request a password reset, please ignore this email or contact support if you have concerns.</p>
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+        <p style="text-align: center; color: #b2bec3;">Best regards,<br><strong>The E-Commerce Team</strong></p>
+        <p style="font-size: 12px; text-align: center; color: #dfe6e9; margin-top: 20px;">© ${new Date().getFullYear()} E-Commerce App. All rights reserved.</p>
+      </div>
+    </div>
+  `;
+
+  await sendEmail({
+    email: user.email,
+    subject: "Security: Your Password Reset Code",
+    message: `Hi ${user.name}, your reset code is ${resetCode}`,
+    html: html,
+  });
 };
