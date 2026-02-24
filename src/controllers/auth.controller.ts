@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import asyncHandler from "express-async-handler";
-import { signupService, loginService } from "../services/auth.service.js";
+import { signupService, loginService,forgotPasswordService } from "../services/auth.service.js";
 import { sendSuccessResponse } from "../utils/apiResponse.js";
 
 /**
@@ -25,4 +25,10 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 
   // Return user and token
   sendSuccessResponse(res, "User logged in successfully", { user, token }, 200);
+});
+
+
+export const forgotPassword = asyncHandler(async (req: Request, res: Response) => {
+  await forgotPasswordService(req.body);
+  sendSuccessResponse(res, "Code sent successfully", {}, 200);
 });

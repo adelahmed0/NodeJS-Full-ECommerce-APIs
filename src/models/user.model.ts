@@ -19,6 +19,9 @@ export interface IUser extends Document {
   avatar?: string;
   password: string;
   passwordChangedAt?: Date;
+  passwordResetCode?: string;
+  passwordResetCodeExpires?: Date;
+  passwordResetVerified?: boolean;
   createdAt: Date;
   updatedAt: Date;
   type: UserRole;
@@ -47,6 +50,9 @@ const userSchema = new Schema<IUser>(
       minlength: [6, "Password must be at least 6 characters"],
     },
     passwordChangedAt: Date,
+    passwordResetCode: String,
+    passwordResetCodeExpires: Date,
+    passwordResetVerified: Boolean,
     type: {
       type: String,
       enum: Object.values(UserRole),
