@@ -19,12 +19,15 @@ import {
   resizeImage,
   parseFormData,
 } from "../middleware/uploadImage.middleware.js";
-import User from "../models/user.model.js";
+import User, { UserRole } from "../models/user.model.js";
+import { protect, allowedTo } from "../middleware/auth.middleware.js";
 
 const router: Router = express.Router();
 
 const userAvatarUpload = uploadSingleImage("avatar");
 const resizeUserAvatar = resizeImage(User, "user", "users", "avatar", 600, 600);
+
+router.use(protect, allowedTo(UserRole.ADMIN));
 
 router
   .route("/")

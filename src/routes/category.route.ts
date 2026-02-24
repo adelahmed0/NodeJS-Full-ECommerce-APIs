@@ -20,6 +20,8 @@ import {
   deleteImage,
 } from "../middleware/uploadImage.middleware.js";
 import Category, { ICategory } from "../models/category.model.js";
+import { protect, allowedTo } from "../middleware/auth.middleware.js";
+import { UserRole } from "../models/user.model.js";
 
 const router: Router = express.Router();
 
@@ -27,6 +29,8 @@ router.use("/:categoryId/sub-categories", subCategoryRouter);
 
 router.post(
   "/",
+  protect,
+  allowedTo(UserRole.ADMIN),
   uploadSingleImage("image"),
   createCategoryValidator,
   resizeImage<ICategory>(Category, "category", "categories", "image", 600, 600),
@@ -38,6 +42,8 @@ router.get("/:id", getCategoryByIdValidator, getCategoryById);
 
 router.put(
   "/:id",
+  protect,
+  allowedTo(UserRole.ADMIN),
   uploadSingleImage("image"),
   updateCategoryValidator,
   resizeImage<ICategory>(Category, "category", "categories", "image", 600, 600),
@@ -45,6 +51,8 @@ router.put(
 );
 router.delete(
   "/:id",
+  protect,
+  allowedTo(UserRole.ADMIN),
   deleteCategoryValidator,
   deleteImage(Category, "categories"),
   deleteCategory,

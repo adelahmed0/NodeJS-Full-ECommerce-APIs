@@ -18,6 +18,8 @@ import {
   resizeMixedImages,
 } from "../middleware/uploadImage.middleware.js";
 import Product from "../models/product.model.js";
+import { protect, allowedTo } from "../middleware/auth.middleware.js";
+import { UserRole } from "../models/user.model.js";
 
 const router: Router = express.Router();
 
@@ -47,6 +49,8 @@ router
   .route("/")
   .get(getAllProductsValidator, getAllProducts)
   .post(
+    protect,
+    allowedTo(UserRole.ADMIN),
     productUpload,
     createProductValidator,
     resizeProductImages,
@@ -57,11 +61,18 @@ router
   .route("/:id")
   .get(getProductValidator, getProductById)
   .put(
+    protect,
+    allowedTo(UserRole.ADMIN),
     productUpload,
     updateProductValidator,
     resizeProductImages,
     updateProduct,
   )
-  .delete(deleteProductValidator, deleteProduct);
+  .delete(
+    protect,
+    allowedTo(UserRole.ADMIN),
+    deleteProductValidator,
+    deleteProduct,
+  );
 
 export default router;
