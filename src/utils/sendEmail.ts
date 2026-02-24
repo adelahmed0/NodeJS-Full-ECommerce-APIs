@@ -1,14 +1,40 @@
-import nodemailer from "nodemailer";
+import nodemailer, { Transporter } from "nodemailer";
+
 /**
- * Utility to send emails using nodemailer
+ * Interface for email options
  */
-const sendEmail = async (options) => {
-  // 1) Create transporter (service like gmail, mailtrap, etc.)
+interface EmailOptions {
+  email: string;
+  subject: string;
+  message: string;
+}
 
+/**
+ * Utility to send emails using nodemailer with Resend SMTP
+ */
+const sendEmail = async (options: EmailOptions): Promise<void> => {
+  // 1) Create transporter
+  const transporter: Transporter = nodemailer.createTransport({
+    host: process.env.EMAIL_HOST,
+    port: Number(process.env.EMAIL_PORT),
+    secure: process.env.EMAIL_SECURE === "true",
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
 
-  //   2) Define email options
+  // 2) Define email options
+  const mailOptions = {
+    from: `E-Commerce App <onboarding@resend.dev>`, // Resend requires a verified domain or their default onboarding email
+    to: options.email,
+    subject: options.subject,
+    text: options.message,
+    // html: options.message, // can be used for HTML content
+  };
 
-  //   3) Send email
+  // 3) Send email
+  await transporter.sendMail(mailOptions);
 };
 
 export default sendEmail;
