@@ -1,7 +1,7 @@
 export interface IApiResponse<T> {
   status: boolean;
   message: string;
-  data?: T;
+  data: T | null;
 }
 
 export interface IPaginatedResponse<T> extends IApiResponse<T[]> {

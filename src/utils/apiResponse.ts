@@ -7,7 +7,7 @@ import { IApiResponse, IPaginatedResponse } from "../types/api.types.js";
 export const sendSuccessResponse = <T>(
   res: Response,
   message: string,
-  data: T,
+  data: T | null = null,
   statusCode: number = 200,
 ): Response<IApiResponse<T>> => {
   return res.status(statusCode).json({
