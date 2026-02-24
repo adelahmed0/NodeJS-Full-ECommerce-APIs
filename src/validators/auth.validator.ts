@@ -74,3 +74,14 @@ export const loginValidator = [
 
   validatorMiddleware,
 ];
+
+export const forgotPasswordValidator = [
+  body("email")
+    .notEmpty()
+    .withMessage("Email is required")
+    .bail()
+    .isEmail()
+    .withMessage("Invalid email address"),
+
+  validatorMiddleware,
+];
