@@ -7,6 +7,7 @@ interface EmailOptions {
   email: string;
   subject: string;
   message: string;
+  html?: string;
 }
 
 /**
@@ -30,7 +31,7 @@ const sendEmail = async (options: EmailOptions): Promise<void> => {
     to: options.email,
     subject: options.subject,
     text: options.message,
-    // html: options.message, // can be used for HTML content
+    html: options.html,
   };
 
   // 3) Send email
