@@ -2,11 +2,11 @@ import mongoose, { Schema, Document } from "mongoose";
 import { toJSONPlugin, imageURLPlugin } from "../helpers/mongoosePlugins.js";
 import { hashPassword } from "../utils/password.js";
 
-enum UserRole {
+export enum UserRole {
   ADMIN = "admin",
   USER = "user",
 }
-enum UserStatus {
+export enum UserStatus {
   ACTIVE = "active",
   INACTIVE = "inactive",
 }

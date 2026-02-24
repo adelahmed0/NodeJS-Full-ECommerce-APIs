@@ -74,10 +74,17 @@ export const protect = asyncHandler(
  */
 export const allowedTo = (...roles: string[]) =>
   asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user || !roles.includes(req.user.type)) {
+    if (!req.user) {
+      return next(new ApiError("Not authorized, please login again", 401));
+    }
+
+    const hasRole = roles.includes(req.user.type);
+
+    if (!hasRole) {
       return next(
         new ApiError("You do not have permission to perform this action", 403),
       );
     }
+
     next();
   });
