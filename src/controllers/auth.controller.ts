@@ -30,5 +30,5 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 
 export const forgotPassword = asyncHandler(async (req: Request, res: Response) => {
   await forgotPasswordService(req.body);
-  sendSuccessResponse(res, "Code sent successfully", {}, 200);
+  sendSuccessResponse(res, "Code sent successfully", null, 200);
 });
