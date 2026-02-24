@@ -4,6 +4,7 @@ import {
   loginValidator,
   forgotPasswordValidator,
   verifyResetCodeValidator,
+  resetPasswordValidator,
 } from "../validators/auth.validator.js";
 import {
   signup,
@@ -33,6 +34,7 @@ router.post(
 router.put(
   "/reset-password",
   parseFormData(),
+  resetPasswordValidator,
   resetPassword,
 );
 
