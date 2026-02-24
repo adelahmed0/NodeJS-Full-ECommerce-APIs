@@ -72,6 +72,7 @@ export const forgotPasswordService = async (body: IUser) => {
         <span style="display: block; font-size: 14px; text-transform: uppercase; color: #b2bec3; letter-spacing: 2px; margin-bottom: 10px;">Verification Code</span>
         <div style="font-size: 42px; font-weight: bold; color: #0984e3; letter-spacing: 5px;">${resetCode}</div>
         <p style="color: #a29bfe; font-size: 13px; margin-top: 15px;">Enter this code in the app to complete the reset process.</p>
+        <p style="color: #ff7675; font-size: 12px; margin-top: 5px;"><strong>Note:</strong> This code is valid for one-time use only.</p>
       </div>
       
       <div style="color: #636e72; font-size: 14px; line-height: 1.6;">
@@ -117,5 +118,7 @@ export const verifyResetCodeService = async (resetCode: string) => {
   }
   // 2) mark reset code as verified
   user.passwordResetVerified = true;
-  await user.save(); 
+  user.passwordResetCode = undefined;
+  user.passwordResetCodeExpires = undefined;
+  await user.save();
 };
