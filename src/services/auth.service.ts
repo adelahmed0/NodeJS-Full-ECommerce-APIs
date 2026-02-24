@@ -49,7 +49,7 @@ export const forgotPasswordService = async (body: IUser) => {
     throw new ApiError("User not found", 404);
   }
   // 2-generate hash random 6-digit code and save it in database
-  const resetCode = Math.floor(100000 + Math.random() * 999999).toString();
+  const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
   const hashedResetCode = crypto
     .createHash("sha256")
     .update(resetCode)
@@ -83,10 +83,18 @@ export const forgotPasswordService = async (body: IUser) => {
     </div>
   `;
 
-  await sendEmail({
-    email: user.email,
-    subject: "Security: Your Password Reset Code",
-    message: `Hi ${user.name}, your reset code is ${resetCode}`,
-    html: html,
-  });
+  try {
+    await sendEmail({
+      email: user.email,
+      subject: "Security: Your Password Reset Code",
+      message: `Hi ${user.name}, your reset code is ${resetCode}`,
+      html: html,
+    });
+  } catch (error) {
+    user.passwordResetCode = undefined;
+    user.passwordResetCodeExpires = undefined;
+    user.passwordResetVerified = undefined;
+    await user.save();
+    throw new ApiError("Failed to send email", 500);
+  }
 };
