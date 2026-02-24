@@ -85,3 +85,14 @@ export const forgotPasswordValidator = [
 
   validatorMiddleware,
 ];
+
+export const verifyResetCodeValidator = [
+  body("resetCode")
+    .notEmpty()
+    .withMessage("Reset code is required")
+    .bail()
+    .isLength({ min: 6, max: 6 })
+    .withMessage("Reset code must be 6 digits"),
+
+  validatorMiddleware,
+];

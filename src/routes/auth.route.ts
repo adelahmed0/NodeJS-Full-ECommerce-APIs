@@ -3,6 +3,7 @@ import {
   signupValidator,
   loginValidator,
   forgotPasswordValidator,
+  verifyResetCodeValidator,
 } from "../validators/auth.validator.js";
 import {
   signup,
@@ -22,6 +23,11 @@ router.post(
   forgotPasswordValidator,
   forgotPassword,
 );
-router.post("/verify-reset-code", parseFormData(), verifyResetCode);
+router.post(
+  "/verify-reset-code",
+  parseFormData(),
+  verifyResetCodeValidator,
+  verifyResetCode,
+);
 
 export default router;
