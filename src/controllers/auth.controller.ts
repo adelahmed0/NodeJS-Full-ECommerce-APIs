@@ -4,6 +4,7 @@ import {
   signupService,
   loginService,
   forgotPasswordService,
+  verifyResetCodeService,
 } from "../services/auth.service.js";
 import { sendSuccessResponse } from "../utils/apiResponse.js";
 
@@ -47,3 +48,19 @@ export const forgotPassword = asyncHandler(
     });
   },
 );
+
+/**
+ * @desc    Verify Reset Code
+ * @route   POST /api/auth/verify-reset-code
+ * @access  Public
+ */
+export const verifyResetCode = asyncHandler(
+  async (req: Request, res: Response) => {
+    await verifyResetCodeService(req.body.resetCode);
+    sendSuccessResponse(res, {
+      message: "Code verified successfully",
+      statusCode: 200,
+    });
+  },
+);
+

@@ -98,3 +98,24 @@ export const forgotPasswordService = async (body: IUser) => {
     throw new ApiError("Failed to send email", 500);
   }
 };
+
+// @desc    Verify Reset Code
+// @route   POST /api/auth/verify-reset-code
+// @access  Public
+export const verifyResetCodeService = async (resetCode: string) => {
+  // 1) get user based on reset code
+  const hashedResetCode = crypto
+    .createHash("sha256")
+    .update(resetCode)
+    .digest("hex");
+  const user = await User.findOne({
+    passwordResetCode: hashedResetCode,
+    passwordResetCodeExpires: { $gt: Date.now() },
+  });
+  if (!user) {
+    throw new ApiError("Invalid or expired reset code", 401);
+  }
+  // 2) mark reset code as verified
+  user.passwordResetVerified = true;
+  await user.save(); 
+};

@@ -8,6 +8,7 @@ import {
   signup,
   login,
   forgotPassword,
+  verifyResetCode,
 } from "../controllers/auth.controller.js";
 import { parseFormData } from "../middleware/uploadImage.middleware.js";
 
@@ -21,5 +22,6 @@ router.post(
   forgotPasswordValidator,
   forgotPassword,
 );
+router.post("/verify-reset-code", parseFormData(), verifyResetCode);
 
 export default router;
