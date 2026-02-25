@@ -25,12 +25,12 @@ export const imageURLPlugin = (
     });
   };
 
-  // بعد جلب البيانات من الداتا بيز
+  // After fetching data from database
   schema.post("init", (doc) => {
     setImageURL(doc);
   });
 
-  // بعد حفظ بيانات جديدة
+  // After saving new data
   schema.post("save", (doc) => {
     setImageURL(doc);
   });

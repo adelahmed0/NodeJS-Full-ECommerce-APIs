@@ -9,16 +9,16 @@ import User from "../models/user.model.js";
 import { faker } from "@faker-js/faker";
 import chalk from "chalk";
 
-// التكوينات (التحكم في الأعداد)
+// Configurations (Control the counts)
 const CATEGORIES_COUNT = 10;
-const SUBCATEGORIES_COUNT = 20; // إجمالي الفئات الفرعية
-const SUBCATEGORIES_PER_CATEGORY = 5; // الحد الأقصى لكل فئة
+const SUBCATEGORIES_COUNT = 20; // Total subcategories
+const SUBCATEGORIES_PER_CATEGORY = 5; // Maximum per category
 const BRANDS_COUNT = 10;
 const PRODUCTS_COUNT = 50;
 const USERS_COUNT = 5;
 
 /**
- * دالة لتوزيع الفئات الفرعية على الكاتيجوريز مع احترام الماكس
+ * Function to distribute subcategories across categories while respecting the maximum
  */
 const distributeSubCategories = (categories: any[]) => {
   const subCats: any[] = [];
@@ -47,7 +47,7 @@ const distributeSubCategories = (categories: any[]) => {
 };
 
 /**
- * دالة إنشاء المنتجات وربطها بالكاتيجوري والـ سب كاتيجوري الصحيح
+ * Function to create products and link them to the correct category and subcategory
  */
 const generateProducts = (
   categories: any[],
@@ -58,7 +58,7 @@ const generateProducts = (
     const category = faker.helpers.arrayElement(categories);
     const brand = faker.helpers.arrayElement(brands);
 
-    // اختيار فئات فرعية تنتمي حصرياً للفئة الرئيسية المختارة
+    // Select subcategories that belong exclusively to the selected main category
     const validSubCats = subCategories
       .filter((sc) => sc.category.toString() === category._id.toString())
       .map((sc) => sc._id);
@@ -97,7 +97,7 @@ const seedData = async () => {
     await mongoose.connect(MONGO_URI);
     console.log(chalk.cyan.bold("🔌 Connected to MongoDB."));
 
-    // 1. مسح البيانات القديمة
+    // 1. Clear old data
     console.log(chalk.yellow("⏳ Clearing old data..."));
     await Promise.all([
       Category.deleteMany(),
@@ -107,7 +107,7 @@ const seedData = async () => {
       User.deleteMany(),
     ]);
 
-    // 2. إنشاء الفئات الرئيسية
+    // 2. Create main categories
     console.log(chalk.blue("📂 Inserting Categories..."));
     const categoriesToCreate = Array.from({ length: CATEGORIES_COUNT }).map(
       () => {
@@ -121,12 +121,12 @@ const seedData = async () => {
     );
     const createdCategories = await Category.insertMany(categoriesToCreate);
 
-    // 3. إنشاء الفئات الفرعية (موزعة على الفئات الرئيسية)
+    // 3. Create subcategories (distributed across main categories)
     console.log(chalk.blue("📂 Inserting SubCategories..."));
     const subCatsToCreate = distributeSubCategories(createdCategories);
     const createdSubCategories = await SubCategory.insertMany(subCatsToCreate);
 
-    // 4. إنشاء الماركات
+    // 4. Create brands
     console.log(chalk.blue("📂 Inserting Brands..."));
     const brandsToCreate = Array.from({ length: BRANDS_COUNT }).map(() => {
       const name = faker.company.name();
@@ -138,7 +138,7 @@ const seedData = async () => {
     });
     const createdBrands = await Brand.insertMany(brandsToCreate);
 
-    // 5. إنشاء المنتجات (الربط النهائي)
+    // 5. Create products (final linking)
     console.log(chalk.blue("📂 Inserting Products..."));
     const productsToCreate = generateProducts(
       createdCategories,
@@ -147,7 +147,7 @@ const seedData = async () => {
     );
     await Product.insertMany(productsToCreate);
 
-    // 6. إنشاء المستخدمين
+    // 6. Create users
     console.log(chalk.blue("📂 Inserting Users..."));
     const usersToCreate = Array.from({ length: USERS_COUNT }).map(() => {
       const name = faker.person.fullName();
@@ -163,7 +163,7 @@ const seedData = async () => {
       };
     });
 
-    // إضافة مستخدم أدمن للتجربة
+    // Add admin user for testing
     usersToCreate.push({
       name: "Admin User",
       slug: "admin-user",
@@ -175,9 +175,9 @@ const seedData = async () => {
       status: "active",
     });
 
-    // ملاحظة: الـ pre-save hook في المودل سيعمل مع الـ save()
-    // لكن insertMany لا تشغل الـ hooks بشكل افتراضي إلا لو فعلنا خيار معين
-    // لذا سنستخدم حلقة بسيطة لضمان تشفير الباسورد لكل يوزر
+    // Note: The pre-save hook in the model will work with save()
+    // but insertMany doesn't run hooks by default unless we enable a specific option
+    // So we'll use a simple loop to ensure password hashing for each user
     for (const userData of usersToCreate) {
       await User.create(userData);
     }
