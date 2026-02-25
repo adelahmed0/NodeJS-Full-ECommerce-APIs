@@ -123,20 +123,23 @@ export const verifyResetCodeService = async (resetCode: string) => {
   await user.save();
 };
 
-export const resetPasswordService = async (email: string, newPassword: string) => {
+export const resetPasswordService = async (
+  email: string,
+  newPassword: string,
+) => {
   // 1) get user based on email
   const user = await User.findOne({ email });
   if (!user) {
     throw new ApiError("There is no account with this email", 404);
   }
   // 2) check if reset code is verified
-  if(!user.passwordResetVerified){
+  if (!user.passwordResetVerified) {
     throw new ApiError("Reset code not verified", 401);
   }
-user.password = newPassword;
-user.passwordResetVerified = undefined;
-user.passwordResetCode = undefined;
-user.passwordResetCodeExpires = undefined;
+  user.password = newPassword;
+  user.passwordResetVerified = undefined;
+  user.passwordResetCode = undefined;
+  user.passwordResetCodeExpires = undefined;
   await user.save();
   // 3) create token
   const token = createToken({
@@ -145,4 +148,15 @@ user.passwordResetCodeExpires = undefined;
     type: user.type,
   });
   return { user, token };
+};
+
+// @desc    Get User Profile
+// @route   GET /api/auth/profile
+// @access  Private
+export const getProfileService = async (userId: string) => {
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new ApiError("User not found", 404);
+  }
+  return user;
 };

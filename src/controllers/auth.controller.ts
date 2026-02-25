@@ -6,6 +6,7 @@ import {
   forgotPasswordService,
   verifyResetCodeService,
   resetPasswordService,
+  getProfileService,
 } from "../services/auth.service.js";
 import { sendSuccessResponse } from "../utils/apiResponse.js";
 
@@ -67,7 +68,10 @@ export const verifyResetCode = asyncHandler(
 
 export const resetPassword = asyncHandler(
   async (req: Request, res: Response) => {
-    const { user, token } = await resetPasswordService(req.body.email, req.body.newPassword);
+    const { user, token } = await resetPasswordService(
+      req.body.email,
+      req.body.newPassword,
+    );
     sendSuccessResponse(res, {
       message: "Password reset successfully",
       data: { user, token },
@@ -76,3 +80,16 @@ export const resetPassword = asyncHandler(
   },
 );
 
+/**
+ * @desc    Get User Profile
+ * @route   GET /api/auth/profile
+ * @access  Private
+ */
+export const getProfile = asyncHandler(async (req: Request, res: Response) => {
+  const user = await getProfileService(req.user!._id.toString());
+  sendSuccessResponse(res, {
+    message: "User profile retrieved successfully",
+    data: { user },
+    statusCode: 200,
+  });
+});

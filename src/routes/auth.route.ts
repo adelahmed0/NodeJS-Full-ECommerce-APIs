@@ -12,8 +12,10 @@ import {
   forgotPassword,
   verifyResetCode,
   resetPassword,
+  getProfile,
 } from "../controllers/auth.controller.js";
 import { parseFormData } from "../middleware/uploadImage.middleware.js";
+import { protect } from "../middleware/auth.middleware.js";
 
 const router: Router = express.Router();
 
@@ -37,5 +39,12 @@ router.put(
   resetPasswordValidator,
   resetPassword,
 );
+
+/**
+ * @desc    Get User Profile
+ * @route   GET /api/auth/profile
+ * @access  Private
+ */
+router.get("/profile", protect, getProfile);
 
 export default router;
