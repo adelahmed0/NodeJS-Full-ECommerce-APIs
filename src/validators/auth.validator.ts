@@ -154,3 +154,45 @@ export const changePasswordValidator = [
 
   validatorMiddleware,
 ];
+
+export const updateProfileValidator = [
+  body("name")
+    .optional()
+    .notEmpty()
+    .withMessage("User name cannot be empty")
+    .bail()
+    .isLength({ min: 3 })
+    .withMessage("Too short user name")
+    .custom((val, { req }) => {
+      req.body.slug = slugify(val, { lowercase: true });
+      return true;
+    }),
+
+  body("email")
+    .optional()
+    .notEmpty()
+    .withMessage("Email cannot be empty")
+    .bail()
+    .isEmail()
+    .withMessage("Invalid email address")
+    .bail()
+    .custom(async (val, { req }) => {
+      // Check if email is being updated to a different email
+      const currentUser = await User.findById(req.user!._id);
+      if (currentUser && currentUser.email !== val) {
+        const user = await User.findOne({ email: val });
+        if (user) {
+          return Promise.reject("E-mail already exists");
+        }
+      }
+    }),
+
+  body("phone")
+    .optional()
+    .isMobilePhone(["ar-EG", "ar-SA"])
+    .withMessage(
+      "Invalid phone number. Only Egyptian and Saudi numbers are accepted",
+    ),
+
+  validatorMiddleware,
+];

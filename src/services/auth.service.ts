@@ -4,6 +4,7 @@ import { createToken } from "../utils/token.js";
 import { comparePassword } from "../utils/password.js";
 import crypto from "crypto";
 import sendEmail from "../utils/sendEmail.js";
+import slugify from "@sindresorhus/slugify";
 
 // @desc    Signup
 // @route   POST /api/auth/signup
@@ -196,4 +197,48 @@ export const changePasswordService = async (
   });
 
   return { user, token };
+};
+
+// @desc    Update User Profile (for authenticated users)
+// @route   PUT /api/auth/update-profile
+// @access  Private
+export const updateProfileService = async (
+  userId: string,
+  updateData: Partial<IUser>,
+) => {
+  // 1) Get user
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new ApiError("User not found", 404);
+  }
+
+  // 2) Remove sensitive fields that shouldn't be updated here
+  delete updateData.password;
+  delete updateData.passwordResetCode;
+  delete updateData.passwordResetCodeExpires;
+  delete updateData.passwordResetVerified;
+  delete updateData.passwordChangedAt;
+  delete updateData.type; // Only admin can change user type
+  delete updateData.status; // Only admin can change user status
+
+  // 3) Handle email uniqueness check if email is being updated
+  if (updateData.email && updateData.email !== user.email) {
+    const existingUser = await User.findOne({ email: updateData.email });
+    if (existingUser) {
+      throw new ApiError("Email already exists", 400);
+    }
+  }
+
+  // 4) Handle name update and slug generation
+  if (updateData.name) {
+    updateData.slug = slugify(updateData.name, { lowercase: true });
+  }
+
+  // 5) Update user
+  const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
+    new: true,
+    runValidators: true,
+  });
+
+  return updatedUser;
 };

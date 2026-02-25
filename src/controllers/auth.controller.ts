@@ -8,6 +8,7 @@ import {
   resetPasswordService,
   getProfileService,
   changePasswordService,
+  updateProfileService,
 } from "../services/auth.service.js";
 import { sendSuccessResponse } from "../utils/apiResponse.js";
 
@@ -111,6 +112,22 @@ export const changePassword = asyncHandler(
     sendSuccessResponse(res, {
       message: "Password changed successfully",
       data: { user, token },
+      statusCode: 200,
+    });
+  },
+);
+
+/**
+ * @desc    Update User Profile (for authenticated users)
+ * @route   PUT /api/auth/update-profile
+ * @access  Private
+ */
+export const updateProfile = asyncHandler(
+  async (req: Request, res: Response) => {
+    const user = await updateProfileService(req.user!._id.toString(), req.body);
+    sendSuccessResponse(res, {
+      message: "Profile updated successfully",
+      data: { user },
       statusCode: 200,
     });
   },
