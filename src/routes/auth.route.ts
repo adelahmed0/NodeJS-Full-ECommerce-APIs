@@ -7,6 +7,7 @@ import {
   resetPasswordValidator,
   changePasswordValidator,
   updateProfileValidator,
+  updateStatusValidator,
 } from "../validators/auth.validator.js";
 import {
   signup,
@@ -17,6 +18,7 @@ import {
   getProfile,
   changePassword,
   updateProfile,
+  updateStatus,
 } from "../controllers/auth.controller.js";
 import { parseFormData } from "../middleware/uploadImage.middleware.js";
 import { protect } from "../middleware/auth.middleware.js";
@@ -75,6 +77,19 @@ router.put(
   protect,
   updateProfileValidator,
   updateProfile,
+);
+
+/**
+ * @desc    Update User Status (for authenticated users)
+ * @route   PUT /api/auth/update-status
+ * @access  Private
+ */
+router.put(
+  "/update-status",
+  parseFormData(),
+  protect,
+  updateStatusValidator,
+  updateStatus,
 );
 
 export default router;

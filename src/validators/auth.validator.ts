@@ -196,3 +196,14 @@ export const updateProfileValidator = [
 
   validatorMiddleware,
 ];
+
+export const updateStatusValidator = [
+  body("status")
+    .notEmpty()
+    .withMessage("Status is required")
+    .bail()
+    .isIn(["active", "inactive"])
+    .withMessage("Status must be either 'active' or 'inactive'"),
+
+  validatorMiddleware,
+];

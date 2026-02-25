@@ -242,3 +242,28 @@ export const updateProfileService = async (
 
   return updatedUser;
 };
+
+// @desc    Update User Status (for authenticated users)
+// @route   PUT /api/auth/update-status
+// @access  Private
+export const updateStatusService = async (userId: string, status: string) => {
+  // 1) Get user
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new ApiError("User not found", 404);
+  }
+
+  // 2) Validate status
+  if (!["active", "inactive"].includes(status)) {
+    throw new ApiError("Invalid status. Must be 'active' or 'inactive'", 400);
+  }
+
+  // 3) Update user status
+  const updatedUser = await User.findByIdAndUpdate(
+    userId,
+    { status },
+    { new: true, runValidators: true },
+  );
+
+  return updatedUser;
+};
