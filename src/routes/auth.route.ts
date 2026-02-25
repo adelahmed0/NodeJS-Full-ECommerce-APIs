@@ -5,6 +5,7 @@ import {
   forgotPasswordValidator,
   verifyResetCodeValidator,
   resetPasswordValidator,
+  changePasswordValidator,
 } from "../validators/auth.validator.js";
 import {
   signup,
@@ -13,6 +14,7 @@ import {
   verifyResetCode,
   resetPassword,
   getProfile,
+  changePassword,
 } from "../controllers/auth.controller.js";
 import { parseFormData } from "../middleware/uploadImage.middleware.js";
 import { protect } from "../middleware/auth.middleware.js";
@@ -46,5 +48,18 @@ router.put(
  * @access  Private
  */
 router.get("/profile", protect, getProfile);
+
+/**
+ * @desc    Change User Password (for authenticated users)
+ * @route   PUT /api/auth/change-password
+ * @access  Private
+ */
+router.put(
+  "/change-password",
+  parseFormData(),
+  protect,
+  changePasswordValidator,
+  changePassword,
+);
 
 export default router;

@@ -125,3 +125,32 @@ export const resetPasswordValidator = [
 
   validatorMiddleware,
 ];
+
+export const changePasswordValidator = [
+  body("currentPassword")
+    .notEmpty()
+    .withMessage("Current password is required")
+    .bail()
+    .isLength({ min: 6 })
+    .withMessage("Password must be at least 6 characters"),
+
+  body("newPassword")
+    .notEmpty()
+    .withMessage("New password is required")
+    .bail()
+    .isLength({ min: 6 })
+    .withMessage("Password must be at least 6 characters"),
+
+  body("newPasswordConfirm")
+    .notEmpty()
+    .withMessage("New password confirmation is required")
+    .bail()
+    .custom((val, { req }) => {
+      if (val !== req.body.newPassword) {
+        throw new Error("Password confirmation does not match new password");
+      }
+      return true;
+    }),
+
+  validatorMiddleware,
+];

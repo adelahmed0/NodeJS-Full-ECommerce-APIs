@@ -7,6 +7,7 @@ import {
   verifyResetCodeService,
   resetPasswordService,
   getProfileService,
+  changePasswordService,
 } from "../services/auth.service.js";
 import { sendSuccessResponse } from "../utils/apiResponse.js";
 
@@ -93,3 +94,24 @@ export const getProfile = asyncHandler(async (req: Request, res: Response) => {
     statusCode: 200,
   });
 });
+
+/**
+ * @desc    Change User Password (for authenticated users)
+ * @route   PUT /api/auth/change-password
+ * @access  Private
+ */
+export const changePassword = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { currentPassword, newPassword } = req.body;
+    const { user, token } = await changePasswordService(
+      req.user!._id.toString(),
+      currentPassword,
+      newPassword,
+    );
+    sendSuccessResponse(res, {
+      message: "Password changed successfully",
+      data: { user, token },
+      statusCode: 200,
+    });
+  },
+);

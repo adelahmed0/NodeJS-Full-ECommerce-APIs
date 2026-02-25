@@ -160,3 +160,40 @@ export const getProfileService = async (userId: string) => {
   }
   return user;
 };
+
+// @desc    Change User Password (for authenticated users)
+// @route   PUT /api/auth/change-password
+// @access  Private
+export const changePasswordService = async (
+  userId: string,
+  currentPassword: string,
+  newPassword: string,
+) => {
+  // 1) Get user
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new ApiError("User not found", 404);
+  }
+
+  // 2) Check if current password is correct
+  const isCurrentPasswordCorrect = await comparePassword(
+    currentPassword,
+    user.password,
+  );
+  if (!isCurrentPasswordCorrect) {
+    throw new ApiError("Current password is incorrect", 401);
+  }
+
+  // 3) Update password
+  user.password = newPassword;
+  await user.save();
+
+  // 4) Create new token
+  const token = createToken({
+    userId: user._id.toString(),
+    email: user.email,
+    type: user.type,
+  });
+
+  return { user, token };
+};
