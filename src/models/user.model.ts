@@ -78,7 +78,10 @@ userSchema.pre<IUser>("save", async function () {
   }
 });
 
-userSchema.plugin(toJSONPlugin, { removePassword: true });
+userSchema.plugin(toJSONPlugin, {
+  removePassword: true,
+  removePasswordFields: true,
+});
 userSchema.plugin(imageURLPlugin, {
   folderName: "users",
   fields: ["avatar"],

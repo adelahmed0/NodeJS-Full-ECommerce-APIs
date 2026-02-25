@@ -43,6 +43,7 @@ export const imageURLPlugin = (
 
 interface PluginOptions {
   removePassword?: boolean;
+  removePasswordFields?: boolean;
 }
 
 /**
@@ -55,7 +56,7 @@ interface PluginOptions {
  * @param {PluginOptions} options - Plugin options
  */
 export const toJSONPlugin = (schema: Schema, options: PluginOptions = {}) => {
-  const { removePassword = false } = options;
+  const { removePassword = false, removePasswordFields = false } = options;
 
   // Add virtual id field
   schema.virtual("id").get(function (this: Document) {
@@ -74,6 +75,14 @@ export const toJSONPlugin = (schema: Schema, options: PluginOptions = {}) => {
         delete rest.password;
       }
 
+      // Remove password-related fields if option is enabled
+      if (removePasswordFields) {
+        delete rest.passwordChangedAt;
+        delete rest.passwordResetCode;
+        delete rest.passwordResetCodeExpires;
+        delete rest.passwordResetVerified;
+      }
+
       // Return with id as first field
       return { id, ...rest };
     },
@@ -88,6 +97,13 @@ export const toJSONPlugin = (schema: Schema, options: PluginOptions = {}) => {
 
       if (removePassword && rest.password) {
         delete rest.password;
+      }
+
+      if (removePasswordFields) {
+        delete rest.passwordChangedAt;
+        delete rest.passwordResetCode;
+        delete rest.passwordResetCodeExpires;
+        delete rest.passwordResetVerified;
       }
 
       return { id, ...rest };
