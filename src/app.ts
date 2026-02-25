@@ -15,6 +15,7 @@ import brandRouter from "./routes/brand.route.js";
 import productRouter from "./routes/product.route.js";
 import userRouter from "./routes/user.route.js";
 import authRouter from "./routes/auth.route.js";
+import profileRouter from "./routes/profile.route.js";
 
 import { ApiError } from "./utils/apiError.js";
 import globalError from "./middleware/globalError.middleware.js";
@@ -94,6 +95,7 @@ app.use(`${api}/brands`, brandRouter);
 app.use(`${api}/products`, productRouter);
 app.use(`${api}/users`, userRouter);
 app.use(`${api}/auth`, authRouter);
+app.use(`${api}/profile`, profileRouter);
 
 // Handle unhandled routes
 app.all(/(.*)/, (req: Request, res: Response, next: NextFunction) => {
