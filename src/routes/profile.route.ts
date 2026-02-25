@@ -4,12 +4,12 @@ import {
   changePassword,
   updateProfile,
   updateStatus,
-} from "../controllers/auth.controller.js";
+} from "../controllers/profile.controller.js";
 import {
   changePasswordValidator,
   updateProfileValidator,
   updateStatusValidator,
-} from "../validators/auth.validator.js";
+} from "../validators/profile.validator.js";
 import { parseFormData } from "../middleware/uploadImage.middleware.js";
 import { protect } from "../middleware/auth.middleware.js";
 
