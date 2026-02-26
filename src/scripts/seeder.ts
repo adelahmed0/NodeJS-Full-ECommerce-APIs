@@ -6,6 +6,7 @@ import SubCategory from "../models/subCategory.model.js";
 import Brand from "../models/brand.model.js";
 import Product from "../models/product.model.js";
 import User from "../models/user.model.js";
+import Review from "../models/review.model.js";
 import { faker } from "@faker-js/faker";
 import chalk from "chalk";
 
@@ -16,6 +17,7 @@ const SUBCATEGORIES_PER_CATEGORY = 5; // Maximum per category
 const BRANDS_COUNT = 10;
 const PRODUCTS_COUNT = 50;
 const USERS_COUNT = 5;
+const REVIEWS_COUNT = 100; // Average 2 reviews per product
 
 /**
  * Function to distribute subcategories across categories while respecting the maximum
@@ -46,6 +48,54 @@ const distributeSubCategories = (categories: any[]) => {
   return subCats;
 };
 
+/**
+ * Function to generate reviews for products
+ */
+const generateReviews = (products: any[], users: any[]) => {
+  const reviews: any[] = [];
+  const usedPairs = new Set(); // To avoid duplicate user-product combinations
+
+  // Filter out admin users - only regular users can create reviews
+  const regularUsers = users.filter((user) => user.type !== "admin");
+
+  for (let i = 0; i < REVIEWS_COUNT; i++) {
+    const product = faker.helpers.arrayElement(products);
+    const user = faker.helpers.arrayElement(regularUsers);
+    const pairKey = `${product._id}-${user._id}`;
+
+    // Skip if this user already reviewed this product
+    if (usedPairs.has(pairKey)) continue;
+
+    usedPairs.add(pairKey);
+
+    const reviewTitles = [
+      "Excellent product!",
+      "Good quality",
+      "Worth the price",
+      "Amazing experience",
+      "Highly recommended",
+      "Great value",
+      "Perfect fit",
+      "Love it!",
+      "Good service",
+      "Nice product",
+      "Satisfied",
+      "Could be better",
+      "Average quality",
+      "Not bad",
+      "Decent product",
+    ];
+
+    reviews.push({
+      title: faker.helpers.arrayElement(reviewTitles),
+      ratings: faker.number.int({ min: 1, max: 5 }),
+      user: user._id,
+      product: product._id,
+    });
+  }
+
+  return reviews;
+};
 /**
  * Function to create products and link them to the correct category and subcategory
  */
@@ -105,6 +155,7 @@ const seedData = async () => {
       Brand.deleteMany(),
       Product.deleteMany(),
       User.deleteMany(),
+      Review.deleteMany(),
     ]);
 
     // 2. Create main categories
@@ -145,7 +196,7 @@ const seedData = async () => {
       createdBrands,
       createdSubCategories,
     );
-    await Product.insertMany(productsToCreate);
+    const createdProducts = await Product.insertMany(productsToCreate);
 
     // 6. Create users
     console.log(chalk.blue("📂 Inserting Users..."));
@@ -178,9 +229,16 @@ const seedData = async () => {
     // Note: The pre-save hook in the model will work with save()
     // but insertMany doesn't run hooks by default unless we enable a specific option
     // So we'll use a simple loop to ensure password hashing for each user
+    const createdUsers = [];
     for (const userData of usersToCreate) {
-      await User.create(userData);
+      const user = await User.create(userData);
+      createdUsers.push(user);
     }
+
+    // 7. Create reviews
+    console.log(chalk.blue("📂 Inserting Reviews..."));
+    const reviewsToCreate = generateReviews(createdProducts, createdUsers);
+    await Review.insertMany(reviewsToCreate);
 
     console.log(
       chalk.magenta.bold("\n🚀 ★ DATABASE SEEDED SUCCESSFULLY! ★ 🚀\n"),

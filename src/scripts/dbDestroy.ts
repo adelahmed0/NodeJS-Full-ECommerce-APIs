@@ -5,6 +5,7 @@ import SubCategory from "../models/subCategory.model.js";
 import Brand from "../models/brand.model.js";
 import Product from "../models/product.model.js";
 import User from "../models/user.model.js";
+import Review from "../models/review.model.js";
 import chalk from "chalk";
 
 /**
@@ -27,6 +28,7 @@ const destroyData = async () => {
     console.log(chalk.yellow("⏳ Deleting all data from database..."));
 
     // Delete all collections
+    await Review.deleteMany();
     await SubCategory.deleteMany();
     await Category.deleteMany();
     await Brand.deleteMany();
