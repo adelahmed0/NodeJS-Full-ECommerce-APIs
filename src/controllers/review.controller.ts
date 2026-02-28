@@ -13,10 +13,18 @@ import * as factory from "./handlersFactory.controller.js";
  * @route   POST /api/reviews
  * @access  Private/User
  */
-export const createReview = factory.createOne<
-  IReview,
-  { name: string } & Partial<IReview>
->(createReviewService, "Review");
+export const createReview = async (req: any, res: any, next: any) => {
+  try {
+    const review = await createReviewService(req.body, req.user._id);
+    res.status(201).json({
+      status: true,
+      message: "Review created successfully",
+      data: review,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 /**
  * @desc    Get all reviews

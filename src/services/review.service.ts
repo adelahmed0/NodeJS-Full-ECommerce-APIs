@@ -6,8 +6,13 @@ import * as factory from "./handlersFactory.service.js";
  */
 export const createReviewService = async (
   body: Partial<IReview>,
+  userId: string,
 ): Promise<IReview> => {
-  return factory.createOne(Review)(body);
+  const reviewData = {
+    ...body,
+    user: userId,
+  };
+  return factory.createOne(Review)(reviewData);
 };
 
 /**
@@ -25,7 +30,10 @@ export const getAllReviewsService = factory.getAll(
 /**
  * Get review by ID
  */
-export const getReviewByIdService = factory.getOne(Review);
+export const getReviewByIdService = factory.getOne(Review, [
+  { path: "user", select: "name email" },
+  { path: "product", select: "title imageCover" },
+]);
 
 /**
  * Update review by ID

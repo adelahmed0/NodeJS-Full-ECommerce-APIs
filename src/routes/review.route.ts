@@ -14,19 +14,35 @@ import {
   deleteReviewValidator,
 } from "../validators/review.validator.js";
 import { protect, allowedTo } from "../middleware/auth.middleware.js";
+import multer from "multer";
 import { UserRole } from "../models/user.model.js";
+
+// Create simple form-data parser for reviews (no files)
+const parseReviewFormData = multer().none();
 
 const router: Router = express.Router();
 
 router
   .route("/")
   .get(getAllReviewsValidator, getAllReviews)
-  .post(protect, allowedTo(UserRole.USER), createReviewValidator, createReview);
+  .post(
+    protect,
+    allowedTo(UserRole.USER),
+    parseReviewFormData,
+    createReviewValidator,
+    createReview,
+  );
 
 router
   .route("/:id")
   .get(getReviewValidator, getReviewById)
-  .put(protect, allowedTo(UserRole.USER), updateReviewValidator, updateReview)
+  .put(
+    protect,
+    allowedTo(UserRole.USER),
+    parseReviewFormData,
+    updateReviewValidator,
+    updateReview,
+  )
   .delete(
     protect,
     allowedTo(UserRole.USER),
