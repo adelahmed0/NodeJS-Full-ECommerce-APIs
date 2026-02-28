@@ -50,8 +50,8 @@ export const createReviewValidator = [
     .notEmpty()
     .withMessage("Review rating is required")
     .bail()
-    .isInt({ min: 1, max: 5 })
-    .withMessage("Rating must be an integer between 1 and 5"),
+    .isFloat({ min: 1, max: 5 })
+    .withMessage("Rating must be a number between 1 and 5"),
 
   body("product")
     .notEmpty()
@@ -142,8 +142,8 @@ export const updateReviewValidator = [
 
   body("ratings")
     .optional()
-    .isInt({ min: 1, max: 5 })
-    .withMessage("Rating must be an integer between 1 and 5"),
+    .isFloat({ min: 1, max: 5 })
+    .withMessage("Rating must be a number between 1 and 5"),
 
   validatorMiddleware,
 ];
