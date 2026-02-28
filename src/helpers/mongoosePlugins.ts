@@ -123,12 +123,25 @@ export const populatePlugin = (
       select?: string;
     }>;
     queryTypes?: RegExp[];
+    skipNestedPopulate?: boolean;
   },
 ) => {
-  const { populateFields, queryTypes = [/^find/] } = options;
+  const {
+    populateFields,
+    queryTypes = [/^find/],
+    skipNestedPopulate = false,
+  } = options;
 
   queryTypes.forEach((queryType) => {
     schema.pre(queryType, function (this: Query<any, any>) {
+      // Check if this query is already being populated (nested populate)
+      if (skipNestedPopulate) {
+        const populatedPaths = this.getPopulatedPaths();
+        if (populatedPaths && populatedPaths.length > 0) {
+          return;
+        }
+      }
+
       populateFields.forEach((field) => {
         this.populate(field);
       });

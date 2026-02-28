@@ -1,9 +1,5 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
-import {
-  toJSONPlugin,
-  imageURLPlugin,
-  populatePlugin,
-} from "../helpers/mongoosePlugins.js";
+import { toJSONPlugin, imageURLPlugin } from "../helpers/mongoosePlugins.js";
 
 export interface IProduct extends Document {
   title: string;
@@ -92,15 +88,6 @@ const productSchema = new Schema<IProduct>(
   },
   { timestamps: true },
 );
-
-productSchema.plugin(populatePlugin, {
-  populateFields: [
-    { path: "category", select: "name image" },
-    { path: "brand", select: "name image" },
-    { path: "subcategories", select: "name" },
-  ],
-  queryTypes: [/^find/],
-});
 
 productSchema.plugin(toJSONPlugin);
 productSchema.plugin(imageURLPlugin, {

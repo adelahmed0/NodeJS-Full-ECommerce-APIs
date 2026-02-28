@@ -13,15 +13,24 @@ export const createProductService = async (
 /**
  * Get all products with pagination and filter
  */
-export const getAllProductsService = factory.getAll(Product, [
-  "title",
-  "description",
-]);
+export const getAllProductsService = factory.getAll(
+  Product,
+  ["title", "description"],
+  [
+    { path: "category", select: "name image" },
+    { path: "brand", select: "name image" },
+    { path: "subcategories", select: "name" },
+  ],
+);
 
 /**
  * Get product by ID
  */
-export const getProductByIdService = factory.getOne(Product);
+export const getProductByIdService = factory.getOne(Product, [
+  { path: "category", select: "name image" },
+  { path: "brand", select: "name image" },
+  { path: "subcategories", select: "name" },
+]);
 
 /**
  * Update product by ID

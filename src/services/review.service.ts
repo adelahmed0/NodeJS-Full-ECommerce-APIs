@@ -13,7 +13,14 @@ export const createReviewService = async (
 /**
  * Get all reviews with pagination and filter
  */
-export const getAllReviewsService = factory.getAll(Review, ["user", "product"]);
+export const getAllReviewsService = factory.getAll(
+  Review,
+  ["user", "product"],
+  [
+    { path: "user", select: "name email" },
+    { path: "product", select: "title imageCover" },
+  ],
+);
 
 /**
  * Get review by ID
