@@ -4,10 +4,22 @@ import ApiFeatures from "../utils/apiFeatures.js";
 /**
  * Factory function to create a new document
  * @param Model - Mongoose model
+ * @param populationOpts - Optional population options
  */
-export const createOne = <T>(Model: Model<T>) => {
+export const createOne = <T>(
+  Model: Model<T>,
+  populationOpts?: string | PopulateOptions | (string | PopulateOptions)[],
+) => {
   return async (body: any) => {
     const document = await Model.create(body);
+
+    if (populationOpts) {
+      const populatedDoc = await Model.findById(document._id).populate(
+        populationOpts as any,
+      );
+      return populatedDoc!;
+    }
+
     return document;
   };
 };
@@ -15,10 +27,20 @@ export const createOne = <T>(Model: Model<T>) => {
 /**
  * Factory function to delete a document by ID
  * @param Model - Mongoose model
+ * @param populationOpts - Optional population options
  */
-export const deleteOne = <T>(Model: Model<T>) => {
+export const deleteOne = <T>(
+  Model: Model<T>,
+  populationOpts?: string | PopulateOptions | (string | PopulateOptions)[],
+) => {
   return async (id: string) => {
-    const document = await Model.findByIdAndDelete(id);
+    let query = Model.findByIdAndDelete(id);
+
+    if (populationOpts) {
+      query = query.populate(populationOpts as any);
+    }
+
+    const document = await query;
     return document;
   };
 };

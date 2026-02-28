@@ -7,7 +7,11 @@ import * as factory from "./handlersFactory.service.js";
 export const createProductService = async (
   productData: Partial<IProduct>,
 ): Promise<IProduct> => {
-  return factory.createOne(Product)(productData);
+  return factory.createOne(Product, [
+    { path: "category", select: "name image" },
+    { path: "brand", select: "name image" },
+    { path: "subcategories", select: "name" },
+  ])(productData);
 };
 
 /**
@@ -39,10 +43,18 @@ export const updateProductService = async (
   id: string,
   updateData: Partial<IProduct>,
 ): Promise<IProduct | null> => {
-  return factory.updateOne(Product)(id, updateData);
+  return factory.updateOne(Product, [
+    { path: "category", select: "name image" },
+    { path: "brand", select: "name image" },
+    { path: "subcategories", select: "name" },
+  ])(id, updateData);
 };
 
 /**
  * Delete product by ID
  */
-export const deleteProductService = factory.deleteOne(Product);
+export const deleteProductService = factory.deleteOne(Product, [
+  { path: "category", select: "name image" },
+  { path: "brand", select: "name image" },
+  { path: "subcategories", select: "name" },
+]);

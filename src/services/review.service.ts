@@ -12,7 +12,10 @@ export const createReviewService = async (
     ...body,
     user: userId,
   };
-  return factory.createOne(Review)(reviewData);
+  return factory.createOne(Review, [
+    { path: "user", select: "name email" },
+    { path: "product", select: "title imageCover" },
+  ])(reviewData);
 };
 
 /**
@@ -42,10 +45,16 @@ export const updateReviewService = async (
   id: string,
   body: Partial<IReview>,
 ): Promise<IReview | null> => {
-  return factory.updateOne(Review)(id, body);
+  return factory.updateOne(Review, [
+    { path: "user", select: "name email" },
+    { path: "product", select: "title imageCover" },
+  ])(id, body);
 };
 
 /**
  * Delete review by ID - Using Factory
  */
-export const deleteReviewService = factory.deleteOne<IReview>(Review);
+export const deleteReviewService = factory.deleteOne(Review, [
+  { path: "user", select: "name email" },
+  { path: "product", select: "title imageCover" },
+]);
