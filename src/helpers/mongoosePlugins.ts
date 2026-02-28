@@ -1,4 +1,4 @@
-import { Schema, Document } from "mongoose";
+import { Schema, Document, Query } from "mongoose";
 
 /**
  * Plugin to automatically prepend base URL to image fields
@@ -108,5 +108,30 @@ export const toJSONPlugin = (schema: Schema, options: PluginOptions = {}) => {
 
       return { id, ...rest };
     },
+  });
+};
+
+/**
+ * Plugin to automatically populate referenced fields on find queries
+ * Reusable plugin for consistent population behavior across schemas
+ */
+export const populatePlugin = (
+  schema: Schema,
+  options: {
+    populateFields: Array<{
+      path: string;
+      select?: string;
+    }>;
+    queryTypes?: RegExp[];
+  },
+) => {
+  const { populateFields, queryTypes = [/^find/] } = options;
+
+  queryTypes.forEach((queryType) => {
+    schema.pre(queryType, function (this: Query<any, any>) {
+      populateFields.forEach((field) => {
+        this.populate(field);
+      });
+    });
   });
 };
