@@ -45,7 +45,7 @@ router
   )
   .delete(
     protect,
-    allowedTo(UserRole.USER),
+    allowedTo(UserRole.USER, UserRole.ADMIN),
     deleteReviewValidator,
     deleteReview,
   );
