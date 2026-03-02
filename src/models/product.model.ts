@@ -95,4 +95,10 @@ productSchema.plugin(imageURLPlugin, {
   fields: ["imageCover", "images"],
 });
 
+productSchema.virtual("reviews", {
+  ref: "Review",
+  localField: "_id",
+  foreignField: "product",
+});
+
 export default mongoose.model("Product", productSchema);

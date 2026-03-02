@@ -34,6 +34,7 @@ export const getProductByIdService = factory.getOne(Product, [
   { path: "category", select: "name image" },
   { path: "brand", select: "name image" },
   { path: "subcategories", select: "name" },
+  { path: "reviews", select: "title ratings user" },
 ]);
 
 /**
