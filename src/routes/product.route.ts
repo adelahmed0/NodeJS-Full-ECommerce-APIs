@@ -20,8 +20,11 @@ import {
 import Product from "../models/product.model.js";
 import { protect, allowedTo } from "../middleware/auth.middleware.js";
 import { UserRole } from "../models/user.model.js";
+import reviewRouter from "./review.route.js";
 
 const router: Router = express.Router();
+
+router.use("/:productId/reviews", reviewRouter);
 
 const productUpload = uploadMixOfImages([
   { name: "imageCover", maxCount: 1 },

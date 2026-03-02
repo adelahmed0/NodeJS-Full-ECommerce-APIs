@@ -20,7 +20,7 @@ import { UserRole } from "../models/user.model.js";
 // Create simple form-data parser for reviews (no files)
 const parseReviewFormData = multer().none();
 
-const router: Router = express.Router();
+const router: Router = express.Router({ mergeParams: true });
 
 router
   .route("/")
