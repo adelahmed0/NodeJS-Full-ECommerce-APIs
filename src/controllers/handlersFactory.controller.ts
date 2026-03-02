@@ -114,6 +114,8 @@ export const getAll = <T>(
     // Nested router filter
     let filterObj = {};
     if (req.params.categoryId) filterObj = { category: req.params.categoryId };
+    else if (req.params.productId)
+      filterObj = { product: req.params.productId };
 
     const { documents, pagination } = await serviceFunction(
       req.query,

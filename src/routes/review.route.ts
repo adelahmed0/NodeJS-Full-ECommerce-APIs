@@ -5,6 +5,7 @@ import {
   getReviewById,
   updateReview,
   deleteReview,
+  setProductIdToBody,
 } from "../controllers/review.controller.js";
 import {
   createReviewValidator,
@@ -29,6 +30,7 @@ router
     protect,
     allowedTo(UserRole.USER),
     parseReviewFormData,
+    setProductIdToBody,
     createReviewValidator,
     createReview,
   );

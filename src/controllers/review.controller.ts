@@ -8,6 +8,12 @@ import {
 } from "../services/review.service.js";
 import * as factory from "./handlersFactory.controller.js";
 
+export const setProductIdToBody = (req: any, res: any, next: any) => {
+  if (!req.body.product && req.params.productId)
+    req.body.product = req.params.productId;
+  next();
+};
+
 /**
  * @desc    Create review
  * @route   POST /api/reviews

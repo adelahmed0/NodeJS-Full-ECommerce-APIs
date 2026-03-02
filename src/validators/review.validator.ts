@@ -68,6 +68,13 @@ export const createReviewValidator = [
 ];
 
 export const getAllReviewsValidator = [
+  param("productId")
+    .optional()
+    .isMongoId()
+    .withMessage("Invalid product ID format")
+    .bail()
+    .custom(checkProductExists),
+
   query("page")
     .optional()
     .isInt({ min: 1 })
