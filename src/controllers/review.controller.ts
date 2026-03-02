@@ -9,6 +9,7 @@ import {
 import * as factory from "./handlersFactory.controller.js";
 
 export const setProductIdToBody = (req: any, res: any, next: any) => {
+  if (!req.body) req.body = {};
   if (!req.body.product && req.params.productId)
     req.body.product = req.params.productId;
   next();
