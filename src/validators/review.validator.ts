@@ -110,6 +110,23 @@ export const getAllReviewsValidator = [
 
 export const getReviewValidator = [
   param("id").isMongoId().withMessage("Invalid review ID format").bail(),
+  param("productId")
+    .optional()
+    .isMongoId()
+    .withMessage("Invalid product ID format")
+    .bail()
+    .custom(async (productId, { req }) => {
+      if (productId && req.params?.id) {
+        const review = await Review.findById(req.params.id);
+        if (!review) {
+          return Promise.reject(`Review not found with id: ${req.params.id}`);
+        }
+        if (review.product.toString() !== productId) {
+          return Promise.reject("Review does not belong to this product");
+        }
+      }
+      return true;
+    }),
 
   validatorMiddleware,
 ];
