@@ -20,11 +20,11 @@ export const createProductService = async (
 export const getAllProductsService = factory.getAll(
   Product,
   ["title", "description"],
-  [
-    { path: "category", select: "name image" },
-    { path: "brand", select: "name image" },
-    { path: "subcategories", select: "name" },
-  ],
+  // [
+  //   { path: "category", select: "name image" },
+  //   { path: "brand", select: "name image" },
+  //   { path: "subcategories", select: "name" },
+  // ],
 );
 
 /**
