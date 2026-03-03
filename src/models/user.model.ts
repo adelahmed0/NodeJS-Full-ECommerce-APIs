@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema, Document, Types } from "mongoose";
 import { toJSONPlugin, imageURLPlugin } from "../helpers/mongoosePlugins.js";
 import { hashPassword } from "../utils/password.js";
 
@@ -26,6 +26,7 @@ export interface IUser extends Document {
   updatedAt: Date;
   type: UserRole;
   status: UserStatus;
+  wishlist: Types.ObjectId[];
 }
 
 const userSchema = new Schema<IUser>(
@@ -63,6 +64,7 @@ const userSchema = new Schema<IUser>(
       enum: Object.values(UserStatus),
       default: UserStatus.ACTIVE,
     },
+    wishlist: [{ type: Types.ObjectId, ref: "Product" }],
   },
   {
     timestamps: true,
