@@ -1,11 +1,16 @@
-import mongoose, { Schema, Document, Types } from "mongoose";
+import mongoose, { Schema, Document, Types, Model } from "mongoose";
 import { toJSONPlugin } from "../helpers/mongoosePlugins.js";
+import Product from "./product.model.js";
 
 export interface IReview extends Document {
   title: string;
   ratings: number;
   user: Types.ObjectId;
   product: Types.ObjectId;
+}
+
+export interface IReviewModel extends Model<IReview> {
+  calcAverageRatingsAndQuantity(productId: Types.ObjectId): Promise<void>;
 }
 
 const reviewSchema = new Schema<IReview>(
@@ -35,6 +40,44 @@ const reviewSchema = new Schema<IReview>(
 
 reviewSchema.plugin(toJSONPlugin);
 
-const Review = mongoose.model<IReview>("Review", reviewSchema);
+reviewSchema.statics.calcAverageRatingsAndQuantity = async function (
+  productId: Types.ObjectId,
+) {
+  const result = await this.aggregate([
+    // stage 1 get all reviews for specific product
+    {
+      $match: { product: productId },
+    },
+    // stage 2 calculate average ratings and quantity
+    {
+      $group: {
+        _id: productId,
+        ratingsAverage: { $avg: "$ratings" },
+        ratingsQuantity: { $sum: 1 },
+      },
+    },
+  ]);
+  console.log(result);
+  if (result.length > 0) {
+    await Product.findByIdAndUpdate(productId, {
+      ratingsAverage: result[0].ratingsAverage,
+      ratingsQuantity: result[0].ratingsQuantity,
+    });
+  } else {
+    await Product.findByIdAndUpdate(productId, {
+      ratingsAverage: 0,
+      ratingsQuantity: 0,
+    });
+  }
+};
+
+reviewSchema.post("save", async function () {
+  await (this.constructor as IReviewModel).calcAverageRatingsAndQuantity(
+    this.product,
+  );
+});
+
+
+const Review = mongoose.model<IReview, IReviewModel>("Review", reviewSchema);
 
 export default Review;
