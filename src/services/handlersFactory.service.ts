@@ -34,13 +34,23 @@ export const deleteOne = <T>(
   populationOpts?: string | PopulateOptions | (string | PopulateOptions)[],
 ) => {
   return async (id: string) => {
-    let query = Model.findByIdAndDelete(id);
-
-    if (populationOpts) {
-      query = query.populate(populationOpts as any);
+    // Find the document first to trigger deleteOne hook
+    const document = await Model.findById(id);
+    if (!document) {
+      return null;
     }
 
-    const document = await query;
+    // Delete the document to trigger the deleteOne hook
+    await document.deleteOne();
+
+    if (populationOpts) {
+      // Return the populated document before deletion
+      const populatedDoc = await Model.findById(document._id).populate(
+        populationOpts as any,
+      );
+      return populatedDoc;
+    }
+
     return document;
   };
 };
@@ -55,16 +65,25 @@ export const updateOne = <T>(
   populationOpts?: string | PopulateOptions | (string | PopulateOptions)[],
 ) => {
   return async (id: string, body: UpdateQuery<T>) => {
-    let query = Model.findByIdAndUpdate(id, body, {
-      new: true,
-      runValidators: true,
-    });
-
-    if (populationOpts) {
-      query = query.populate(populationOpts as any);
+    // Find the document first
+    const document = await Model.findById(id);
+    if (!document) {
+      return null;
     }
 
-    const document = await query;
+    // Update the document fields
+    Object.assign(document, body);
+
+    // Save to trigger post hooks
+    await document.save();
+
+    if (populationOpts) {
+      const populatedDoc = await Model.findById(document._id).populate(
+        populationOpts as any,
+      );
+      return populatedDoc!;
+    }
+
     return document;
   };
 };
