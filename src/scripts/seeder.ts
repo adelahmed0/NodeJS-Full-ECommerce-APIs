@@ -238,7 +238,13 @@ const seedData = async () => {
     // 7. Create reviews
     console.log(chalk.blue("📂 Inserting Reviews..."));
     const reviewsToCreate = generateReviews(createdProducts, createdUsers);
-    await Review.insertMany(reviewsToCreate);
+
+    // Use create instead of insertMany to trigger post-save hooks
+    const createdReviews = [];
+    for (const reviewData of reviewsToCreate) {
+      const review = await Review.create(reviewData);
+      createdReviews.push(review);
+    }
 
     console.log(
       chalk.magenta.bold("\n🚀 ★ DATABASE SEEDED SUCCESSFULLY! ★ 🚀\n"),
