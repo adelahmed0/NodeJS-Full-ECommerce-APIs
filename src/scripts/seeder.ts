@@ -88,7 +88,7 @@ const generateReviews = (products: any[], users: any[]) => {
 
     reviews.push({
       title: faker.helpers.arrayElement(reviewTitles),
-      ratings: faker.number.int({ min: 1, max: 5 }),
+      ratings: faker.number.float({ min: 1, max: 5, fractionDigits: 1 }),
       user: user._id,
       product: product._id,
     });
