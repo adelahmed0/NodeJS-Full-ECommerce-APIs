@@ -154,7 +154,7 @@ export const deleteAddressService = async (
     throw new ApiError("Address not found", 404);
   }
 
-  return { message: "Address deleted successfully" };
+  return [];
 };
 
 /**
