@@ -26,3 +26,15 @@ export const addToWishlistValidator = [
   validatorMiddleware,
 ];
 
+export const removeFromWishlistValidator = [
+  param("productId")
+    .notEmpty()
+    .withMessage("Product ID is required")
+    .bail()
+    .isMongoId()
+    .withMessage("Invalid product ID format")
+    .bail()
+    .custom(checkProductExists),
+
+  validatorMiddleware,
+];
