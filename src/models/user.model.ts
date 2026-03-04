@@ -75,19 +75,47 @@ const userSchema = new Schema<IUser>(
     wishlist: [{ type: Types.ObjectId, ref: "Product" }],
     addresses: [
       {
-        id: { type: Types.ObjectId },
-        alias: String,
-        details: String,
-        phone: String,
-        city: String,
-        postalCode: String,
+        id: { type: Types.ObjectId, default: () => new Types.ObjectId() },
+        alias: {
+          type: String,
+          required: [true, "Address alias is required"],
+          trim: true,
+          minlength: [2, "Alias too short"],
+          maxlength: [50, "Alias too long"],
+        },
+        details: {
+          type: String,
+          required: [true, "Address details are required"],
+          trim: true,
+          minlength: [10, "Details too short"],
+          maxlength: [200, "Details too long"],
+        },
+        phone: {
+          type: String,
+          required: [true, "Phone number is required"],
+          trim: true,
+        },
+        city: {
+          type: String,
+          required: [true, "City is required"],
+          trim: true,
+          minlength: [2, "City name too short"],
+          maxlength: [50, "City name too long"],
+        },
+        postalCode: {
+          type: String,
+          required: [true, "Postal code is required"],
+          trim: true,
+          minlength: [3, "Postal code too short"],
+          maxlength: [10, "Postal code too long"],
+        },
       },
     ],
   },
   {
     timestamps: true,
   },
-); 
+);
 
 userSchema.pre<IUser>("save", async function () {
   if (!this.isModified("password")) return;

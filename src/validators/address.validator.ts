@@ -1,0 +1,90 @@
+import { body, param } from "express-validator";
+import validatorMiddleware from "../middleware/validator.middleware.js";
+
+/**
+ * Add Address Validator
+ */
+export const addAddressValidator = [
+  body("alias")
+    .notEmpty()
+    .withMessage("Address alias is required")
+    .isLength({ min: 2, max: 50 })
+    .withMessage("Alias must be between 2 and 50 characters"),
+  
+  body("details")
+    .notEmpty()
+    .withMessage("Address details are required")
+    .isLength({ min: 10, max: 200 })
+    .withMessage("Details must be between 10 and 200 characters"),
+  
+  body("phone")
+    .notEmpty()
+    .withMessage("Phone number is required")
+    .isMobilePhone("any")
+    .withMessage("Please provide a valid phone number"),
+  
+  body("city")
+    .notEmpty()
+    .withMessage("City is required")
+    .isLength({ min: 2, max: 50 })
+    .withMessage("City must be between 2 and 50 characters"),
+  
+  body("postalCode")
+    .notEmpty()
+    .withMessage("Postal code is required")
+    .isLength({ min: 3, max: 10 })
+    .withMessage("Postal code must be between 3 and 10 characters"),
+
+  validatorMiddleware,
+];
+
+/**
+ * Update Address Validator
+ */
+export const updateAddressValidator = [
+  param("addressId")
+    .notEmpty()
+    .withMessage("Address ID is required")
+    .isMongoId()
+    .withMessage("Invalid address ID format"),
+  
+  body("alias")
+    .optional()
+    .isLength({ min: 2, max: 50 })
+    .withMessage("Alias must be between 2 and 50 characters"),
+  
+  body("details")
+    .optional()
+    .isLength({ min: 10, max: 200 })
+    .withMessage("Details must be between 10 and 200 characters"),
+  
+  body("phone")
+    .optional()
+    .isMobilePhone("any")
+    .withMessage("Please provide a valid phone number"),
+  
+  body("city")
+    .optional()
+    .isLength({ min: 2, max: 50 })
+    .withMessage("City must be between 2 and 50 characters"),
+  
+  body("postalCode")
+    .optional()
+    .isLength({ min: 3, max: 10 })
+    .withMessage("Postal code must be between 3 and 10 characters"),
+
+  validatorMiddleware,
+];
+
+/**
+ * Get/Delete/Set Default Address Validator
+ */
+export const addressIdValidator = [
+  param("addressId")
+    .notEmpty()
+    .withMessage("Address ID is required")
+    .isMongoId()
+    .withMessage("Invalid address ID format"),
+
+  validatorMiddleware,
+];
