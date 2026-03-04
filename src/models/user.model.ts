@@ -27,6 +27,14 @@ export interface IUser extends Document {
   type: UserRole;
   status: UserStatus;
   wishlist: Types.ObjectId[];
+  addresses: {
+    id: Types.ObjectId;
+    alias: string;
+    details: string;
+    phone: string;
+    city: string;
+    postalCode: string;
+  }[];
 }
 
 const userSchema = new Schema<IUser>(
@@ -65,11 +73,21 @@ const userSchema = new Schema<IUser>(
       default: UserStatus.ACTIVE,
     },
     wishlist: [{ type: Types.ObjectId, ref: "Product" }],
+    addresses: [
+      {
+        id: { type: Types.ObjectId },
+        alias: String,
+        details: String,
+        phone: String,
+        city: String,
+        postalCode: String,
+      },
+    ],
   },
   {
     timestamps: true,
   },
-);
+); 
 
 userSchema.pre<IUser>("save", async function () {
   if (!this.isModified("password")) return;
