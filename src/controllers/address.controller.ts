@@ -7,7 +7,10 @@ import {
   deleteAddressService,
   setDefaultAddressService,
 } from "../services/address.service.js";
-import { sendSuccessResponse } from "../utils/apiResponse.js";
+import {
+  sendSuccessResponse,
+  sendPaginatedResponse,
+} from "../utils/apiResponse.js";
 
 /**
  * @desc    Add address
@@ -30,11 +33,22 @@ export const addAddress = asyncHandler(async (req: Request, res: Response) => {
  */
 export const getAddresses = asyncHandler(
   async (req: Request, res: Response) => {
-    const addresses = await getAddressesService(req.user!._id.toString());
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const city = req.query.city as string;
+    const alias = req.query.alias as string;
 
-    sendSuccessResponse(res, {
+    const result = await getAddressesService(req.user!._id.toString(), {
+      page,
+      limit,
+      city,
+      alias,
+    });
+
+    sendPaginatedResponse(res, {
       message: "Addresses retrieved successfully",
-      data: addresses,
+      data: result.addresses,
+      pagination: result.pagination,
     });
   },
 );

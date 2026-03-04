@@ -9,6 +9,7 @@ import {
 import { protect, allowedTo } from "../middleware/auth.middleware.js";
 import {
   addAddressValidator,
+  getAddressesValidator,
   updateAddressValidator,
   addressIdValidator,
 } from "../validators/address.validator.js";
@@ -35,7 +36,7 @@ router.post("/", parseAddressFormData, addAddressValidator, addAddress);
  * @route   GET /api/addresses
  * @access  Private/User
  */
-router.get("/", getAddresses);
+router.get("/", getAddressesValidator, getAddresses);
 
 /**
  * @desc    Update address

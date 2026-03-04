@@ -42,15 +42,54 @@ export const addAddressService = async (
 };
 
 /**
- * Get User Addresses
+ * Get User Addresses (with pagination and filtering)
  */
-export const getAddressesService = async (userId: string) => {
+export const getAddressesService = async (
+  userId: string,
+  options: {
+    page?: number;
+    limit?: number;
+    city?: string;
+    alias?: string;
+  } = {},
+) => {
+  const { page = 1, limit = 10, city, alias } = options;
+
   const user = await User.findById(userId).select("addresses");
   if (!user) {
     throw new ApiError("User not found", 404);
   }
 
-  return user.addresses;
+  let addresses = user.addresses;
+
+  // Apply filters
+  if (city) {
+    addresses = addresses.filter((addr) =>
+      addr.city.toLowerCase().includes(city.toLowerCase()),
+    );
+  }
+
+  if (alias) {
+    addresses = addresses.filter((addr) =>
+      addr.alias.toLowerCase().includes(alias.toLowerCase()),
+    );
+  }
+
+  // Calculate pagination
+  const total_count = addresses.length;
+  const last_page = Math.ceil(total_count / limit);
+  const offset = (page - 1) * limit;
+  const paginatedData = addresses.slice(offset, offset + limit);
+
+  return {
+    addresses: paginatedData,
+    pagination: {
+      total_count,
+      current_page: page,
+      last_page,
+      per_page: limit,
+    },
+  };
 };
 
 /**
