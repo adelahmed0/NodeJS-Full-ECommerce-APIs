@@ -17,6 +17,7 @@ import userRouter from "./routes/user.route.js";
 import authRouter from "./routes/auth.route.js";
 import profileRouter from "./routes/profile.route.js";
 import reviewRouter from "./routes/review.route.js";
+import wishlistRouter from "./routes/wishlist.route.js";
 
 import { ApiError } from "./utils/apiError.js";
 import globalError from "./middleware/globalError.middleware.js";
@@ -98,6 +99,7 @@ app.use(`${api}/users`, userRouter);
 app.use(`${api}/auth`, authRouter);
 app.use(`${api}/profile`, profileRouter);
 app.use(`${api}/reviews`, reviewRouter);
+app.use(`${api}/wishlist`, wishlistRouter);
 
 // Handle unhandled routes
 app.all(/(.*)/, (req: Request, res: Response, next: NextFunction) => {
