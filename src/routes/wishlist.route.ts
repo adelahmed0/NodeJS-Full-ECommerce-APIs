@@ -4,11 +4,14 @@ import {
   getWishlist,
   removeFromWishlist,
   clearWishlist,
+  checkProductInWishlist,
 } from "../controllers/wishlist.controller.js";
 import { protect, allowedTo } from "../middleware/auth.middleware.js";
 import {
   addToWishlistValidator,
   removeFromWishlistValidator,
+  checkProductInWishlistValidator,
+  getWishlistValidator,
 } from "../validators/wishlist.validator.js";
 import multer from "multer";
 
@@ -38,7 +41,18 @@ router.post(
  * @route   GET /api/wishlist
  * @access  Private/User
  */
-router.get("/", getWishlist);
+router.get("/", getWishlistValidator, getWishlist);
+
+/**
+ * @desc    Check if product is in wishlist
+ * @route   GET /api/wishlist/check/:productId
+ * @access  Private/User
+ */
+router.get(
+  "/check/:productId",
+  checkProductInWishlistValidator,
+  checkProductInWishlist,
+);
 
 /**
  * @desc    Remove product from wishlist

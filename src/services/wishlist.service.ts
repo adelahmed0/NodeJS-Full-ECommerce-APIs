@@ -61,19 +61,69 @@ export const removeFromWishlistService = async (
 };
 
 /**
- * Get User Wishlist
+ * Check if product is in user wishlist
  */
-export const getWishlistService = async (userId: string) => {
+export const checkProductInWishlistService = async (
+  userId: string,
+  productId: string,
+) => {
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new ApiError("User not found", 404);
+  }
+
+  const productObjectId = new Types.ObjectId(productId);
+  const isInWishlist = user.wishlist.some((id) => id.equals(productObjectId));
+
+  return isInWishlist;
+};
+
+/**
+ * Get User Wishlist (with pagination)
+ */
+export const getWishlistService = async (
+  userId: string,
+  page: number = 1,
+  limit: number = 10,
+) => {
+  const skip = (page - 1) * limit;
+
   const user = await User.findById(userId).populate({
     path: "wishlist",
-    select: "title description price imageCover ratingsAverage",
+    select:
+      "title description price priceAfterDiscount imageCover images colors ratingsAverage ratingsQuantity category brand slug",
+    populate: [
+      {
+        path: "category",
+        select: "name slug",
+      },
+      {
+        path: "brand",
+        select: "name slug",
+      },
+    ],
+    options: {
+      skip,
+      limit,
+      sort: { createdAt: -1 },
+    },
   });
 
   if (!user) {
     throw new ApiError("User not found", 404);
   }
 
-  return user.wishlist;
+  // Get total count for pagination
+  const totalCount = await User.findById(userId).select("wishlist").lean();
+  const total_count = totalCount?.wishlist.length || 0;
+
+  return {
+    wishlist: user.wishlist,
+    total_count,
+    current_page: page,
+    last_page: Math.ceil(total_count / limit),
+    per_page: limit,
+  };
 };
 
 /**

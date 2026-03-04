@@ -5,8 +5,12 @@ import {
   removeFromWishlistService,
   getWishlistService,
   clearWishlistService,
+  checkProductInWishlistService,
 } from "../services/wishlist.service.js";
-import { sendSuccessResponse } from "../utils/apiResponse.js";
+import {
+  sendSuccessResponse,
+  sendPaginatedResponse,
+} from "../utils/apiResponse.js";
 
 /**
  * @desc    Add product to wishlist
@@ -34,11 +38,24 @@ export const addProductToWishlist = asyncHandler(
  * @access  Private/User
  */
 export const getWishlist = asyncHandler(async (req: Request, res: Response) => {
-  const wishlist = await getWishlistService(req.user!._id.toString());
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 10;
 
-  sendSuccessResponse(res, {
+  const result = await getWishlistService(
+    req.user!._id.toString(),
+    page,
+    limit,
+  );
+
+  sendPaginatedResponse(res, {
     message: "Wishlist retrieved successfully",
-    data: wishlist,
+    data: result.wishlist,
+    pagination: {
+      total_count: result.total_count,
+      current_page: result.current_page,
+      last_page: result.last_page,
+      per_page: result.per_page,
+    },
   });
 });
 
@@ -57,6 +74,25 @@ export const removeFromWishlist = asyncHandler(
     sendSuccessResponse(res, {
       message: "Product removed from wishlist successfully",
       data: wishlist,
+    });
+  },
+);
+
+/**
+ * @desc    Check if product is in wishlist
+ * @route   GET /api/v1/wishlist/check/:productId
+ * @access  Private/User
+ */
+export const checkProductInWishlist = asyncHandler(
+  async (req: Request, res: Response) => {
+    const isInWishlist = await checkProductInWishlistService(
+      req.user!._id.toString(),
+      req.params.productId as string,
+    );
+
+    sendSuccessResponse(res, {
+      message: "Product wishlist status checked successfully",
+      data: { isInWishlist },
     });
   },
 );
