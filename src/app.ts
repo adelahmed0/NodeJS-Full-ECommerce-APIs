@@ -9,17 +9,7 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-import categoryRouter from "./routes/category.route.js";
-import subCategoryRouter from "./routes/subCategory.route.js";
-import brandRouter from "./routes/brand.route.js";
-import productRouter from "./routes/product.route.js";
-import userRouter from "./routes/user.route.js";
-import authRouter from "./routes/auth.route.js";
-import profileRouter from "./routes/profile.route.js";
-import reviewRouter from "./routes/review.route.js";
-import wishlistRouter from "./routes/wishlist.route.js";
-import addressRouter from "./routes/address.route.js";
-import couponRouter from "./routes/coupon.route.js";
+import routes from "./routes/index.js";
 
 import { ApiError } from "./utils/apiError.js";
 import globalError from "./middleware/globalError.middleware.js";
@@ -93,17 +83,7 @@ app.use(
 );
 
 // Routes
-app.use(`${api}/categories`, categoryRouter);
-app.use(`${api}/sub-categories`, subCategoryRouter);
-app.use(`${api}/brands`, brandRouter);
-app.use(`${api}/products`, productRouter);
-app.use(`${api}/users`, userRouter);
-app.use(`${api}/auth`, authRouter);
-app.use(`${api}/profile`, profileRouter);
-app.use(`${api}/reviews`, reviewRouter);
-app.use(`${api}/wishlist`, wishlistRouter);
-app.use(`${api}/addresses`, addressRouter);
-app.use(`${api}/coupons`, couponRouter);
+app.use(`${api}`, routes);
 
 // Handle unhandled routes
 app.all(/(.*)/, (req: Request, res: Response, next: NextFunction) => {
