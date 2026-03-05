@@ -6,6 +6,7 @@ import Brand from "../models/brand.model.js";
 import Product from "../models/product.model.js";
 import User from "../models/user.model.js";
 import Review from "../models/review.model.js";
+import Coupon from "../models/coupon.model.js";
 import chalk from "chalk";
 
 /**
@@ -34,6 +35,7 @@ const destroyData = async () => {
     await Brand.deleteMany();
     await Product.deleteMany();
     await User.deleteMany();
+    await Coupon.deleteMany();
 
     console.log(chalk.green("✅ All data deleted successfully."));
     console.log(chalk.magenta.bold("\n★ DATABASE IS NOW EMPTY ★\n"));

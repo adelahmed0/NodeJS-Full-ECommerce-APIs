@@ -7,6 +7,7 @@ import Brand from "../models/brand.model.js";
 import Product from "../models/product.model.js";
 import User from "../models/user.model.js";
 import Review from "../models/review.model.js";
+import Coupon from "../models/coupon.model.js";
 import { faker } from "@faker-js/faker";
 import chalk from "chalk";
 
@@ -18,6 +19,7 @@ const BRANDS_COUNT = 10;
 const PRODUCTS_COUNT = 50;
 const USERS_COUNT = 5;
 const REVIEWS_COUNT = 100; // Average 2 reviews per product
+const COUPONS_COUNT = 10;
 
 /**
  * Function to distribute subcategories across categories while respecting the maximum
@@ -46,6 +48,30 @@ const distributeSubCategories = (categories: any[]) => {
     });
   }
   return subCats;
+};
+
+/**
+ * Function to generate coupons
+ */
+const generateCoupons = () => {
+  const couponNames = [
+    "SUMMER2026",
+    "WINTER2026",
+    "NEWYEAR2026",
+    "RAMADAN2026",
+    "EID2026",
+    "BLACKFRIDAY",
+    "FIRST10",
+    "SPECIAL2026",
+    "FLASHSALE",
+    "WELCOME2026",
+  ];
+
+  return couponNames.map((name, index) => ({
+    name,
+    discount: faker.number.int({ min: 10, max: 60 }),
+    expire: faker.date.future({ years: 1 }),
+  }));
 };
 
 /**
@@ -156,6 +182,7 @@ const seedData = async () => {
       Product.deleteMany(),
       User.deleteMany(),
       Review.deleteMany(),
+      Coupon.deleteMany(),
     ]);
 
     // 2. Create main categories
@@ -246,6 +273,11 @@ const seedData = async () => {
       createdReviews.push(review);
     }
 
+    // 8. Create coupons
+    console.log(chalk.blue("📂 Inserting Coupons..."));
+    const couponsToCreate = generateCoupons();
+    const createdCoupons = await Coupon.insertMany(couponsToCreate);
+
     console.log(
       chalk.magenta.bold("\n🚀 ★ DATABASE SEEDED SUCCESSFULLY! ★ 🚀\n"),
     );
@@ -256,4 +288,37 @@ const seedData = async () => {
   }
 };
 
-seedData();
+/**
+ * Function to delete all coupons only
+ */
+const deleteAllCoupons = async () => {
+  try {
+    const MONGO_URI = process.env.MONGO_URI;
+    if (!MONGO_URI) throw new Error("MONGO_URI not found");
+
+    await mongoose.connect(MONGO_URI);
+    console.log(chalk.cyan.bold("🔌 Connected to MongoDB."));
+
+    console.log(chalk.yellow("⏳ Deleting all coupons..."));
+    const result = await Coupon.deleteMany({});
+
+    console.log(
+      chalk.green.bold(
+        `✅ Deleted ${result.deletedCount} coupons successfully`,
+      ),
+    );
+    process.exit(0);
+  } catch (error) {
+    console.error(chalk.red.bold("❌ Error deleting coupons:"), error);
+    process.exit(1);
+  }
+};
+
+// Check command line arguments
+const command = process.argv[2];
+
+if (command === "delete-coupons") {
+  deleteAllCoupons();
+} else {
+  seedData();
+}
