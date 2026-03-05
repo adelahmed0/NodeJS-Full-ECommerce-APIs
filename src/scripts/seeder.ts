@@ -67,11 +67,21 @@ const generateCoupons = () => {
     "WELCOME2026",
   ];
 
-  return couponNames.map((name, index) => ({
-    name,
-    discount: faker.number.int({ min: 10, max: 60 }),
-    expire: faker.date.future({ years: 1 }),
-  }));
+  return couponNames.map((name, index) => {
+    // Generate a future date in YYYY-MM-DD format
+    const futureDate = new Date();
+    futureDate.setMonth(futureDate.getMonth() + (index + 1) * 2); // Add 2, 4, 6... months
+
+    const year = futureDate.getFullYear();
+    const month = String(futureDate.getMonth() + 1).padStart(2, "0");
+    const day = String(futureDate.getDate()).padStart(2, "0");
+
+    return {
+      name,
+      discount: faker.number.int({ min: 10, max: 60 }),
+      expire: `${year}-${month}-${day}`, // YYYY-MM-DD format
+    };
+  });
 };
 
 /**

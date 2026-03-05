@@ -28,15 +28,34 @@ export const createCouponValidator = [
     .notEmpty()
     .withMessage("Expiry date is required")
     .bail()
-    .isISO8601()
-    .withMessage("Please provide a valid date (ISO8601 format)")
-    .bail()
     .custom((value) => {
+      // Accept YYYY-MM-DD format or ISO8601 format
+      const dateFormats = [
+        /^\d{4}-\d{2}-\d{2}$/, // YYYY-MM-DD
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/, // YYYY-MM-DDTHH:MM:SS
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/, // ISO8601 with milliseconds
+      ];
+
+      const isValidFormat = dateFormats.some((format) => format.test(value));
+
+      if (!isValidFormat) {
+        throw new Error(
+          "Please provide a valid date format (YYYY-MM-DD or ISO8601)",
+        );
+      }
+
+      // Parse the date
       const expireDate = new Date(value);
       const now = new Date();
+
+      if (isNaN(expireDate.getTime())) {
+        throw new Error("Invalid date");
+      }
+
       if (expireDate <= now) {
         throw new Error("Expiry date must be in the future");
       }
+
       return true;
     }),
 
@@ -74,17 +93,37 @@ export const updateCouponValidator = [
 
   body("expire")
     .optional()
-    .isISO8601()
-    .withMessage("Please provide a valid date (ISO8601 format)")
-    .bail()
     .custom((value) => {
+      // Accept YYYY-MM-DD format or ISO8601 format
+      const dateFormats = [
+        /^\d{4}-\d{2}-\d{2}$/, // YYYY-MM-DD
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/, // YYYY-MM-DDTHH:MM:SS
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/, // ISO8601 with milliseconds
+      ];
+
+      const isValidFormat = dateFormats.some((format) => format.test(value));
+
+      if (!isValidFormat) {
+        throw new Error(
+          "Please provide a valid date format (YYYY-MM-DD or ISO8601)",
+        );
+      }
+
+      // Parse the date
       const expireDate = new Date(value);
       const now = new Date();
+
+      if (isNaN(expireDate.getTime())) {
+        throw new Error("Invalid date");
+      }
+
       if (expireDate <= now) {
         throw new Error("Expiry date must be in the future");
       }
+
       return true;
-    }),
+    })
+    .bail(),
 
   validatorMiddleware,
 ];
