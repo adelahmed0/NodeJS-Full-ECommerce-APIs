@@ -1,0 +1,45 @@
+import mongoose, { Schema, Document, Types } from "mongoose";
+import { toJSONPlugin } from "../helpers/mongoosePlugins.js";
+
+export interface ICart extends Document {
+  cartItems: {
+    product: Types.ObjectId;
+    quantity: number;
+    color: string;
+    price: number;
+  }[];
+  totalPrice: number;
+  totalPriceAfterDiscount: number;
+  user: Types.ObjectId;
+}
+
+const cartSchema = new Schema<ICart>(
+  {
+    cartItems: [
+      {
+        product: {
+          type: Types.ObjectId,
+          ref: "Product",
+        },
+        quantity: Number,
+        color: String,
+        price: Number,
+      },
+    ],
+    totalPrice: Number,
+    totalPriceAfterDiscount: Number,
+    user: {
+      type: Types.ObjectId,
+      ref: "User",
+    },
+  },
+  {
+    timestamps: true,
+  },
+);
+
+cartSchema.plugin(toJSONPlugin);
+
+const Cart = mongoose.model<ICart>("Cart", cartSchema);
+
+export default Cart;
