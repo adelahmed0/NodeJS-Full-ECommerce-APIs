@@ -15,8 +15,17 @@ const calcTotalPrice = (cart: ICart): void => {
     0,
   );
   cart.totalPrice = totalPrice;
-  // Reset coupon discount whenever cart totals are recalculated
-  cart.totalPriceAfterDiscount = undefined;
+
+  // Re-calculate discount if it exists in the cart object
+  if (cart.discount && cart.discount > 0) {
+    const totalPriceAfterDiscount = (
+      totalPrice -
+      (totalPrice * cart.discount) / 100
+    ).toFixed(2);
+    cart.totalPriceAfterDiscount = Number(totalPriceAfterDiscount);
+  } else {
+    cart.totalPriceAfterDiscount = undefined;
+  }
 };
 
 // ─── Services ────────────────────────────────────────────────────────────────
@@ -40,6 +49,13 @@ export const addProductToCartService = async (
 
   // 2 If no cart, create new cart
   if (!cart) {
+    // #1 Check stock before create
+    if (quantity > product.quantity) {
+      throw new ApiError(
+        `Only ${product.quantity} items available in stock`,
+        400,
+      );
+    }
     cart = await Cart.create({
       user: new Types.ObjectId(userId),
       cartItems: [
@@ -66,12 +82,17 @@ export const addProductToCartService = async (
           400,
         );
       }
-      // #1: increment by the requested quantity (not always 1)
       cartItem.quantity += quantity;
-      // #6: sync price in case it changed since item was added
-      cartItem.price = product.price;
+      cartItem.price = product.price; // Sync price
       cart.cartItems[productIndex] = cartItem;
     } else {
+      // #1 Check stock before pushing new item
+      if (quantity > product.quantity) {
+        throw new ApiError(
+          `Only ${product.quantity} items available in stock`,
+          400,
+        );
+      }
       cart.cartItems.push({
         product: new Types.ObjectId(productId),
         color,
@@ -82,10 +103,9 @@ export const addProductToCartService = async (
   }
 
   calcTotalPrice(cart);
-
   await cart.save();
 
-  return cart;
+  return cart.populate("cartItems.product", "title imageCover price");
 };
 
 /**
@@ -108,26 +128,27 @@ export const getLoggedUserCartService = async (userId: string) => {
  * Remove specific item from cart by itemId
  */
 export const removeCartItemService = async (userId: string, itemId: string) => {
-  const cart = await Cart.findOneAndUpdate(
-    { user: new Types.ObjectId(userId) },
-    { $pull: { cartItems: { _id: new Types.ObjectId(itemId) } } },
-    { new: true },
-  );
+  const cart = await Cart.findOne({ user: new Types.ObjectId(userId) });
 
   if (!cart) {
     throw new ApiError("Cart not found", 404);
   }
 
+  // #2 Filter item out of the array held in memory
+  cart.cartItems = cart.cartItems.filter(
+    (item) => item._id?.toString() !== itemId,
+  );
+
   // If cart is now empty, delete the document entirely
   if (cart.cartItems.length === 0) {
     await Cart.findByIdAndDelete(cart._id);
-    return null;
+    return { cartItems: [], totalPrice: 0 };
   }
 
   calcTotalPrice(cart);
   await cart.save();
 
-  return cart;
+  return cart.populate("cartItems.product", "title imageCover price");
 };
 
 /**
@@ -170,7 +191,7 @@ export const updateCartItemQuantityService = async (
   calcTotalPrice(cart);
   await cart.save();
 
-  return cart;
+  return cart.populate("cartItems.product", "title imageCover price");
 };
 
 /**
@@ -191,17 +212,11 @@ export const applyCouponService = async (userId: string, coupon: ICoupon) => {
     throw new ApiError("Cart not found", 404);
   }
 
-  const totalPrice = cart.totalPrice;
+  // Store discount to be persisted across cart updates
+  cart.discount = coupon.discount;
 
-  // Calculate price after discount
-  const totalPriceAfterDiscount = (
-    totalPrice -
-    (totalPrice * coupon.discount) / 100
-  ).toFixed(2);
-
-  cart.totalPriceAfterDiscount = Number(totalPriceAfterDiscount);
-
+  calcTotalPrice(cart);
   await cart.save();
 
-  return cart;
+  return cart.populate("cartItems.product", "title imageCover price");
 };

@@ -13,6 +13,7 @@ export interface ICart extends Document {
   cartItems: ICartItem[];
   totalPrice: number;
   totalPriceAfterDiscount?: number;
+  discount?: number; // Coupon discount percentage
   user: Types.ObjectId;
 }
 
@@ -43,6 +44,10 @@ const cartSchema = new Schema<ICart>(
     cartItems: [cartItemSchema],
     totalPrice: Number,
     totalPriceAfterDiscount: Number,
+    discount: {
+      type: Number,
+      default: 0,
+    },
     user: {
       type: Types.ObjectId,
       ref: "User",
