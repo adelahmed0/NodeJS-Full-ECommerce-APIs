@@ -4,6 +4,7 @@ import {
   getLoggedUserCart,
   removeCartItem,
   clearCart,
+  updateCartItemQuantity,
 } from "../controllers/cart.controller.js";
 import multer from "multer";
 import { protect, allowedTo } from "../middleware/auth.middleware.js";
@@ -20,6 +21,7 @@ router
   .get("/", getLoggedUserCart)
   .delete("/", clearCart);
 
+router.put("/:itemId", parseCartFormData, updateCartItemQuantity);
 router.delete("/:itemId", removeCartItem);
 
 export default router;

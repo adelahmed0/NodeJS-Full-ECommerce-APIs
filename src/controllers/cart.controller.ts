@@ -1,10 +1,12 @@
 import { Request, Response } from "express";
 import asyncHandler from "express-async-handler";
+import { ApiError } from "../utils/apiError.js";
 import {
   addProductToCartService,
   getLoggedUserCartService,
   removeCartItemService,
   clearCartService,
+  updateCartItemQuantityService,
 } from "../services/cart.service.js";
 
 /**
@@ -84,3 +86,31 @@ export const clearCart = asyncHandler(async (req: Request, res: Response) => {
     message: "Cart cleared successfully",
   });
 });
+
+/**
+ * @desc    Update specific cart item quantity
+ * @route   PUT /api/cart/:itemId
+ * @access  Private/User
+ */
+export const updateCartItemQuantity = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { quantity } = req.body;
+
+    if (!quantity || quantity < 1) {
+      throw new ApiError("Quantity must be greater than 0", 400);
+    }
+
+    const cart = await updateCartItemQuantityService(
+      req.user!._id.toString(),
+      req.params.itemId as string,
+      Number(quantity),
+    );
+
+    res.status(200).json({
+      status: true,
+      message: "Cart item quantity updated successfully",
+      numOfCartItems: cart.cartItems.length,
+      data: cart,
+    });
+  },
+);

@@ -107,6 +107,49 @@ export const removeCartItemService = async (userId: string, itemId: string) => {
 };
 
 /**
+ * Update specific cart item quantity
+ */
+export const updateCartItemQuantityService = async (
+  userId: string,
+  itemId: string,
+  quantity: number,
+) => {
+  const cart = await Cart.findOne({ user: new Types.ObjectId(userId) });
+  if (!cart) {
+    throw new ApiError("Cart not found", 404);
+  }
+
+  const itemIndex = cart.cartItems.findIndex(
+    (item) => item._id?.toString() === itemId,
+  );
+
+  if (itemIndex === -1) {
+    throw new ApiError("Cart item not found", 404);
+  }
+
+  // Check product stock
+  const productId = cart.cartItems[itemIndex].product;
+  const product = await Product.findById(productId);
+  if (!product) {
+    throw new ApiError("Product not found", 404);
+  }
+
+  if (quantity > product.quantity) {
+    throw new ApiError(
+      `Only ${product.quantity} items available in stock`,
+      400,
+    );
+  }
+
+  cart.cartItems[itemIndex].quantity = quantity;
+
+  cart.totalPrice = calcTotalPrice(cart);
+  await cart.save();
+
+  return cart;
+};
+
+/**
  * Clear logged user cart
  */
 export const clearCartService = async (userId: string) => {
