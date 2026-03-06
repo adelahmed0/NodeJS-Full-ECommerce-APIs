@@ -5,6 +5,7 @@ import {
   removeCartItem,
   clearCart,
   updateCartItemQuantity,
+  applyCoupon,
 } from "../controllers/cart.controller.js";
 import multer from "multer";
 import { protect, allowedTo } from "../middleware/auth.middleware.js";
@@ -20,6 +21,8 @@ router
   .post("/", parseCartFormData, addProductToCart)
   .get("/", getLoggedUserCart)
   .delete("/", clearCart);
+
+router.put("/applyCoupon", parseCartFormData, applyCoupon);
 
 router.put("/:itemId", parseCartFormData, updateCartItemQuantity);
 router.delete("/:itemId", removeCartItem);

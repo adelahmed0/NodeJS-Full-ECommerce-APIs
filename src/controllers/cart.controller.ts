@@ -7,6 +7,7 @@ import {
   removeCartItemService,
   clearCartService,
   updateCartItemQuantityService,
+  applyCouponService,
 } from "../services/cart.service.js";
 
 /**
@@ -114,3 +115,21 @@ export const updateCartItemQuantity = asyncHandler(
     });
   },
 );
+
+/**
+ * @desc    Apply coupon on cart
+ * @route   PUT /api/cart/applyCoupon
+ * @access  Private/User
+ */
+export const applyCoupon = asyncHandler(async (req: Request, res: Response) => {
+  const { coupon } = req.body;
+
+  const cart = await applyCouponService(req.user!._id.toString(), coupon);
+
+  res.status(200).json({
+    status: true,
+    message: "Coupon applied successfully",
+    numOfCartItems: cart.cartItems.length,
+    data: cart,
+  });
+});

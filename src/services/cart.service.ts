@@ -1,6 +1,7 @@
 import { ApiError } from "../utils/apiError.js";
 import Cart, { ICart } from "../models/cart.model.js";
 import Product from "../models/product.model.js";
+import Coupon from "../models/coupon.model.js";
 import { Types } from "mongoose";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -156,4 +157,43 @@ export const updateCartItemQuantityService = async (
  */
 export const clearCartService = async (userId: string) => {
   await Cart.findOneAndDelete({ user: new Types.ObjectId(userId) });
+};
+
+/**
+ * Apply coupon on cart
+ */
+export const applyCouponService = async (
+  userId: string,
+  couponName: string,
+) => {
+  // 1- Get coupon based on coupon name
+  const coupon = await Coupon.findOne({
+    name: { $regex: new RegExp(`^${couponName}$`, "i") }, // case-insensitive
+    expire: { $gt: new Date() },
+  });
+
+  if (!coupon) {
+    throw new ApiError("Coupon is invalid or expired", 400);
+  }
+
+  // 2- Get logged user cart
+  const cart = await Cart.findOne({ user: new Types.ObjectId(userId) });
+
+  if (!cart) {
+    throw new ApiError("Cart not found", 404);
+  }
+
+  const totalPrice = cart.totalPrice;
+
+  // 3- Calculate price after discount
+  const totalPriceAfterDiscount = (
+    totalPrice -
+    (totalPrice * coupon.discount) / 100
+  ).toFixed(2);
+
+  cart.totalPriceAfterDiscount = Number(totalPriceAfterDiscount);
+
+  await cart.save();
+
+  return cart;
 };
