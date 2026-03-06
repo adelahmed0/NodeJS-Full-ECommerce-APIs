@@ -11,6 +11,7 @@ import wishlistRoute from "./wishlist.route.js";
 import addressRoute from "./address.route.js";
 import couponRoute from "./coupon.route.js";
 import cartRoute from "./cart.route.js";
+import orderRoute from "./order.route.js";
 
 const router = Router();
 
@@ -27,5 +28,6 @@ router.use("/wishlist", wishlistRoute);
 router.use("/addresses", addressRoute);
 router.use("/coupons", couponRoute);
 router.use("/cart", cartRoute);
+router.use("/orders", orderRoute);
 
 export default router;
