@@ -9,13 +9,14 @@ import { Types } from "mongoose";
 /**
  * Recalculate totalPrice from cart items and save the cart
  */
-const calcTotalPrice = (cart: ICart): number => {
+const calcTotalPrice = (cart: ICart): void => {
   const totalPrice = cart.cartItems.reduce(
     (acc, item) => acc + item.price * item.quantity,
     0,
   );
   cart.totalPrice = totalPrice;
-  return totalPrice;
+  // Reset coupon discount whenever cart totals are recalculated
+  cart.totalPriceAfterDiscount = undefined;
 };
 
 // ─── Services ────────────────────────────────────────────────────────────────
@@ -58,6 +59,13 @@ export const addProductToCartService = async (
 
     if (productIndex > -1) {
       const cartItem = cart.cartItems[productIndex];
+      // Check stock before incrementing
+      if (cartItem.quantity + 1 > product.quantity) {
+        throw new ApiError(
+          `Only ${product.quantity} items available in stock`,
+          400,
+        );
+      }
       cartItem.quantity += 1;
       cart.cartItems[productIndex] = cartItem;
     } else {
@@ -82,7 +90,9 @@ export const addProductToCartService = async (
  */
 
 export const getLoggedUserCartService = async (userId: string) => {
-  const cart = await Cart.findOne({ user: new Types.ObjectId(userId) });
+  const cart = await Cart.findOne({
+    user: new Types.ObjectId(userId),
+  }).populate("cartItems.product", "title imageCover price");
   if (!cart) {
     throw new ApiError("Cart not found", 404);
   }
@@ -101,6 +111,12 @@ export const removeCartItemService = async (userId: string, itemId: string) => {
 
   if (!cart) {
     throw new ApiError("Cart not found", 404);
+  }
+
+  // If cart is now empty, delete the document entirely
+  if (cart.cartItems.length === 0) {
+    await Cart.findByIdAndDelete(cart._id);
+    return null;
   }
 
   calcTotalPrice(cart);

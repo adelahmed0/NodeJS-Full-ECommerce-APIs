@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import asyncHandler from "express-async-handler";
 import User, { IUser } from "../models/user.model.js";
+import { IProduct } from "../models/product.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { verifyToken } from "../utils/token.js";
 
@@ -9,12 +10,11 @@ interface DecodedPayload {
   iat: number;
 }
 
-// Extend Request interface locally for this file if needed,
-// but it's better to declare it globally if used across the app.
 declare global {
   namespace Express {
     interface Request {
       user?: IUser;
+      product?: IProduct;
     }
   }
 }

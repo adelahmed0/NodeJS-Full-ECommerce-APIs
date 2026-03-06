@@ -65,6 +65,17 @@ export const removeCartItem = asyncHandler(
       req.params.itemId as string,
     );
 
+    if (!cart) {
+      // Cart was deleted because it became empty
+      res.status(200).json({
+        status: true,
+        message: "Cart item removed and cart is now empty",
+        numOfCartItems: 0,
+        data: null,
+      });
+      return;
+    }
+
     res.status(200).json({
       status: true,
       message: "Cart item removed successfully",
