@@ -1,15 +1,18 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 import { toJSONPlugin } from "../helpers/mongoosePlugins.js";
 
+export interface ICartItem {
+  _id?: Types.ObjectId;
+  product: Types.ObjectId;
+  quantity: number;
+  color: string;
+  price: number;
+}
+
 export interface ICart extends Document {
-  cartItems: {
-    product: Types.ObjectId;
-    quantity: number;
-    color: string;
-    price: number;
-  }[];
+  cartItems: ICartItem[];
   totalPrice: number;
-  totalPriceAfterDiscount: number;
+  totalPriceAfterDiscount?: number;
   user: Types.ObjectId;
 }
 
@@ -21,7 +24,10 @@ const cartSchema = new Schema<ICart>(
           type: Types.ObjectId,
           ref: "Product",
         },
-        quantity: Number,
+        quantity: {
+          type: Number,
+          default: 1,
+        },
         color: String,
         price: Number,
       },
