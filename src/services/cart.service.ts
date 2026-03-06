@@ -66,6 +66,9 @@ export const addProductToCartService = async (
       });
     }
   }
+
+  cart.totalPrice = calcTotalPrice(cart);
+
   await cart.save();
 
   return cart;
