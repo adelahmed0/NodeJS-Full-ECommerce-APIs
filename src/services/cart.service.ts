@@ -9,10 +9,12 @@ import { Types } from "mongoose";
  * Recalculate totalPrice from cart items and save the cart
  */
 const calcTotalPrice = (cart: ICart): number => {
-  return cart.cartItems.reduce(
+  const totalPrice = cart.cartItems.reduce(
     (acc, item) => acc + item.price * item.quantity,
     0,
   );
+  cart.totalPrice = totalPrice;
+  return totalPrice;
 };
 
 // ─── Services ────────────────────────────────────────────────────────────────
@@ -67,7 +69,7 @@ export const addProductToCartService = async (
     }
   }
 
-  cart.totalPrice = calcTotalPrice(cart);
+  calcTotalPrice(cart);
 
   await cart.save();
 
@@ -100,7 +102,7 @@ export const removeCartItemService = async (userId: string, itemId: string) => {
     throw new ApiError("Cart not found", 404);
   }
 
-  cart.totalPrice = calcTotalPrice(cart);
+  calcTotalPrice(cart);
   await cart.save();
 
   return cart;
@@ -143,7 +145,7 @@ export const updateCartItemQuantityService = async (
 
   cart.cartItems[itemIndex].quantity = quantity;
 
-  cart.totalPrice = calcTotalPrice(cart);
+  calcTotalPrice(cart);
   await cart.save();
 
   return cart;
