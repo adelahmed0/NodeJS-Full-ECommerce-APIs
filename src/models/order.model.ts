@@ -9,14 +9,21 @@ export interface IOrder extends Document {
     color: string;
     price: number;
   }[];
+  shippingAddress: {
+    details?: string;
+    phone: string;
+    city: string;
+    postalCode?: string;
+  };
   taxPrice: number;
   shippingPrice: number;
   totalOrderPrice: number;
   paymentMethod: "cash" | "card";
   isPaid: boolean;
-  paidAt: Date;
+  paidAt?: Date;
   isDelivered: boolean;
-  deliveredAt: Date;
+  deliveredAt?: Date;
+  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
 }
 
 const orderSchema = new Schema<IOrder>(
@@ -37,6 +44,18 @@ const orderSchema = new Schema<IOrder>(
         price: Number,
       },
     ],
+    shippingAddress: {
+      details: String,
+      phone: {
+        type: String,
+        required: [true, "Phone number is required for shipping"],
+      },
+      city: {
+        type: String,
+        required: [true, "City is required for shipping"],
+      },
+      postalCode: String,
+    },
     taxPrice: {
       type: Number,
       default: 0,
@@ -68,6 +87,11 @@ const orderSchema = new Schema<IOrder>(
     deliveredAt: {
       type: Date,
     },
+    status: {
+      type: String,
+      enum: ["pending", "processing", "shipped", "delivered", "cancelled"],
+      default: "pending",
+    },
   },
   { timestamps: true },
 );
@@ -75,3 +99,5 @@ const orderSchema = new Schema<IOrder>(
 orderSchema.plugin(toJSONPlugin);
 
 const Order = mongoose.model<IOrder>("Order", orderSchema);
+
+export default Order;
