@@ -4,6 +4,7 @@ import {
   addProductToCartService,
   getLoggedUserCartService,
   removeCartItemService,
+  clearCartService,
 } from "../services/cart.service.js";
 
 /**
@@ -69,3 +70,17 @@ export const removeCartItem = asyncHandler(
     });
   },
 );
+
+/**
+ * @desc    Clear logged user cart
+ * @route   DELETE /api/cart
+ * @access  Private/User
+ */
+export const clearCart = asyncHandler(async (req: Request, res: Response) => {
+  await clearCartService(req.user!._id.toString());
+
+  res.status(200).json({
+    status: true,
+    message: "Cart cleared successfully",
+  });
+});

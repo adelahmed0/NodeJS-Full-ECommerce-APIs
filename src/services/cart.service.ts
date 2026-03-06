@@ -105,3 +105,10 @@ export const removeCartItemService = async (userId: string, itemId: string) => {
 
   return cart;
 };
+
+/**
+ * Clear logged user cart
+ */
+export const clearCartService = async (userId: string) => {
+  await Cart.findOneAndDelete({ user: new Types.ObjectId(userId) });
+};

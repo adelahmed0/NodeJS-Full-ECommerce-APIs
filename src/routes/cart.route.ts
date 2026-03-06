@@ -3,6 +3,7 @@ import {
   addProductToCart,
   getLoggedUserCart,
   removeCartItem,
+  clearCart,
 } from "../controllers/cart.controller.js";
 import multer from "multer";
 import { protect, allowedTo } from "../middleware/auth.middleware.js";
@@ -16,7 +17,8 @@ router.use(protect, allowedTo("user"));
 
 router
   .post("/", parseCartFormData, addProductToCart)
-  .get("/", getLoggedUserCart);
+  .get("/", getLoggedUserCart)
+  .delete("/", clearCart);
 
 router.delete("/:itemId", removeCartItem);
 
