@@ -251,17 +251,29 @@ const seedData = async () => {
       };
     });
 
-    // Add admin user for testing
-    usersToCreate.push({
-      name: "Admin User",
-      slug: "admin-user",
-      email: "admin@gmail.com",
-      password: "password123",
-      phone: "01012345678",
-      avatar: faker.image.avatar(),
-      type: "admin",
-      status: "active",
-    });
+    // Add admin and regular users for testing
+    usersToCreate.push(
+      {
+        name: "Admin User",
+        slug: "admin-user",
+        email: "admin@gmail.com",
+        password: "password123",
+        phone: "01012345678",
+        avatar: faker.image.avatar(),
+        type: "admin",
+        status: "active",
+      },
+      {
+        name: "Test User",
+        slug: "test-user",
+        email: "user@gmail.com",
+        password: "password123",
+        phone: "01087654321",
+        avatar: faker.image.avatar(),
+        type: "user",
+        status: "active",
+      },
+    );
 
     // Note: The pre-save hook in the model will work with save()
     // but insertMany doesn't run hooks by default unless we enable a specific option
