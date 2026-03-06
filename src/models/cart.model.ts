@@ -16,22 +16,24 @@ export interface ICart extends Document {
   user: Types.ObjectId;
 }
 
+const cartItemSchema = new Schema<ICartItem>({
+  product: {
+    type: Types.ObjectId,
+    ref: "Product",
+  },
+  quantity: {
+    type: Number,
+    default: 1,
+  },
+  color: String,
+  price: Number,
+});
+
+cartItemSchema.plugin(toJSONPlugin);
+
 const cartSchema = new Schema<ICart>(
   {
-    cartItems: [
-      {
-        product: {
-          type: Types.ObjectId,
-          ref: "Product",
-        },
-        quantity: {
-          type: Number,
-          default: 1,
-        },
-        color: String,
-        price: Number,
-      },
-    ],
+    cartItems: [cartItemSchema],
     totalPrice: Number,
     totalPriceAfterDiscount: Number,
     user: {
