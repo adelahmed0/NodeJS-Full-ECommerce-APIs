@@ -85,3 +85,23 @@ export const getLoggedUserCartService = async (userId: string) => {
   }
   return cart;
 };
+
+/**
+ * Remove specific item from cart by itemId
+ */
+export const removeCartItemService = async (userId: string, itemId: string) => {
+  const cart = await Cart.findOneAndUpdate(
+    { user: new Types.ObjectId(userId) },
+    { $pull: { cartItems: { _id: new Types.ObjectId(itemId) } } },
+    { new: true },
+  );
+
+  if (!cart) {
+    throw new ApiError("Cart not found", 404);
+  }
+
+  cart.totalPrice = calcTotalPrice(cart);
+  await cart.save();
+
+  return cart;
+};

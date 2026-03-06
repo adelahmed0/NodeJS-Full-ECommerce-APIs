@@ -3,6 +3,7 @@ import asyncHandler from "express-async-handler";
 import {
   addProductToCartService,
   getLoggedUserCartService,
+  removeCartItemService,
 } from "../services/cart.service.js";
 
 /**
@@ -42,6 +43,27 @@ export const getLoggedUserCart = asyncHandler(
     res.status(200).json({
       status: true,
       message: "Cart fetched successfully",
+      numOfCartItems: cart.cartItems.length,
+      data: cart,
+    });
+  },
+);
+
+/**
+ * @desc    Remove specific item from cart
+ * @route   DELETE /api/cart/:itemId
+ * @access  Private/User
+ */
+export const removeCartItem = asyncHandler(
+  async (req: Request, res: Response) => {
+    const cart = await removeCartItemService(
+      req.user!._id.toString(),
+      req.params.itemId as string,
+    );
+
+    res.status(200).json({
+      status: true,
+      message: "Cart item removed successfully",
       numOfCartItems: cart.cartItems.length,
       data: cart,
     });
