@@ -39,6 +39,7 @@ export const addProductToCartService = async (
   color: string,
   quantity: number = 1,
 ) => {
+  const quantityNum = parseInt(quantity.toString(), 10) || 1;
   const product = await Product.findById(productId);
   if (!product) {
     throw new ApiError("Product not found", 404);
@@ -50,7 +51,7 @@ export const addProductToCartService = async (
   // 2 If no cart, create new cart
   if (!cart) {
     // #1 Check stock before create
-    if (quantity > product.quantity) {
+    if (quantityNum > product.quantity) {
       throw new ApiError(
         `Only ${product.quantity} items available in stock`,
         400,
@@ -62,7 +63,7 @@ export const addProductToCartService = async (
         {
           product: new Types.ObjectId(productId),
           color,
-          quantity,
+          quantity: quantityNum,
           price: product.price,
         },
       ],
@@ -76,18 +77,18 @@ export const addProductToCartService = async (
     if (productIndex > -1) {
       const cartItem = cart.cartItems[productIndex];
       // Check stock before incrementing
-      if (cartItem.quantity + quantity > product.quantity) {
+      if (cartItem.quantity + quantityNum > product.quantity) {
         throw new ApiError(
           `Only ${product.quantity} items available in stock`,
           400,
         );
       }
-      cartItem.quantity += quantity;
+      cartItem.quantity += quantityNum;
       cartItem.price = product.price; // Sync price
       cart.cartItems[productIndex] = cartItem;
     } else {
       // #1 Check stock before pushing new item
-      if (quantity > product.quantity) {
+      if (quantityNum > product.quantity) {
         throw new ApiError(
           `Only ${product.quantity} items available in stock`,
           400,
@@ -96,7 +97,7 @@ export const addProductToCartService = async (
       cart.cartItems.push({
         product: new Types.ObjectId(productId),
         color,
-        quantity,
+        quantity: quantityNum,
         price: product.price,
       });
     }
