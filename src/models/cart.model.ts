@@ -20,13 +20,20 @@ const cartItemSchema = new Schema<ICartItem>({
   product: {
     type: Types.ObjectId,
     ref: "Product",
+    required: [true, "Product is required"],
   },
   quantity: {
     type: Number,
     default: 1,
   },
-  color: String,
-  price: Number,
+  color: {
+    type: String,
+    required: [true, "Color is required"],
+  },
+  price: {
+    type: Number,
+    required: [true, "Price is required"],
+  },
 });
 
 cartItemSchema.plugin(toJSONPlugin);

@@ -1,6 +1,7 @@
 import { body, param } from "express-validator";
 import validatorMiddleware from "../middleware/validator.middleware.js";
 import Product from "../models/product.model.js";
+import Coupon from "../models/coupon.model.js";
 
 /**
  * Add Product to Cart Validator
@@ -103,7 +104,21 @@ export const applyCouponValidator = [
     .withMessage("Coupon code must be a string")
     .bail()
     .isLength({ min: 3, max: 50 })
-    .withMessage("Coupon code must be between 3 and 50 characters"),
+    .withMessage("Coupon code must be between 3 and 50 characters")
+    .bail()
+    .custom(async (couponName, { req }) => {
+      // #3: validate coupon existence & expiry here to avoid a second DB query in the service
+      const coupon = await Coupon.findOne({
+        name: { $regex: new RegExp(`^${couponName}$`, "i") },
+        expire: { $gt: new Date() },
+      });
+      if (!coupon) {
+        throw new Error("Coupon is invalid or expired");
+      }
+      // Store on req so the controller can pass it directly to the service
+      req.coupon = coupon;
+      return true;
+    }),
 
   validatorMiddleware,
 ];

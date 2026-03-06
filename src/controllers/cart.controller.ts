@@ -133,9 +133,8 @@ export const updateCartItemQuantity = asyncHandler(
  * @access  Private/User
  */
 export const applyCoupon = asyncHandler(async (req: Request, res: Response) => {
-  const { coupon } = req.body;
-
-  const cart = await applyCouponService(req.user!._id.toString(), coupon);
+  // Use the coupon object already fetched and validated in applyCouponValidator
+  const cart = await applyCouponService(req.user!._id.toString(), req.coupon!);
 
   res.status(200).json({
     status: true,

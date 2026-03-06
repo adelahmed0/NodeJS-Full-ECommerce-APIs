@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import asyncHandler from "express-async-handler";
 import User, { IUser } from "../models/user.model.js";
 import { IProduct } from "../models/product.model.js";
+import { ICoupon } from "../models/coupon.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { verifyToken } from "../utils/token.js";
 
@@ -15,6 +16,7 @@ declare global {
     interface Request {
       user?: IUser;
       product?: IProduct;
+      coupon?: ICoupon;
     }
   }
 }

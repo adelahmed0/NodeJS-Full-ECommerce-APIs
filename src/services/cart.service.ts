@@ -1,7 +1,7 @@
 import { ApiError } from "../utils/apiError.js";
 import Cart, { ICart } from "../models/cart.model.js";
 import Product from "../models/product.model.js";
-import Coupon from "../models/coupon.model.js";
+import { ICoupon } from "../models/coupon.model.js";
 import { Types } from "mongoose";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -60,13 +60,16 @@ export const addProductToCartService = async (
     if (productIndex > -1) {
       const cartItem = cart.cartItems[productIndex];
       // Check stock before incrementing
-      if (cartItem.quantity + 1 > product.quantity) {
+      if (cartItem.quantity + quantity > product.quantity) {
         throw new ApiError(
           `Only ${product.quantity} items available in stock`,
           400,
         );
       }
-      cartItem.quantity += 1;
+      // #1: increment by the requested quantity (not always 1)
+      cartItem.quantity += quantity;
+      // #6: sync price in case it changed since item was added
+      cartItem.price = product.price;
       cart.cartItems[productIndex] = cartItem;
     } else {
       cart.cartItems.push({
@@ -92,7 +95,9 @@ export const addProductToCartService = async (
 export const getLoggedUserCartService = async (userId: string) => {
   const cart = await Cart.findOne({
     user: new Types.ObjectId(userId),
-  }).populate("cartItems.product", "title imageCover price");
+  })
+    .populate("cartItems.product", "title imageCover price")
+    .populate("user", "name email");
   if (!cart) {
     throw new ApiError("Cart not found", 404);
   }
@@ -176,23 +181,10 @@ export const clearCartService = async (userId: string) => {
 };
 
 /**
- * Apply coupon on cart
+ * Apply coupon on cart — receives a pre-validated ICoupon object
+ * (fetched & validated in the validator layer to avoid a second DB query)
  */
-export const applyCouponService = async (
-  userId: string,
-  couponName: string,
-) => {
-  // 1- Get coupon based on coupon name
-  const coupon = await Coupon.findOne({
-    name: { $regex: new RegExp(`^${couponName}$`, "i") }, // case-insensitive
-    expire: { $gt: new Date() },
-  });
-
-  if (!coupon) {
-    throw new ApiError("Coupon is invalid or expired", 400);
-  }
-
-  // 2- Get logged user cart
+export const applyCouponService = async (userId: string, coupon: ICoupon) => {
   const cart = await Cart.findOne({ user: new Types.ObjectId(userId) });
 
   if (!cart) {
@@ -201,7 +193,7 @@ export const applyCouponService = async (
 
   const totalPrice = cart.totalPrice;
 
-  // 3- Calculate price after discount
+  // Calculate price after discount
   const totalPriceAfterDiscount = (
     totalPrice -
     (totalPrice * coupon.discount) / 100
