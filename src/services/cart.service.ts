@@ -105,7 +105,7 @@ export const addProductToCartService = async (
   calcTotalPrice(cart);
   await cart.save();
 
-  return cart.populate("cartItems.product", "title imageCover price");
+  return cart.populate("cartItems.product", "title imageCover");
 };
 
 /**
@@ -116,7 +116,7 @@ export const getLoggedUserCartService = async (userId: string) => {
   const cart = await Cart.findOne({
     user: new Types.ObjectId(userId),
   })
-    .populate("cartItems.product", "title imageCover price")
+    .populate("cartItems.product", "title imageCover")
     .populate("user", "name email");
   if (!cart) {
     throw new ApiError("Cart not found", 404);
@@ -148,7 +148,7 @@ export const removeCartItemService = async (userId: string, itemId: string) => {
   calcTotalPrice(cart);
   await cart.save();
 
-  return cart.populate("cartItems.product", "title imageCover price");
+  return cart.populate("cartItems.product", "title imageCover");
 };
 
 /**
@@ -191,7 +191,7 @@ export const updateCartItemQuantityService = async (
   calcTotalPrice(cart);
   await cart.save();
 
-  return cart.populate("cartItems.product", "title imageCover price");
+  return cart.populate("cartItems.product", "title imageCover");
 };
 
 /**
@@ -218,5 +218,5 @@ export const applyCouponService = async (userId: string, coupon: ICoupon) => {
   calcTotalPrice(cart);
   await cart.save();
 
-  return cart.populate("cartItems.product", "title imageCover price");
+  return cart.populate("cartItems.product", "title imageCover");
 };
