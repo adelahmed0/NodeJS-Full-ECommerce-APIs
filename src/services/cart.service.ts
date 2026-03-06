@@ -73,3 +73,15 @@ export const addProductToCartService = async (
 
   return cart;
 };
+
+/**
+ * Get logged user cart
+ */
+
+export const getLoggedUserCartService = async (userId: string) => {
+  const cart = await Cart.findOne({ user: new Types.ObjectId(userId) });
+  if (!cart) {
+    throw new ApiError("Cart not found", 404);
+  }
+  return cart;
+};
