@@ -98,3 +98,40 @@ export const getSpecificOrderService = factory.getOne<IOrder>(Order, [
     select: "title imageCover ratingsAverage price",
   },
 ]);
+
+/**
+ * @desc    Update order to paid
+ * @param   id
+ * @returns Success Order
+ */
+export const updateOrderToPaidService = async (id: string) => {
+  const order = await Order.findById(id);
+  if (!order) {
+    throw new ApiError(`There is no such order with id ${id}`, 404);
+  }
+
+  order.isPaid = true;
+  order.paidAt = new Date(Date.now());
+
+  const updatedOrder = await order.save();
+  return updatedOrder;
+};
+
+/**
+ * @desc    Update order to delivered
+ * @param   id
+ * @returns Success Order
+ */
+export const updateOrderToDeliveredService = async (id: string) => {
+  const order = await Order.findById(id);
+  if (!order) {
+    throw new ApiError(`There is no such order with id ${id}`, 404);
+  }
+
+  order.isDelivered = true;
+  order.deliveredAt = new Date(Date.now());
+  order.status = "delivered";
+
+  const updatedOrder = await order.save();
+  return updatedOrder;
+};

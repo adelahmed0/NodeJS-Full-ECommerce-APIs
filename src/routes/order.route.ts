@@ -3,6 +3,8 @@ import {
   createCashOrder,
   getAllOrders,
   getSpecificOrder,
+  updateOrderToDelivered,
+  updateOrderToPaid,
 } from "../controllers/order.controller.js";
 import { protect, allowedTo } from "../middleware/auth.middleware.js";
 import { filterOrderForLoggedUser } from "../services/order.service.js";
@@ -15,12 +17,15 @@ const parseOrderFormData = multer().none();
 
 router.use(protect);
 
+router.post("/:cartId", allowedTo("user"), parseOrderFormData, createCashOrder);
+
 router.get(
   "/",
   allowedTo("user", "admin"),
   filterOrderForLoggedUser,
   getAllOrders,
 );
+
 router.get(
   "/:id",
   allowedTo("user", "admin"),
@@ -28,6 +33,12 @@ router.get(
   getSpecificOrder,
 );
 
-router.post("/:cartId", allowedTo("user"), parseOrderFormData, createCashOrder);
+router.put("/:id/pay", allowedTo("admin"), updateOrderToPaid);
+
+router.put(
+  "/:id/deliver",
+  allowedTo("admin"),
+  updateOrderToDelivered,
+);
 
 export default router;
