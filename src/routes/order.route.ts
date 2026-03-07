@@ -38,6 +38,11 @@ router.put("/:id/pay", allowedTo("admin"), updateOrderToPaid);
 
 router.put("/:id/deliver", allowedTo("admin"), updateOrderToDelivered);
 
-router.put("/:id/status", allowedTo("admin", "manager"), updateOrderStatus);
+router.put(
+  "/:id/status",
+  allowedTo("admin"),
+  parseOrderFormData,
+  updateOrderStatus,
+);
 
 export default router;
