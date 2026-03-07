@@ -9,6 +9,13 @@ import {
 } from "../controllers/order.controller.js";
 import { protect, allowedTo } from "../middleware/auth.middleware.js";
 import { filterOrderForLoggedUser } from "../services/order.service.js";
+import {
+  createCashOrderValidator,
+  getSpecificOrderValidator,
+  updateOrderToDeliveredValidator,
+  updateOrderToPaidValidator,
+  updateOrderStatusValidator,
+} from "../validators/order.validator.js";
 import multer from "multer";
 
 const router: Router = express.Router();
@@ -18,7 +25,13 @@ const parseOrderFormData = multer().none();
 
 router.use(protect);
 
-router.post("/:cartId", allowedTo("user"), parseOrderFormData, createCashOrder);
+router.post(
+  "/:cartId",
+  allowedTo("user"),
+  parseOrderFormData,
+  createCashOrderValidator,
+  createCashOrder,
+);
 
 router.get(
   "/",
@@ -30,18 +43,30 @@ router.get(
 router.get(
   "/:id",
   allowedTo("user", "admin"),
+  getSpecificOrderValidator,
   filterOrderForLoggedUser,
   getSpecificOrder,
 );
 
-router.put("/:id/pay", allowedTo("admin"), updateOrderToPaid);
+router.put(
+  "/:id/pay",
+  allowedTo("admin", "manager"),
+  updateOrderToPaidValidator,
+  updateOrderToPaid,
+);
 
-router.put("/:id/deliver", allowedTo("admin"), updateOrderToDelivered);
+router.put(
+  "/:id/deliver",
+  allowedTo("admin", "manager"),
+  updateOrderToDeliveredValidator,
+  updateOrderToDelivered,
+);
 
 router.put(
   "/:id/status",
-  allowedTo("admin"),
+  allowedTo("admin", "manager"),
   parseOrderFormData,
+  updateOrderStatusValidator,
   updateOrderStatus,
 );
 
