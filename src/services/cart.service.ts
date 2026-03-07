@@ -119,9 +119,7 @@ export const getLoggedUserCartService = async (userId: string) => {
   })
     .populate("cartItems.product", "title imageCover")
     .populate("user", "name email");
-  if (!cart) {
-    throw new ApiError("Cart not found", 404);
-  }
+
   return cart;
 };
 

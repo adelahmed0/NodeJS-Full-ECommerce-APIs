@@ -47,8 +47,8 @@ export const getLoggedUserCart = asyncHandler(
     res.status(200).json({
       status: true,
       message: "Cart fetched successfully",
-      numOfCartItems: cart.cartItems.length,
-      data: cart,
+      numOfCartItems: cart ? cart.cartItems.length : 0,
+      data: cart || { cartItems: [], totalPrice: 0 },
     });
   },
 );
