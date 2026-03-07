@@ -1,4 +1,4 @@
-import Order, { IOrder } from "../models/order.model.js";
+import Order, { IOrder, OrderStatus } from "../models/order.model.js";
 import Cart from "../models/cart.model.js";
 import Product from "../models/product.model.js";
 import { ApiError } from "../utils/apiError.js";
@@ -130,7 +130,33 @@ export const updateOrderToDeliveredService = async (id: string) => {
 
   order.isDelivered = true;
   order.deliveredAt = new Date(Date.now());
-  order.status = "delivered";
+  order.status = OrderStatus.DELIVERED;
+
+  const updatedOrder = await order.save();
+  return updatedOrder;
+};
+
+/**
+ * @desc    Update order status
+ * @param   id
+ * @param   status
+ * @returns Success Order
+ */
+export const updateOrderStatusService = async (id: string, status: string) => {
+  const order = await Order.findById(id);
+  if (!order) {
+    throw new ApiError(`There is no such order with id ${id}`, 404);
+  }
+
+  // If status is delivered, update isDelivered and deliveredAt
+  if (status === OrderStatus.DELIVERED) {
+    order.isDelivered = true;
+    order.deliveredAt = new Date(Date.now());
+  }
+
+  // If status is paid, update isPaid and paidAt (optional, usually handled separately)
+  // However, here we just update the status field primarily
+  order.status = status as OrderStatus;
 
   const updatedOrder = await order.save();
   return updatedOrder;

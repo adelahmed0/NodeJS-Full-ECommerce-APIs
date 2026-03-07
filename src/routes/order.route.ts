@@ -5,6 +5,7 @@ import {
   getSpecificOrder,
   updateOrderToDelivered,
   updateOrderToPaid,
+  updateOrderStatus,
 } from "../controllers/order.controller.js";
 import { protect, allowedTo } from "../middleware/auth.middleware.js";
 import { filterOrderForLoggedUser } from "../services/order.service.js";
@@ -35,10 +36,8 @@ router.get(
 
 router.put("/:id/pay", allowedTo("admin"), updateOrderToPaid);
 
-router.put(
-  "/:id/deliver",
-  allowedTo("admin"),
-  updateOrderToDelivered,
-);
+router.put("/:id/deliver", allowedTo("admin"), updateOrderToDelivered);
+
+router.put("/:id/status", allowedTo("admin", "manager"), updateOrderStatus);
 
 export default router;

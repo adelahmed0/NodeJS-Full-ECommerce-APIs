@@ -1,6 +1,19 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 import { toJSONPlugin } from "../helpers/mongoosePlugins.js";
 
+export enum OrderStatus {
+  PENDING = "pending",
+  PROCESSING = "processing",
+  SHIPPED = "shipped",
+  DELIVERED = "delivered",
+  CANCELLED = "cancelled",
+}
+
+export enum PaymentMethod {
+  CASH = "cash",
+  CARD = "card",
+}
+
 export interface IOrder extends Document {
   user: Types.ObjectId;
   cartItems: {
@@ -18,12 +31,12 @@ export interface IOrder extends Document {
   taxPrice: number;
   shippingPrice: number;
   totalOrderPrice: number;
-  paymentMethod: "cash" | "card";
+  paymentMethod: PaymentMethod;
   isPaid: boolean;
   paidAt?: Date;
   isDelivered: boolean;
   deliveredAt?: Date;
-  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
+  status: OrderStatus;
 }
 
 const orderSchema = new Schema<IOrder>(
@@ -70,8 +83,8 @@ const orderSchema = new Schema<IOrder>(
     },
     paymentMethod: {
       type: String,
-      enum: ["cash", "card"],
-      default: "cash",
+      enum: Object.values(PaymentMethod),
+      default: PaymentMethod.CASH,
     },
     isPaid: {
       type: Boolean,
@@ -89,8 +102,8 @@ const orderSchema = new Schema<IOrder>(
     },
     status: {
       type: String,
-      enum: ["pending", "processing", "shipped", "delivered", "cancelled"],
-      default: "pending",
+      enum: Object.values(OrderStatus),
+      default: OrderStatus.PENDING,
     },
   },
   { timestamps: true },

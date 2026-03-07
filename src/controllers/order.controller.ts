@@ -6,6 +6,7 @@ import {
   getSpecificOrderService,
   updateOrderToDeliveredService,
   updateOrderToPaidService,
+  updateOrderStatusService,
 } from "../services/order.service.js";
 import { sendSuccessResponse } from "../utils/apiResponse.js";
 import * as factory from "./handlersFactory.controller.js";
@@ -78,6 +79,23 @@ export const updateOrderToDelivered = asyncHandler(
     const order = await updateOrderToDeliveredService(id as string);
     sendSuccessResponse(res, {
       message: "Order delivered successfully",
+      data: order,
+    });
+  },
+);
+
+/**
+ * @desc    Update order status
+ * @route   PUT /api/orders/:id/status
+ * @access  Protected/Admin-Manager
+ */
+export const updateOrderStatus = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { status } = req.body;
+    const order = await updateOrderStatusService(id as string, status);
+    sendSuccessResponse(res, {
+      message: `Order status updated to ${status} successfully`,
       data: order,
     });
   },
