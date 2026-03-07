@@ -8,9 +8,42 @@ import {
   updateOrderToPaidService,
   updateOrderStatusService,
   createStripeCheckoutSessionService,
+  stripe,
+  createCardOrderService,
 } from "../services/order.service.js";
 import { sendSuccessResponse } from "../utils/apiResponse.js";
 import * as factory from "./handlersFactory.controller.js";
+
+/**
+ * @desc    Webhook to handle stripe payment
+ * @route   POST /webhook
+ * @access  Public
+ */
+export const webhookCheckout = asyncHandler(
+  async (req: Request, res: Response) => {
+    const sig = req.headers["stripe-signature"] as string;
+
+    let event;
+
+    try {
+      event = stripe.webhooks.constructEvent(
+        req.body,
+        sig,
+        process.env.STRIPE_WEBHOOK_SECRET!,
+      );
+    } catch (err: any) {
+      res.status(400).send(`Webhook Error: ${err.message}`);
+      return;
+    }
+
+    if (event.type === "checkout.session.completed") {
+      // Create order
+      await createCardOrderService(event.data.object);
+    }
+
+    res.status(200).json({ received: true });
+  },
+);
 
 /**
  * @desc    create cash order

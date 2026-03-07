@@ -16,6 +16,8 @@ import globalError from "./middleware/globalError.middleware.js";
 
 import chalk from "chalk";
 
+import { webhookCheckout } from "./controllers/order.controller.js";
+
 const app: Application = express();
 const api = process.env.API_PREFIX || "/api";
 
@@ -31,6 +33,13 @@ const limiter = rateLimit({
 });
 
 app.use(`${api}`, limiter);
+
+// Checkout webhook
+app.post(
+  "/webhook",
+  express.raw({ type: "application/json" }),
+  webhookCheckout,
+);
 
 app.set("query parser", "extended");
 app.use(express.json());

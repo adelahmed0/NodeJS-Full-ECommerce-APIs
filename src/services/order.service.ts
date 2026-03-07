@@ -1,6 +1,7 @@
 import Order, { IOrder, OrderStatus } from "../models/order.model.js";
 import Cart from "../models/cart.model.js";
 import Product from "../models/product.model.js";
+import User from "../models/user.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { Types } from "mongoose";
 import * as factory from "./handlersFactory.service.js";
@@ -8,7 +9,7 @@ import { NextFunction, Request, Response } from "express";
 import asyncHandler from "express-async-handler";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2026-02-25.clover",
 });
 
@@ -220,4 +221,43 @@ export const createStripeCheckoutSessionService = async (
     metadata: shippingAddress as unknown as Stripe.MetadataParam,
   });
   return session;
+};
+
+export const createCardOrderService = async (session: any) => {
+  const cartId = session.client_reference_id;
+  const shippingAddress = session.metadata;
+  const orderPrice = session.amount_total / 100;
+
+  // 1) Get cart
+  const cart = await Cart.findById(cartId);
+  const user = await User.findOne({ email: session.customer_email });
+
+  if (!cart || !user) {
+    return;
+  }
+
+  // 2) Create order
+  const order = await Order.create({
+    user: user._id,
+    cartItems: cart.cartItems,
+    shippingAddress,
+    totalOrderPrice: orderPrice,
+    isPaid: true,
+    paidAt: new Date(),
+    paymentMethod: "card",
+  });
+
+  // 3) After creating order, decrement product quantity, increment product sold
+  if (order) {
+    const bulkOption = cart.cartItems.map((item) => ({
+      updateOne: {
+        filter: { _id: item.product },
+        update: { $inc: { quantity: -item.quantity, sold: +item.quantity } },
+      },
+    }));
+    await Product.bulkWrite(bulkOption, {});
+
+    // 4) Clear cart
+    await Cart.findByIdAndDelete(cartId);
+  }
 };
