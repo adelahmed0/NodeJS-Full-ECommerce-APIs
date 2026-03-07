@@ -47,6 +47,15 @@ export const createCashOrderService = async (
     await Product.bulkWrite(bulkOption, {});
     //  5 Clear cart depend on cartId
     await Cart.findByIdAndDelete(cartId);
+
+    // Populate order before returning
+    await order.populate([
+      { path: "user", select: "name email phone" },
+      {
+        path: "cartItems.product",
+        select: "title imageCover ratingsAverage price",
+      },
+    ]);
   }
   return order;
 };
@@ -65,11 +74,27 @@ export const filterOrderForLoggedUser = asyncHandler(
  * @param   res
  * @returns Success Order
  */
-export const getAllOrdersService = factory.getAll<IOrder>(Order);
+export const getAllOrdersService = factory.getAll<IOrder>(
+  Order,
+  ["shippingAddress.city", "totalOrderPrice"],
+  [
+    { path: "user", select: "name email phone" },
+    {
+      path: "cartItems.product",
+      select: "title imageCover ratingsAverage price",
+    },
+  ],
+);
 
 /**
  * @desc    Get specific order
  * @param   id
  * @returns Success Order
  */
-export const getSpecificOrderService = factory.getOne<IOrder>(Order);
+export const getSpecificOrderService = factory.getOne<IOrder>(Order, [
+  { path: "user", select: "name email phone" },
+  {
+    path: "cartItems.product",
+    select: "title imageCover ratingsAverage price",
+  },
+]);
