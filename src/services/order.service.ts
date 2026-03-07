@@ -1,4 +1,4 @@
-import Order from "../models/order.model.js";
+import Order, { IOrder } from "../models/order.model.js";
 import Cart from "../models/cart.model.js";
 import Product from "../models/product.model.js";
 import { ApiError } from "../utils/apiError.js";
@@ -51,16 +51,25 @@ export const createCashOrderService = async (
   return order;
 };
 
-export const filterOrderForLoggedUser = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-  if (req.user?.type === "user") {
-    req.filterObj = { user: req.user._id };
-  }
-  next();
-});
+export const filterOrderForLoggedUser = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    if (req.user?.type === "user") {
+      req.filterObj = { user: req.user._id };
+    }
+    next();
+  },
+);
 /**
  * @desc    Get all orders
  * @param   req
  * @param   res
  * @returns Success Order
  */
-export const getAllOrdersService = factory.getAll(Order);
+export const getAllOrdersService = factory.getAll<IOrder>(Order);
+
+/**
+ * @desc    Get specific order
+ * @param   id
+ * @returns Success Order
+ */
+export const getSpecificOrderService = factory.getOne<IOrder>(Order);

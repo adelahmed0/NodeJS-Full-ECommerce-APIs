@@ -2,6 +2,7 @@ import express, { Router } from "express";
 import {
   createCashOrder,
   getAllOrders,
+  getSpecificOrder,
 } from "../controllers/order.controller.js";
 import { protect, allowedTo } from "../middleware/auth.middleware.js";
 import { filterOrderForLoggedUser } from "../services/order.service.js";
@@ -20,6 +21,7 @@ router.get(
   filterOrderForLoggedUser,
   getAllOrders,
 );
+router.get("/:id", allowedTo("user", "admin"), getSpecificOrder);
 
 router.post("/:cartId", allowedTo("user"), parseOrderFormData, createCashOrder);
 

@@ -3,6 +3,7 @@ import asyncHandler from "express-async-handler";
 import {
   createCashOrderService,
   getAllOrdersService,
+  getSpecificOrderService,
 } from "../services/order.service.js";
 import { sendSuccessResponse } from "../utils/apiResponse.js";
 import * as factory from "./handlersFactory.controller.js";
@@ -37,3 +38,13 @@ export const createCashOrder = asyncHandler(
  * @access  Protected/User-Admin
  */
 export const getAllOrders = factory.getAll(getAllOrdersService, "Order");
+
+/**
+ * @desc    Get specific order
+ * @route   GET /api/orders/:id
+ * @access  Protected/User-Admin
+ */
+export const getSpecificOrder = factory.getOne(
+  getSpecificOrderService,
+  "Order",
+);
