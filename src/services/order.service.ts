@@ -6,6 +6,19 @@ import { Types } from "mongoose";
 import * as factory from "./handlersFactory.service.js";
 import { NextFunction, Request, Response } from "express";
 import asyncHandler from "express-async-handler";
+import Stripe from "stripe";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: "2026-02-25.clover",
+});
+
+interface ShippingAddress {
+  details?: string;
+  phone: string;
+  city: string;
+  postalCode?: string;
+}
+
 /**
  * @desc    Create cash order
  * @param   userId
@@ -15,7 +28,7 @@ import asyncHandler from "express-async-handler";
 export const createCashOrderService = async (
   userId: string,
   cartId: string,
-  shippingAddress: any,
+  shippingAddress: ShippingAddress,
 ) => {
   const taxPrice = 0;
   const shippingPrice = 0;
@@ -160,4 +173,51 @@ export const updateOrderStatusService = async (id: string, status: string) => {
 
   const updatedOrder = await order.save();
   return updatedOrder;
+};
+
+// @desc    Create Stripe checkout session
+// @route   POST /api/orders/checkout-session/:cartId
+// @access  Protected/User
+export const createStripeCheckoutSessionService = async (
+  userEmail: string,
+  cartId: string,
+  shippingAddress: ShippingAddress,
+  successUrl: string,
+  cancelUrl: string,
+) => {
+  const taxPrice = 0;
+  const shippingPrice = 0;
+
+  // 1. Get cart
+  const cart = await Cart.findById(cartId).populate("cartItems.product");
+  if (!cart) {
+    throw new ApiError(`There is no such cart with id ${cartId}`, 404);
+  }
+
+  // 2. Calculate total price
+  const cartPrice = cart.totalPriceAfterDiscount
+    ? cart.totalPriceAfterDiscount
+    : cart.totalPrice;
+  const totalOrderPrice = cartPrice + taxPrice + shippingPrice;
+
+  // 3. Create Stripe checkout session
+  const session = await stripe.checkout.sessions.create({
+    line_items: cart.cartItems.map((item: any) => ({
+      price_data: {
+        currency: "egp",
+        product_data: {
+          name: item.product.title,
+        },
+        unit_amount: item.price * 100,
+      },
+      quantity: item.quantity,
+    })),
+    mode: "payment",
+    success_url: successUrl,
+    cancel_url: cancelUrl,
+    customer_email: userEmail,
+    client_reference_id: cartId,
+    metadata: shippingAddress as unknown as Stripe.MetadataParam,
+  });
+  return session;
 };
