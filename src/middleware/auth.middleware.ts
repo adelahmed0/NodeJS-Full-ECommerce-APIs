@@ -17,6 +17,7 @@ declare global {
       user?: IUser;
       product?: IProduct;
       coupon?: ICoupon;
+      filterObj?: any;
     }
   }
 }

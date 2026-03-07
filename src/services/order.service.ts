@@ -3,7 +3,9 @@ import Cart from "../models/cart.model.js";
 import Product from "../models/product.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { Types } from "mongoose";
-
+import * as factory from "./handlersFactory.service.js";
+import { NextFunction, Request, Response } from "express";
+import asyncHandler from "express-async-handler";
 /**
  * @desc    Create cash order
  * @param   userId
@@ -48,3 +50,17 @@ export const createCashOrderService = async (
   }
   return order;
 };
+
+export const filterOrderForLoggedUser = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+  if (req.user?.type === "user") {
+    req.filterObj = { user: req.user._id };
+  }
+  next();
+});
+/**
+ * @desc    Get all orders
+ * @param   req
+ * @param   res
+ * @returns Success Order
+ */
+export const getAllOrdersService = factory.getAll(Order);

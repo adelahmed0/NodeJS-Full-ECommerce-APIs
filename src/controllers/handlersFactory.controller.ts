@@ -112,10 +112,11 @@ export const getAll = <T>(
 ): RequestHandler<any, any, any> => {
   return asyncHandler(async (req, res) => {
     // Nested router filter
-    let filterObj = {};
-    if (req.params.categoryId) filterObj = { category: req.params.categoryId };
+    let filterObj: any = req.filterObj || {};
+    if (req.params.categoryId)
+      filterObj = { ...filterObj, category: req.params.categoryId };
     else if (req.params.productId)
-      filterObj = { product: req.params.productId };
+      filterObj = { ...filterObj, product: req.params.productId };
 
     const { documents, pagination } = await serviceFunction(
       req.query,
