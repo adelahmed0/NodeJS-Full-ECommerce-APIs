@@ -6,6 +6,7 @@ import {
   updateOrderToDelivered,
   updateOrderToPaid,
   updateOrderStatus,
+  checkoutSession,
 } from "../controllers/order.controller.js";
 import { protect, allowedTo } from "../middleware/auth.middleware.js";
 import { filterOrderForLoggedUser } from "../services/order.service.js";
@@ -24,6 +25,8 @@ const router: Router = express.Router();
 const parseOrderFormData = multer().none();
 
 router.use(protect);
+
+router.get("/checkout-session/:cartId", allowedTo("user"),parseOrderFormData, checkoutSession);
 
 router.post(
   "/:cartId",

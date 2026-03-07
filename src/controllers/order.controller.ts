@@ -7,6 +7,7 @@ import {
   updateOrderToDeliveredService,
   updateOrderToPaidService,
   updateOrderStatusService,
+  createStripeCheckoutSessionService,
 } from "../services/order.service.js";
 import { sendSuccessResponse } from "../utils/apiResponse.js";
 import * as factory from "./handlersFactory.controller.js";
@@ -31,6 +32,34 @@ export const createCashOrder = asyncHandler(
       message: "Order created successfully",
       data: order,
       statusCode: 201,
+    });
+  },
+);
+
+/**
+ * @desc    Get checkout session from stripe and send it as response
+ * @route   GET /api/orders/checkout-session/:cartId
+ * @access  Protected/User
+ */
+export const checkoutSession = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { cartId } = req.params;
+    const { shippingAddress } = req.body;
+
+    const successUrl = `${req.protocol}://${req.get("host")}/orders`;
+    const cancelUrl = `${req.protocol}://${req.get("host")}/cart`;
+
+    const session = await createStripeCheckoutSessionService(
+      req.user!.email!,
+      cartId as string,
+      shippingAddress,
+      successUrl,
+      cancelUrl,
+    );
+
+    sendSuccessResponse(res, {
+      message: "Checkout session created successfully",
+      data: session,
     });
   },
 );

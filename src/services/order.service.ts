@@ -176,7 +176,7 @@ export const updateOrderStatusService = async (id: string, status: string) => {
 };
 
 // @desc    Create Stripe checkout session
-// @route   POST /api/orders/checkout-session/:cartId
+// @route   GET /api/orders/checkout-session/:cartId
 // @access  Protected/User
 export const createStripeCheckoutSessionService = async (
   userEmail: string,
