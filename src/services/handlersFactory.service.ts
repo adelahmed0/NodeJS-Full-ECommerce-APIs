@@ -97,8 +97,8 @@ export const getOne = <T>(
   Model: Model<T>,
   populationOpts?: string | PopulateOptions | (string | PopulateOptions)[],
 ) => {
-  return async (id: string) => {
-    let query = Model.findById(id);
+  return async (id: string, filterObj: any = {}) => {
+    let query = Model.findOne({ _id: id, ...filterObj });
 
     if (populationOpts) {
       query = query.populate(populationOpts as any);

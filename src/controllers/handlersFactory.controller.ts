@@ -80,12 +80,12 @@ export const updateOne = <T, B = any>(
  * @param modelName - Name of the model (for response message)
  */
 export const getOne = <T>(
-  serviceFunction: (id: string) => Promise<T | null>,
+  serviceFunction: (id: string, filterObj?: any) => Promise<T | null>,
   modelName: string,
 ): RequestHandler<{ id: string }, IApiResponse<T>> => {
   return asyncHandler(async (req, res, next) => {
     const { id } = req.params;
-    const document = await serviceFunction(id);
+    const document = await serviceFunction(id, req.filterObj);
 
     if (!document) {
       return next(new ApiError(`${modelName} not found`, 404));

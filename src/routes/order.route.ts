@@ -21,7 +21,12 @@ router.get(
   filterOrderForLoggedUser,
   getAllOrders,
 );
-router.get("/:id", allowedTo("user", "admin"), getSpecificOrder);
+router.get(
+  "/:id",
+  allowedTo("user", "admin"),
+  filterOrderForLoggedUser,
+  getSpecificOrder,
+);
 
 router.post("/:cartId", allowedTo("user"), parseOrderFormData, createCashOrder);
 
