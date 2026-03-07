@@ -123,7 +123,7 @@ export const getAll = <T>(
       filterObj,
     );
     sendPaginatedResponse(res, {
-      message: `${modelName}s fetched successfully`,
+      message: `${modelName} fetched successfully`,
       data: documents,
       pagination,
     });

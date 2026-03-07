@@ -33,7 +33,7 @@ export const createCategory = factory.createOne<
  */
 export const getAllCategories = factory.getAll<ICategory>(
   getAllCategoriesService,
-  "Category",
+  "Categories",
 );
 
 /**

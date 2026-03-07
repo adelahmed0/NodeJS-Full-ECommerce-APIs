@@ -20,7 +20,7 @@ import * as factory from "./handlersFactory.controller.js";
  */
 export const createCoupon = factory.createOne<ICoupon, Partial<ICoupon>>(
   createCouponService,
-  "Coupon",
+  "Coupons",
 );
 
 /**

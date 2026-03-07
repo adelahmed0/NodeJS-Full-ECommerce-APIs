@@ -33,7 +33,7 @@ export const createProduct = factory.createOne<IProduct, Partial<IProduct>>(
  */
 export const getAllProducts = factory.getAll<IProduct>(
   getAllProductsService,
-  "Product",
+  "Products",
 );
 
 /**

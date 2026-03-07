@@ -39,7 +39,7 @@ export const createSubCategory = factory.createOne<
  */
 export const getAllSubCategories = factory.getAll<ISubCategory>(
   getAllSubCategoriesService,
-  "SubCategory",
+  "SubCategories",
 );
 
 /**

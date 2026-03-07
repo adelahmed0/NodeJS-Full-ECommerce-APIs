@@ -50,7 +50,7 @@ export const createUser = factory.createOne<IUser, Partial<IUser>>(
  * @route   GET /api/users
  * @access  Private/Admin
  */
-export const getAllUsers = factory.getAll<IUser>(getAllUsersService, "User");
+export const getAllUsers = factory.getAll<IUser>(getAllUsersService, "Users");
 
 /**
  * @desc    Get user by ID

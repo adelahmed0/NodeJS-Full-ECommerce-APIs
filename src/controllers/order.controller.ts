@@ -40,7 +40,7 @@ export const createCashOrder = asyncHandler(
  * @route   GET /api/orders
  * @access  Protected/User-Admin
  */
-export const getAllOrders = factory.getAll(getAllOrdersService, "Order");
+export const getAllOrders = factory.getAll(getAllOrdersService, "Orders");
 
 /**
  * @desc    Get specific order

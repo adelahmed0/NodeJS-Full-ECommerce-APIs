@@ -33,7 +33,7 @@ export const createBrand = factory.createOne<
  */
 export const getAllBrands = factory.getAll<IBrand>(
   getAllBrandsService,
-  "Brand",
+  "Brands",
 );
 
 /**

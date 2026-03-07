@@ -40,7 +40,7 @@ export const createReview = async (req: any, res: any, next: any) => {
  */
 export const getAllReviews = factory.getAll<IReview>(
   getAllReviewsService,
-  "Review",
+  "Reviews",
 );
 
 /**
