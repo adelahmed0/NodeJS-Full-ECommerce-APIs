@@ -22,6 +22,23 @@ interface ShippingAddress {
 }
 
 /**
+ * Helper to handle shared post-order tasks like stock updates and cart cleanup.
+ */
+const handlePostOrderExecution = async (cart: any, cartId: string) => {
+  // 1) Atomically decrement stock and increment 'sold' count
+  const bulkOption = cart.cartItems.map((item: any) => ({
+    updateOne: {
+      filter: { _id: item.product },
+      update: { $inc: { quantity: -item.quantity, sold: +item.quantity } },
+    },
+  }));
+  await Product.bulkWrite(bulkOption, {});
+
+  // 2) Clean up: Delete the cart
+  await Cart.findByIdAndDelete(cartId);
+};
+
+/**
  * Handle the logic for creating an order with Cash on Delivery
  * @param userId - ID of the user placing the order
  * @param cartId - ID of the source shopping cart
@@ -36,37 +53,39 @@ export const createCashOrderService = async (
   const shippingPrice = 0;
 
   // 1) Retrieve the cart and verify its existence
-  const cart = await Cart.findById(cartId);
+  const cart = await Cart.findById(cartId).populate("cartItems.product");
   if (!cart) {
     throw new ApiError(`There is no such cart with id ${cartId}`, 404);
   }
 
-  // 2) Determine the order price (prioritize discounted price if available)
+  // 2) Prepare cart items with snapshots (title, image)
+  const cartItemsSnapshots = cart.cartItems.map((item: any) => ({
+    product: item.product._id,
+    quantity: item.quantity,
+    color: item.color,
+    price: item.price,
+    title: item.product.title,
+    imageCover: item.product.imageCover,
+  }));
+
+  // 3) Determine the order price (prioritize discounted price if available)
   const cartPrice = cart.totalPriceAfterDiscount
     ? cart.totalPriceAfterDiscount
     : cart.totalPrice;
   const totalOrderPrice = cartPrice + taxPrice + shippingPrice;
 
-  // 3) Create the Order document (default payment method is 'cash')
+  // 4) Create the Order document (default payment method is 'cash')
   const order = await Order.create({
     user: new Types.ObjectId(userId),
-    cartItems: cart.cartItems,
+    cartItems: cartItemsSnapshots,
     shippingAddress,
     totalOrderPrice,
+    statusHistory: [{ status: OrderStatus.PENDING }],
   });
 
   if (order) {
-    // 4) Atomically decrement stock and increment 'sold' count for all ordered items
-    const bulkOption = cart.cartItems.map((item) => ({
-      updateOne: {
-        filter: { _id: item.product },
-        update: { $inc: { quantity: -item.quantity, sold: +item.quantity } },
-      },
-    }));
-    await Product.bulkWrite(bulkOption, {});
-
-    // 5) Clean up: Delete the cart as it has been successfully converted to an order
-    await Cart.findByIdAndDelete(cartId);
+    // 4) Execute post-order tasks (Stock update and Cart deletion)
+    await handlePostOrderExecution(cart, cartId);
 
     // Re-populate the order for the API response
     await order.populate([
@@ -147,6 +166,10 @@ export const updateOrderToDeliveredService = async (id: string) => {
   order.isDelivered = true;
   order.deliveredAt = new Date(Date.now());
   order.status = OrderStatus.DELIVERED;
+  order.statusHistory?.push({
+    status: OrderStatus.DELIVERED,
+    timestamp: new Date(),
+  });
 
   const updatedOrder = await order.save();
   return updatedOrder;
@@ -170,6 +193,10 @@ export const updateOrderStatusService = async (id: string, status: string) => {
   }
 
   order.status = status as OrderStatus;
+  order.statusHistory?.push({
+    status: status as OrderStatus,
+    timestamp: new Date(),
+  });
 
   const updatedOrder = await order.save();
   return updatedOrder;
@@ -236,31 +263,39 @@ export const createCardOrderService = async (session: any) => {
   const user = await User.findOne({ email: session.customer_email });
 
   if (!cart || !user) {
-    return; // Exit silently (webhook will retry or fail based on HTTP code)
+    console.error(
+      `[Stripe Webhook Error]: Cart (${cartId}) or User (${session.customer_email}) not found. Order creation skipped.`,
+    );
+    return;
   }
 
   // 2) Persist the new order as 'Paid' because credit card was processed
+  const populatedCart = await cart.populate("cartItems.product");
+  const cartItemsSnapshots = populatedCart.cartItems.map((item: any) => ({
+    product: item.product._id,
+    quantity: item.quantity,
+    color: item.color,
+    price: item.price,
+    title: item.product.title,
+    imageCover: item.product.imageCover,
+  }));
+
   const order = await Order.create({
     user: user._id,
-    cartItems: cart.cartItems,
+    cartItems: cartItemsSnapshots,
     shippingAddress,
     totalOrderPrice: orderPrice,
     isPaid: true,
     paidAt: new Date(),
     paymentMethod: "card",
+    statusHistory: [{ status: OrderStatus.PENDING }],
   });
 
   // 3) Finalize stock updates and inventory cleanup
   if (order) {
-    const bulkOption = cart.cartItems.map((item) => ({
-      updateOne: {
-        filter: { _id: item.product },
-        update: { $inc: { quantity: -item.quantity, sold: +item.quantity } },
-      },
-    }));
-    await Product.bulkWrite(bulkOption, {});
-
-    // Delete the cart
-    await Cart.findByIdAndDelete(cartId);
+    await handlePostOrderExecution(cart, cartId);
+    console.info(
+      `[Order Success]: Card order ${order._id} created via Stripe Webhook.`,
+    );
   }
 };

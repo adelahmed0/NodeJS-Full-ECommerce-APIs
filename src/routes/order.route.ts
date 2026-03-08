@@ -33,13 +33,14 @@ router.use(protect);
 
 /**
  * @desc    Initiate a Stripe Checkout session for card payments
- * @route   GET /api/orders/checkout-session/:cartId
+ * @route   POST /api/orders/checkout-session/:cartId
  * @access  Private/User
  */
-router.get(
+router.post(
   "/checkout-session/:cartId",
   allowedTo("user"),
   parseOrderFormData,
+  createCashOrderValidator,
   checkoutSession,
 );
 

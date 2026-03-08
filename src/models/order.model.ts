@@ -30,6 +30,8 @@ export interface IOrder extends Document {
     quantity: number;
     color: string;
     price: number;
+    title: string;
+    imageCover: string;
   }[];
   shippingAddress: {
     details?: string;
@@ -46,6 +48,10 @@ export interface IOrder extends Document {
   isDelivered: boolean;
   deliveredAt?: Date;
   status: OrderStatus;
+  statusHistory?: {
+    status: OrderStatus;
+    timestamp: Date;
+  }[];
 }
 
 /**
@@ -69,6 +75,8 @@ const orderSchema = new Schema<IOrder>(
         quantity: Number,
         color: String,
         price: Number,
+        title: String,
+        imageCover: String,
       },
     ],
     // Delivery destination
@@ -124,6 +132,13 @@ const orderSchema = new Schema<IOrder>(
       enum: Object.values(OrderStatus),
       default: OrderStatus.PENDING,
     },
+    // Track every status change
+    statusHistory: [
+      {
+        status: { type: String, enum: Object.values(OrderStatus) },
+        timestamp: { type: Date, default: Date.now },
+      },
+    ],
   },
   { timestamps: true },
 );
