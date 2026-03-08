@@ -1,5 +1,6 @@
 import express, { Application, Request, Response, NextFunction } from "express";
 import helmet from "helmet";
+import compression from "compression";
 import { rateLimit } from "express-rate-limit";
 import cors from "cors";
 import morgan from "morgan";
@@ -22,6 +23,7 @@ const app: Application = express();
 const api = process.env.API_PREFIX || "/api";
 
 app.use(helmet());
+app.use(compression());
 
 // Global Rate Limiting
 const limiter = rateLimit({
