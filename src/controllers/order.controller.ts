@@ -50,7 +50,7 @@ export const webhookCheckout = asyncHandler(
 
 /**
  * @desc    Create a new cash-on-delivery order
- * @route   POST /api/orders/:cartId
+ * @route   POST /api/orders/cash/:cartId
  * @access  Protected/User
  */
 export const createCashOrder = asyncHandler(
@@ -121,16 +121,16 @@ export const getSpecificOrder = factory.getOne(
 );
 
 /**
- * @desc    Update order payment status to 'Paid' manually (e.g., for Cash on Delivery)
- * @route   PUT /api/orders/:id/pay
- * @access  Protected/Admin-Manager
+ * @desc    Update order payment status to 'Paid' manually (for Cash on Delivery)
+ * @route   PUT /api/orders/:id/pay-cash
+ * @access  Protected/Admin
  */
 export const updateOrderToPaid = asyncHandler(
   async (req: Request, res: Response) => {
     const { id } = req.params;
     const order = await updateOrderToPaidService(id as string);
     sendSuccessResponse(res, {
-      message: "Order paid successfully",
+      message: "Order paid successfully manually",
       data: order,
     });
   },

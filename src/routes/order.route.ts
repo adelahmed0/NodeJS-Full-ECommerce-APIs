@@ -48,11 +48,11 @@ router.post(
 
 /**
  * @desc    Submit a cash-on-delivery order
- * @route   POST /api/orders/:cartId
+ * @route   POST /api/orders/cash/:cartId
  * @access  Private/User
  */
 router.post(
-  "/:cartId",
+  "/cash/:cartId",
   allowedTo("user"),
   parseOrderFormData,
   createCashOrderValidator,
@@ -123,11 +123,11 @@ router.put(
 
 /**
  * @desc    Cancel an order and restore stock
- * @route   PUT /api/orders/:id/cancel
+ * @route   PUT /api/orders/cancel/:id
  * @access  Private/Admin
  */
 router.put(
-  "/:id/cancel",
+  "/cancel/:id",
   allowedTo("admin"),
   cancelOrderValidator,
   cancelOrder,
