@@ -53,10 +53,10 @@ app.post(
 // 3) BODY PARSERS
 // Parse query strings and JSON/URL-encoded data
 app.set("query parser", "extended");
-app.use(express.json());
+app.use(express.json({ limit: "20kb" }));
 // Serve static files from the uploads directory
 app.use(express.static(path.join(__dirname, "uploads")));
-app.use(express.urlencoded({ extended: true, limit: "10kb" }));
+app.use(express.urlencoded({ extended: true, limit: "20kb" }));
 
 // 4) LOGGING (Development only)
 if (process.env.NODE_ENV === "development") {
