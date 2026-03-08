@@ -52,6 +52,7 @@ export interface IOrder extends Document {
     status: OrderStatus;
     timestamp: Date;
   }[];
+  stripeSessionId?: string;
 }
 
 /**
@@ -139,6 +140,11 @@ const orderSchema = new Schema<IOrder>(
         timestamp: { type: Date, default: Date.now },
       },
     ],
+    stripeSessionId: {
+      type: String,
+      unique: true,
+      sparse: true, // Only for card orders
+    },
   },
   { timestamps: true },
 );

@@ -52,13 +52,29 @@ export const createCashOrderService = async (
   const taxPrice = 0;
   const shippingPrice = 0;
 
-  // 1) Retrieve the cart and verify its existence
-  const cart = await Cart.findById(cartId).populate("cartItems.product");
+  // 1) Retrieve the cart and verify its existence and ownership
+  const cart = await Cart.findOne({ _id: cartId, user: userId }).populate(
+    "cartItems.product",
+  );
   if (!cart) {
-    throw new ApiError(`There is no such cart with id ${cartId}`, 404);
+    throw new ApiError(
+      `There is no such cart with id ${cartId} for this user`,
+      404,
+    );
   }
 
-  // 2) Prepare cart items with snapshots (title, image)
+  // 2) Verify stock availability for all items before proceeding
+  for (const item of cart.cartItems) {
+    const product = item.product as any;
+    if (product.quantity < item.quantity) {
+      throw new ApiError(
+        `Not enough stock for product: ${product.title}. Available: ${product.quantity}, Requested: ${item.quantity}`,
+        400,
+      );
+    }
+  }
+
+  // 3) Prepare cart items with snapshots (title, image)
   const cartItemsSnapshots = cart.cartItems.map((item: any) => ({
     product: item.product._id,
     quantity: item.quantity,
@@ -263,10 +279,24 @@ export const createStripeCheckoutSessionService = async (
   const taxPrice = 0;
   const shippingPrice = 0;
 
-  // 1) Verify cart and source prices
-  const cart = await Cart.findById(cartId).populate("cartItems.product");
+  // 1) Verify cart existence, ownership and stock availability
+  const cart = await Cart.findOne({
+    _id: cartId,
+    user: (await User.findOne({ email: userEmail }))?._id,
+  }).populate("cartItems.product");
   if (!cart) {
-    throw new ApiError(`There is no such cart with id ${cartId}`, 404);
+    throw new ApiError(
+      `There is no such cart with id ${cartId} for this user`,
+      404,
+    );
+  }
+
+  // Check stock before creating session
+  for (const item of cart.cartItems) {
+    const product = item.product as any;
+    if (product.quantity < item.quantity) {
+      throw new ApiError(`Not enough stock for product: ${product.title}`, 400);
+    }
   }
 
   const cartPrice = cart.totalPriceAfterDiscount
@@ -305,9 +335,19 @@ export const createCardOrderService = async (session: any) => {
   const cartId = session.client_reference_id;
   const shippingAddress = session.metadata;
   const orderPrice = session.amount_total / 100;
+  const sessionId = session.id;
 
-  // 1) Find the transient cart and the user
-  const cart = await Cart.findById(cartId);
+  // 1) Idempotency Check: Prevent duplicate orders if Stripe sends webhook twice
+  const existingOrder = await Order.findOne({ stripeSessionId: sessionId });
+  if (existingOrder) {
+    console.info(
+      `[Webhook Notice]: Order for session ${sessionId} already exists. Skipping.`,
+    );
+    return;
+  }
+
+  // 2) Find the transient cart and the user
+  const cart = await Cart.findById(cartId).populate("cartItems.product");
   const user = await User.findOne({ email: session.customer_email });
 
   if (!cart || !user) {
@@ -317,9 +357,19 @@ export const createCardOrderService = async (session: any) => {
     return;
   }
 
-  // 2) Persist the new order as 'Paid' because credit card was processed
-  const populatedCart = await cart.populate("cartItems.product");
-  const cartItemsSnapshots = populatedCart.cartItems.map((item: any) => ({
+  // 3) Safety Check: Verify stock one last time before creating order (Rare race condition guard)
+  for (const item of cart.cartItems) {
+    const product = item.product as any;
+    if (product.quantity < item.quantity) {
+      console.error(
+        `[Webhook Critical]: Stock ran out for ${product.title} before payment finalization.`,
+      );
+      // We should still create order since payment is done, but log critical inventory failure
+    }
+  }
+
+  // 4) Persist the new order as 'Paid'
+  const cartItemsSnapshots = cart.cartItems.map((item: any) => ({
     product: item.product._id,
     quantity: item.quantity,
     color: item.color,
@@ -336,7 +386,8 @@ export const createCardOrderService = async (session: any) => {
     isPaid: true,
     paidAt: new Date(),
     paymentMethod: "card",
-    status: OrderStatus.PROCESSING, // Explicitly set to processing after payment
+    stripeSessionId: sessionId, // Store session ID to prevent duplicate creation
+    status: OrderStatus.PROCESSING,
     statusHistory: [
       { status: OrderStatus.PENDING, timestamp: new Date() },
       { status: OrderStatus.PROCESSING, timestamp: new Date() },
