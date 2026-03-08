@@ -1,21 +1,31 @@
+/**
+ * Password Utility
+ * Provides asynchronous functions for secure password hashing and comparison using bcrypt.
+ */
 import bcrypt from "bcryptjs";
 
 /**
- * Hash a plain text password
- * @param password The plain text password to hash
- * @param saltRounds Number of salt rounds (default: 12)
- * @returns The hashed password
+ * Generates a secure hash for a plain text password.
+ * Uses bcrypt's salt-based hashing to prevent rainbow table attacks.
+ *
+ * @param password - The plain text password string to be hashed
+ * @param saltRounds - The cost factor (log2 iterations). Default is 12 for a good balance between security and performance.
+ * @returns A promise that resolves to the final hashed password string.
  */
-export const hashPassword = async (password: string, saltRounds: number = 12) =>
-  await bcrypt.hash(password, saltRounds);
+export const hashPassword = async (
+  password: string,
+  saltRounds: number = 12,
+): Promise<string> => await bcrypt.hash(password, saltRounds);
 
 /**
- * Compare a plain text password with a hashed password
- * @param password The plain text password
- * @param hashedPassword The hashed password to compare against
- * @returns Promise<boolean> indicating if they match
+ * Validates a plain text password against a stored hash.
+ * This comparison is timing-attack safe.
+ *
+ * @param password - The plain text password provided by the user during login
+ * @param hashedPassword - The previously generated hash stored in the database
+ * @returns A promise that resolves to a boolean (true if the password matches the hash, false otherwise).
  */
 export const comparePassword = async (
   password: string,
   hashedPassword: string,
-) => await bcrypt.compare(password, hashedPassword);
+): Promise<boolean> => await bcrypt.compare(password, hashedPassword);

@@ -6,11 +6,17 @@ import { ICoupon } from "../models/coupon.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { verifyToken } from "../utils/token.js";
 
+/**
+ * Expected JWT Payload structure
+ */
 interface DecodedPayload {
   userId: string;
   iat: number;
 }
 
+/**
+ * Extending Express Request interface to include custom properties
+ */
 declare global {
   namespace Express {
     interface Request {
@@ -23,11 +29,15 @@ declare global {
 }
 
 /**
- * @desc    Middleware to protect routes - Check if user is authenticated
+ * @desc    Middleware to protect routes - Authenticates the user via JWT
+ * 1) Checks Authorization header for Bearer token
+ * 2) Verifies the token
+ * 3) Checks if user still exists and is active
+ * 4) Checks if password was changed after token issuance
  */
 export const protect = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
-    // 1) Check if token exists in headers
+    // 1) Extract token from Authorization header
     let token: string | undefined;
     if (
       req.headers.authorization &&
@@ -40,10 +50,10 @@ export const protect = asyncHandler(
       return next(new ApiError("Not authorized, please login again", 401));
     }
 
-    // 2) Verify token (Check if not expired or manipulated)
+    // 2) Verify token integrity and expiration
     const decoded = verifyToken(token) as DecodedPayload;
 
-    // 3) Check if user still exists
+    // 3) Verify the user associated with the token exists in DB
     const currentUser = await User.findById(decoded.userId);
     if (!currentUser) {
       return next(
@@ -51,7 +61,7 @@ export const protect = asyncHandler(
       );
     }
 
-    // 4) Check if user is active
+    // 4) Ensure account is active
     if (currentUser.status !== "active") {
       return next(
         new ApiError(
@@ -61,7 +71,7 @@ export const protect = asyncHandler(
       );
     }
 
-    // 5) Check if user changed password after token was created
+    // 5) Security check: If password was changed after JWT was issued, invalidate token
     if (currentUser.passwordChangedAt) {
       const changedTimestamp = Math.floor(
         currentUser.passwordChangedAt.getTime() / 1000,
@@ -76,21 +86,24 @@ export const protect = asyncHandler(
       }
     }
 
-    // 6) Grant access to protected route
+    // 6) Store user in request object for use in subsequent controllers
     req.user = currentUser;
     next();
   },
 );
 
 /**
- * @desc    Middleware to restrict access to specific roles
+ * @desc    Authorization Middleware - Limits access based on user roles (e.g., admin, user)
+ * @param   roles  List of allowed roles
  */
 export const allowedTo = (...roles: string[]) =>
   asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    // Ensure user is already authenticated by 'protect' middleware
     if (!req.user) {
       return next(new ApiError("Not authorized, please login again", 401));
     }
 
+    // Check if user's role is in the allowed list
     const hasRole = roles.includes(req.user.type);
 
     if (!hasRole) {

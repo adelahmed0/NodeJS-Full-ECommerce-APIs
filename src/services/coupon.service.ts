@@ -2,26 +2,27 @@ import Coupon, { ICoupon } from "../models/coupon.model.js";
 import * as factory from "./handlersFactory.service.js";
 
 /**
- * Create a new coupon
+ * Service to register a new discount coupon.
  */
 export const createCouponService = factory.createOne<ICoupon>(Coupon);
 
 /**
- * Get all coupons
+ * Service to fetch all available coupons.
+ * Supports searching by coupon name.
  */
 export const getAllCouponsService = factory.getAll(Coupon, ["name"]);
 
 /**
- * Get coupon by ID
+ * Service to fetch a single coupon by its ID.
  */
 export const getCouponByIdService = factory.getOne(Coupon);
 
 /**
- * Update coupon by ID
+ * Service to update coupon properties (e.g., expiry date, discount percentage).
  */
 export const updateCouponService = factory.updateOne<ICoupon>(Coupon);
 
 /**
- * Delete coupon by ID
+ * Service to delete a coupon.
  */
 export const deleteCouponService = factory.deleteOne(Coupon);

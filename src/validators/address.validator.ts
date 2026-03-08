@@ -1,8 +1,14 @@
+/**
+ * Address Validators
+ * Defines the validation rules for operations related to user addresses,
+ * ensuring data integrity for adding, updating, and filtering addresses.
+ */
 import { body, param, query } from "express-validator";
 import validatorMiddleware from "../middleware/validator.middleware.js";
 
 /**
- * Add Address Validator
+ * Validation rules for adding a new address to a user's profile.
+ * Ensures all required fields are present and follow consistent formatting.
  */
 export const addAddressValidator = [
   body("alias")
@@ -39,7 +45,7 @@ export const addAddressValidator = [
 ];
 
 /**
- * Update Address Validator
+ * Validation rules for retrieving and filtering a user's address list.
  */
 export const getAddressesValidator = [
   query("page")
@@ -100,7 +106,7 @@ export const updateAddressValidator = [
 ];
 
 /**
- * Get/Delete/Set Default Address Validator
+ * Basic validator for operations requiring a specific address ID (MongoID format).
  */
 export const addressIdValidator = [
   param("addressId")

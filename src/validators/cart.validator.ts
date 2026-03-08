@@ -1,10 +1,16 @@
+/**
+ * Cart Validators
+ * Ensures data integrity for shopping cart operations, including
+ * stock checks and coupon verification.
+ */
 import { body, param } from "express-validator";
 import validatorMiddleware from "../middleware/validator.middleware.js";
 import Product from "../models/product.model.js";
 import Coupon from "../models/coupon.model.js";
 
 /**
- * Add Product to Cart Validator
+ * Validation rules for adding a product to the cart.
+ * Performs database checks for product existence, requested color availability, and stock levels.
  */
 export const addProductToCartValidator = [
   body("productId")
@@ -58,7 +64,7 @@ export const addProductToCartValidator = [
 ];
 
 /**
- * Remove Cart Item Validator
+ * Validation rules for operations targeting a specific item in the cart.
  */
 export const cartItemIdValidator = [
   param("itemId")
@@ -72,7 +78,7 @@ export const cartItemIdValidator = [
 ];
 
 /**
- * Update Cart Item Quantity Validator
+ * Validation rules for modifying the quantity of a cart item.
  */
 export const updateCartItemQuantityValidator = [
   param("itemId")
@@ -93,7 +99,8 @@ export const updateCartItemQuantityValidator = [
 ];
 
 /**
- * Apply Coupon Validator
+ * Validation rules for applying a discount coupon to the cart.
+ * Checks coupon validity and expiry date against current time.
  */
 export const applyCouponValidator = [
   body("coupon")

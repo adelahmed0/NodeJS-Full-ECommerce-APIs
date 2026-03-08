@@ -1,6 +1,9 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 import { toJSONPlugin } from "../helpers/mongoosePlugins.js";
 
+/**
+ * Individual item in the cart
+ */
 export interface ICartItem {
   _id?: Types.ObjectId;
   product: Types.ObjectId;
@@ -9,6 +12,9 @@ export interface ICartItem {
   price: number;
 }
 
+/**
+ * Cart structure for a specific user
+ */
 export interface ICart extends Document {
   cartItems: ICartItem[];
   totalPrice: number;
@@ -17,6 +23,9 @@ export interface ICart extends Document {
   user: Types.ObjectId;
 }
 
+/**
+ * Sub-schema for cart items
+ */
 const cartItemSchema = new Schema<ICartItem>({
   product: {
     type: Types.ObjectId,
@@ -39,6 +48,9 @@ const cartItemSchema = new Schema<ICartItem>({
 
 cartItemSchema.plugin(toJSONPlugin);
 
+/**
+ * Main Cart Schema
+ */
 const cartSchema = new Schema<ICart>(
   {
     cartItems: [cartItemSchema],

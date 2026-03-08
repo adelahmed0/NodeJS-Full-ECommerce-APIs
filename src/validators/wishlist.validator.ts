@@ -1,9 +1,14 @@
+/**
+ * Wishlist Validators
+ * Validation logic for user product wishlists, ensuring
+ * products exist before adding or removing them.
+ */
 import { body, param, query } from "express-validator";
 import validatorMiddleware from "../middleware/validator.middleware.js";
 import Product from "../models/product.model.js";
 
 /**
- * Check if product exists
+ * Verifies that the requested product ID corresponds to an existing record.
  */
 const checkProductExists = async (productId: string) => {
   const product = await Product.findById(productId);
@@ -13,6 +18,9 @@ const checkProductExists = async (productId: string) => {
   return true;
 };
 
+/**
+ * Validation rules for adding an item to the user's wishlist.
+ */
 export const addToWishlistValidator = [
   body("productId")
     .notEmpty()
@@ -26,6 +34,9 @@ export const addToWishlistValidator = [
   validatorMiddleware,
 ];
 
+/**
+ * Validation for paginated wishlist retrieval.
+ */
 export const getWishlistValidator = [
   query("page")
     .optional()
@@ -41,6 +52,9 @@ export const getWishlistValidator = [
   validatorMiddleware,
 ];
 
+/**
+ * Validation for checking if a specific product is already in the wishlist.
+ */
 export const checkProductInWishlistValidator = [
   param("productId")
     .notEmpty()
@@ -52,6 +66,9 @@ export const checkProductInWishlistValidator = [
   validatorMiddleware,
 ];
 
+/**
+ * Validation for removing a product from the wishlist.
+ */
 export const removeFromWishlistValidator = [
   param("productId")
     .notEmpty()

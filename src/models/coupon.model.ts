@@ -1,12 +1,18 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 import { toJSONPlugin } from "../helpers/mongoosePlugins.js";
 
+/**
+ * Coupon Interface for discounts
+ */
 export interface ICoupon extends Document {
   name: string;
   expire: Date;
   discount: number;
 }
 
+/**
+ * Coupon Schema with expiry and discount percentage
+ */
 const couponSchema = new Schema<ICoupon>(
   {
     name: {

@@ -1,9 +1,18 @@
+/**
+ * User Validators
+ * Handles validation for administrative user management, including
+ * role assignments, status toggles, and secure password updates.
+ */
 import { body, param } from "express-validator";
 import validatorMiddleware from "../middleware/validator.middleware.js";
 import User from "../models/user.model.js";
 import slugify from "@sindresorhus/slugify";
 import { comparePassword } from "../utils/password.js";
 
+/**
+ * Validation rules for creating a new user account (Admin usage).
+ * Enforces email uniqueness and password complexity.
+ */
 export const createUserValidator = [
   body("name")
     .notEmpty()
@@ -61,11 +70,18 @@ export const createUserValidator = [
   validatorMiddleware,
 ];
 
+/**
+ * Validation for fetching user details by ID.
+ */
 export const getUserValidator = [
   param("id").isMongoId().withMessage("Invalid User ID format").bail(),
   validatorMiddleware,
 ];
 
+/**
+ * Validation rules for updating user details.
+ * Note: Password updates are blocked on this endpoint to maintain security.
+ */
 export const updateUserValidator = [
   param("id").isMongoId().withMessage("Invalid User ID format").bail(),
   body("name")
@@ -123,11 +139,18 @@ export const updateUserValidator = [
   validatorMiddleware,
 ];
 
+/**
+ * Validation for user deletion.
+ */
 export const deleteUserValidator = [
   param("id").isMongoId().withMessage("Invalid User ID format").bail(),
   validatorMiddleware,
 ];
 
+/**
+ * Validation rules for admin-initiated user password resets.
+ * Requires verification of the current password before modification.
+ */
 export const updateUserPasswordValidator = [
   param("id").isMongoId().withMessage("Invalid User ID format").bail(),
   body("currentPassword")

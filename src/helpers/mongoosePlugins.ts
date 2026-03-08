@@ -1,9 +1,18 @@
+/**
+ * Mongoose Global Plugins
+ * This file contains reusable Mongoose plugins that standardize
+ * schema behavior across the application, including image URL formatting,
+ * JSON serialization, and automatic population.
+ */
 import { Schema, Document, Query } from "mongoose";
 
 /**
- * Plugin to automatically prepend base URL to image fields
- * Handles single strings and arrays of strings
- * Supports both http and https check
+ * Image URL Plugin
+ * Automatically prepends the application's base URL to specified image paths.
+ * Ensures that relative file paths stored in the DB are served as full absolute URLs.
+ *
+ * @param schema - The Mongoose schema to apply the plugin to.
+ * @param options - Configuration containing the folder name and target fields.
  */
 export const imageURLPlugin = (
   schema: Schema,
@@ -11,12 +20,16 @@ export const imageURLPlugin = (
 ) => {
   const { folderName, fields } = options;
 
+  /**
+   * Internal helper to set the absolute URL for a document.
+   */
   const setImageURL = (doc: any) => {
     if (!doc) return;
     const baseUrl =
       process.env.BASE_URL || `http://localhost:${process.env.PORT || 8000}`;
 
     fields.forEach((field) => {
+      // Only prefix if it's a relative path (doesn't start with http/https)
       if (doc[field] && typeof doc[field] === "string") {
         if (!doc[field].startsWith("http") && !doc[field].startsWith("https")) {
           doc[field] = `${baseUrl}/${folderName}/${doc[field]}`;
@@ -25,57 +38,55 @@ export const imageURLPlugin = (
     });
   };
 
-  // After fetching data from database
+  // Process URL after fetching from DB (init) and after saving new data (save)
   schema.post("init", (doc) => {
     setImageURL(doc);
   });
 
-  // After saving new data
   schema.post("save", (doc) => {
     setImageURL(doc);
   });
 };
 
 /**
- * Mongoose Schema Plugins
- * Reusable plugins for consistent schema behavior
+ * Plugin Options for JSON/Object transformations
  */
-
 interface PluginOptions {
   removePassword?: boolean;
   removePasswordFields?: boolean;
 }
 
 /**
- * Plugin to standardize JSON output
- * - Adds virtual 'id' field
- * - Removes _id, __v, and optionally password
- * - Ensures 'id' is the first field in response
+ * JSON Standardization Plugin
+ * Enhances document serialization by:
+ * 1. Adding a virtual 'id' field.
+ * 2. Removing MongoDB internal fields (_id, __v).
+ * 3. Optionally stripping sensitive password data.
+ * 4. Ordering 'id' as the first property in the output.
  *
- * @param {Schema} schema - Mongoose schema
- * @param {PluginOptions} options - Plugin options
+ * @param schema - The Mongoose schema.
+ * @param options - Transformation settings.
  */
 export const toJSONPlugin = (schema: Schema, options: PluginOptions = {}) => {
   const { removePassword = false, removePasswordFields = false } = options;
 
-  // Add virtual id field
+  // Define the virtual 'id' getter
   schema.virtual("id").get(function (this: Document) {
     return this._id.toHexString();
   });
 
-  // Configure toJSON transformation
+  // Apply transformation to JSON output (used by res.json())
   schema.set("toJSON", {
     virtuals: true,
     versionKey: false,
     transform: function (doc, ret) {
       const { _id, __v, id, ...rest } = ret;
 
-      // Remove password if option is enabled
+      // Handle sensitive field removal
       if (removePassword && rest.password) {
         delete rest.password;
       }
 
-      // Remove password-related fields if option is enabled
       if (removePasswordFields) {
         delete rest.passwordChangedAt;
         delete rest.passwordResetCode;
@@ -83,12 +94,12 @@ export const toJSONPlugin = (schema: Schema, options: PluginOptions = {}) => {
         delete rest.passwordResetVerified;
       }
 
-      // Return with id as first field
+      // Reconstruct object with 'id' at the top for clean API responses
       return { id, ...rest };
     },
   });
 
-  // Also configure toObject for consistency
+  // Apply transformation to hard objects for internal consistency
   schema.set("toObject", {
     virtuals: true,
     versionKey: false,
@@ -112,8 +123,11 @@ export const toJSONPlugin = (schema: Schema, options: PluginOptions = {}) => {
 };
 
 /**
- * Plugin to automatically populate referenced fields on find queries
- * Reusable plugin for consistent population behavior across schemas
+ * Global Population Plugin
+ * Standardizes automatic population of referenced fields across queries.
+ *
+ * @param schema - The Mongoose schema.
+ * @param options - Fields to populate and optional query type filtering.
  */
 export const populatePlugin = (
   schema: Schema,
@@ -132,9 +146,10 @@ export const populatePlugin = (
     skipNestedPopulate = false,
   } = options;
 
+  // Apply pre-hooks to all matching query types (e.g., find, findOne)
   queryTypes.forEach((queryType) => {
     schema.pre(queryType, function (this: Query<any, any>) {
-      // Check if this query is already being populated (nested populate)
+      // Avoid redundant population if the query is already nested
       if (skipNestedPopulate) {
         const populatedPaths = this.getPopulatedPaths();
         if (populatedPaths && populatedPaths.length > 0) {

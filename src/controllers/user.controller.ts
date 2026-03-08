@@ -18,16 +18,20 @@ import * as factory from "./handlersFactory.controller.js";
 import { ApiError } from "../utils/apiError.js";
 
 /**
- * @desc    Update user password
+ * @desc    Change user password via Administrative tools
  * @route   PUT /api/users/:id/change-password
  * @access  Private/Admin
  */
 export const updateUserPassword = asyncHandler(
   async (req: Request<{ id: string }>, res: Response, next: NextFunction) => {
+    // Calling service to handle password hashing and validation
     const user = await updateUserPasswordService(req.params.id, req.body);
+
+    // Guard: Ensure user exists
     if (!user) {
       return next(new ApiError(`No user for this id ${req.params.id}`, 404));
     }
+
     sendSuccessResponse(res, {
       message: "Password updated successfully",
       data: user,
@@ -36,7 +40,7 @@ export const updateUserPassword = asyncHandler(
 );
 
 /**
- * @desc    Create user
+ * @desc    Create a new user manually by Admin
  * @route   POST /api/users
  * @access  Private/Admin
  */
@@ -46,21 +50,21 @@ export const createUser = factory.createOne<IUser, Partial<IUser>>(
 );
 
 /**
- * @desc    Get all users
+ * @desc    Fetch a list of all registered users
  * @route   GET /api/users
  * @access  Private/Admin
  */
 export const getAllUsers = factory.getAll<IUser>(getAllUsersService, "Users");
 
 /**
- * @desc    Get user by ID
+ * @desc    Fetch user details by their ID
  * @route   GET /api/users/:id
  * @access  Private/Admin
  */
 export const getUserById = factory.getOne<IUser>(getUserByIdService, "User");
 
 /**
- * @desc    Update user by ID
+ * @desc    Update user profile data (e.g., name, phone, isActive)
  * @route   PUT /api/users/:id
  * @access  Private/Admin
  */
@@ -70,7 +74,7 @@ export const updateUser = factory.updateOne<IUser, Partial<IUser>>(
 );
 
 /**
- * @desc    Delete user by ID
+ * @desc    Delete a user from the system
  * @route   DELETE /api/users/:id
  * @access  Private/Admin
  */

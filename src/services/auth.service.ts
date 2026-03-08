@@ -6,61 +6,73 @@ import crypto from "crypto";
 import sendEmail from "../utils/sendEmail.js";
 import slugify from "@sindresorhus/slugify";
 
-// @desc    Signup
-// @route   POST /api/auth/signup
-// @access  Public
+/**
+ * Handle user registration logic
+ * @param body - User data from request
+ */
 export const signupService = async (body: IUser) => {
+  // Create user in DB (password hashing happens in model pre-save hook)
   const user = await User.create(body);
+
+  // Issue a JWT for the new user
   const token = createToken({
     userId: user._id.toString(),
     email: user.email,
     type: user.type,
   });
+
   return { user, token };
 };
 
-// @desc    Login
-// @route   POST /api/auth/login
-// @access  Public
+/**
+ * Handle user login logic
+ * @param body - Credentials (email, password)
+ */
 export const loginService = async (body: IUser) => {
-  // 1-check if user exists & check if password is correct
+  // 1) Find user and check if password is correct
   const user = await User.findOne({ email: body.email });
+
+  // Use a timing-safe comparison via bcrypt (wrapped in comparePassword)
   if (!user || !(await comparePassword(body.password, user.password))) {
     throw new ApiError("Invalid email or password", 401);
   }
 
-  // 2-create token
+  // 2) Generate session token
   const token = createToken({
     userId: user._id.toString(),
     email: user.email,
     type: user.type,
   });
 
-  // 3-return user and token
+  // 3) Return user profile and token
   return { user, token };
 };
 
-// @desc    Forgot Password
-// @route   POST /api/auth/forgot-password
-// @access  Public
+/**
+ * Initiate password reset by generating a 6-digit code and emailing it
+ * @param body - Object containing the user's email
+ */
 export const forgotPasswordService = async (body: IUser) => {
-  // 1-check if user exists
+  // 1) Verify user exists
   const user = await User.findOne({ email: body.email });
   if (!user) {
     throw new ApiError("User not found", 404);
   }
-  // 2-generate hash random 6-digit code and save it in database
+
+  // 2) Generate a random 6-digit code and its hash
   const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
   const hashedResetCode = crypto
     .createHash("sha256")
     .update(resetCode)
     .digest("hex");
-  // save hash
+
+  // Save hash and expiry to user document (expires in 10 mins)
   user.passwordResetCode = hashedResetCode;
   user.passwordResetCodeExpires = new Date(Date.now() + 10 * 60 * 1000);
   user.passwordResetVerified = false;
   await user.save();
-  // 3-send code to user's email
+
+  // 3) Prepare and send email with the formatted HTML template
   const html = `
     <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px; background-color: #ffffff;">
       <div style="text-align: center; margin-bottom: 30px;">
@@ -93,60 +105,76 @@ export const forgotPasswordService = async (body: IUser) => {
       html: html,
     });
   } catch (error) {
+    // Cleanup security fields if email delivery fails
     user.passwordResetCode = undefined;
     user.passwordResetCodeExpires = undefined;
     user.passwordResetVerified = undefined;
     await user.save();
-    throw new ApiError("Failed to send email", 500);
+    throw new ApiError("Failed to send email. Please try again later.", 500);
   }
 };
 
-// @desc    Verify Reset Code
-// @route   POST /api/auth/verify-reset-code
-// @access  Public
+/**
+ * Verify if the provided reset code matches the one stored in DB and hasn't expired
+ * @param resetCode - Plain text code from user
+ */
 export const verifyResetCodeService = async (resetCode: string) => {
-  // 1) get user based on reset code
+  // 1) Hash the incoming code to compare with stored hash
   const hashedResetCode = crypto
     .createHash("sha256")
     .update(resetCode)
     .digest("hex");
+
+  // Find user with valid code and within expiry time
   const user = await User.findOne({
     passwordResetCode: hashedResetCode,
     passwordResetCodeExpires: { $gt: Date.now() },
   });
+
   if (!user) {
     throw new ApiError("Invalid or expired reset code", 401);
   }
-  // 2) mark reset code as verified
+
+  // 2) Mark as verified to allow the actual password change in the next step
   user.passwordResetVerified = true;
   user.passwordResetCode = undefined;
   user.passwordResetCodeExpires = undefined;
   await user.save();
 };
 
+/**
+ * Finalize password reset by saving the new password
+ * @param email - User's email
+ * @param newPassword - New password string
+ */
 export const resetPasswordService = async (
   email: string,
   newPassword: string,
 ) => {
-  // 1) get user based on email
+  // 1) Get user based on email
   const user = await User.findOne({ email });
   if (!user) {
-    throw new ApiError("There is no account with this email", 404);
+    throw new ApiError("There is no account associated with this email", 404);
   }
-  // 2) check if reset code is verified
+
+  // 2) Pre-condition: User MUST have passed the code verification step
   if (!user.passwordResetVerified) {
-    throw new ApiError("Reset code not verified", 401);
+    throw new ApiError("Please verify your reset code first", 401);
   }
+
+  // Set new password (will be hashed by model hook)
   user.password = newPassword;
   user.passwordResetVerified = undefined;
   user.passwordResetCode = undefined;
   user.passwordResetCodeExpires = undefined;
   await user.save();
-  // 3) create token
+
+  // 3) Re-authenticate user immediately after reset
   const token = createToken({
     userId: user._id.toString(),
     email: user.email,
     type: user.type,
   });
+
   return { user, token };
 };

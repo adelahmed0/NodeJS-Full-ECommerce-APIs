@@ -62,6 +62,11 @@ export const updateSubCategory = factory.updateOne<
   Partial<ISubCategory>
 >(updateSubCategoryService, "SubCategory");
 
+/**
+ * @desc    Delete subCategory by ID
+ * @route   DELETE /api/subcategories/:id
+ * @access  Private/Admin
+ */
 export const deleteSubCategory = factory.deleteOne<ISubCategory>(
   deleteSubCategoryService,
   "SubCategory",

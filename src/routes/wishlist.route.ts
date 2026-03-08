@@ -1,3 +1,8 @@
+/**
+ * Personal Wishlist Routes
+ * Restricted to authenticated Users. Allows tracking favorite
+ * products with atomic addition and removal logic.
+ */
 import express, { Router } from "express";
 import {
   addProductToWishlist,
@@ -29,6 +34,11 @@ router.use(allowedTo("user"));
  * @route   POST /api/wishlist
  * @access  Private/User
  */
+/**
+ * @desc    Save a product to the user's favorites
+ * @route   POST /api/wishlist
+ * @access  Private/User
+ */
 router.post(
   "/",
   parseWishlistFormData,
@@ -37,14 +47,14 @@ router.post(
 );
 
 /**
- * @desc    Get user wishlist
+ * @desc    View all products current user has favorited
  * @route   GET /api/wishlist
  * @access  Private/User
  */
 router.get("/", getWishlistValidator, getWishlist);
 
 /**
- * @desc    Check if product is in wishlist
+ * @desc    Verify if a specific product is already in the wishlist
  * @route   GET /api/wishlist/check/:productId
  * @access  Private/User
  */
@@ -55,14 +65,14 @@ router.get(
 );
 
 /**
- * @desc    Remove product from wishlist
+ * @desc    Remove a product from the favorites list
  * @route   DELETE /api/wishlist/:productId
  * @access  Private/User
  */
 router.delete("/:productId", removeFromWishlistValidator, removeFromWishlist);
 
 /**
- * @desc    Clear wishlist
+ * @desc    Clear the entire wishlist
  * @route   DELETE /api/wishlist
  * @access  Private/User
  */

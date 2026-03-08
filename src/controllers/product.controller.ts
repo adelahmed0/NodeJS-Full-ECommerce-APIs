@@ -1,3 +1,7 @@
+/**
+ * Product Controller
+ * Orchestrates the lifecycle of product catalog items, handling search, filters, and inventory updates.
+ */
 import { Request, Response, RequestHandler } from "express";
 import { IApiResponse, IPaginatedResponse } from "../types/api.types.js";
 import asyncHandler from "express-async-handler";
@@ -17,51 +21,51 @@ import {
 import * as factory from "./handlersFactory.controller.js";
 
 /**
- * @desc    Create product
+ * @desc    Add a new product to the catalog
  * @route   POST /api/products
  * @access  Private/Admin
  */
 export const createProduct = factory.createOne<IProduct, Partial<IProduct>>(
-  createProductService,
+  createProductService, // Logic for persistence and relationship handling
   "Product",
 );
 
 /**
- * @desc    Get all products
+ * @desc    Retrieve a list of products with pagination, search, and filtering
  * @route   GET /api/products
  * @access  Public
  */
 export const getAllProducts = factory.getAll<IProduct>(
-  getAllProductsService,
+  getAllProductsService, // Logic for processing query parameters via ApiFeatures
   "Products",
 );
 
 /**
- * @desc    Get product by ID
+ * @desc    Fetch detailed information for a single product by ID
  * @route   GET /api/products/:id
  * @access  Public
  */
 export const getProductById = factory.getOne<IProduct>(
-  getProductByIdService,
+  getProductByIdService, // Includes deep population of categories and brands
   "Product",
 );
 
 /**
- * @desc    Update product by ID
+ * @desc    Update an existing product's details
  * @route   PUT /api/products/:id
  * @access  Private/Admin
  */
 export const updateProduct = factory.updateOne<IProduct, Partial<IProduct>>(
-  updateProductService,
+  updateProductService, // Handles partial updates and re-population
   "Product",
 );
 
 /**
- * @desc    Delete product by ID
+ * @desc    Permanently remove a product from the database
  * @route   DELETE /api/products/:id
  * @access  Private/Admin
  */
 export const deleteProduct = factory.deleteOne<IProduct>(
-  deleteProductService,
+  deleteProductService, // Triggers atomic deletion
   "Product",
 );

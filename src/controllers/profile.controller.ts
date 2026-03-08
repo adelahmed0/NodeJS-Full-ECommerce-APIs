@@ -9,12 +9,14 @@ import {
 import { sendSuccessResponse } from "../utils/apiResponse.js";
 
 /**
- * @desc    Get User Profile
+ * @desc    Fetch the profile of the currently logged-in user
  * @route   GET /api/profile
- * @access  Private
+ * @access  Private/Authenticated
  */
 export const getProfile = asyncHandler(async (req: Request, res: Response) => {
+  // Use the user ID from the 'protect' middleware
   const user = await getProfileService(req.user!._id.toString());
+
   sendSuccessResponse(res, {
     message: "User profile retrieved successfully",
     data: { user },
@@ -23,18 +25,26 @@ export const getProfile = asyncHandler(async (req: Request, res: Response) => {
 });
 
 /**
- * @desc    Change User Password (for authenticated users)
+ * @desc    Allow a logged-in user to change their own password
  * @route   PUT /api/profile/change-password
- * @access  Private
+ * @access  Private/Authenticated
  */
 export const changePassword = asyncHandler(
   async (req: Request, res: Response) => {
     const { currentPassword, newPassword } = req.body;
+
+    /**
+     * Service handles:
+     * 1. Verifying current password matches DB
+     * 2. Hashing new password
+     * 3. Issuing a fresh JWT
+     */
     const { user, token } = await changePasswordService(
       req.user!._id.toString(),
       currentPassword,
       newPassword,
     );
+
     sendSuccessResponse(res, {
       message: "Password changed successfully",
       data: { user, token },
@@ -44,13 +54,15 @@ export const changePassword = asyncHandler(
 );
 
 /**
- * @desc    Update User Profile (for authenticated users)
+ * @desc    Allow a logged-in user to update their own basic profile data
  * @route   PUT /api/profile/update-profile
- * @access  Private
+ * @access  Private/Authenticated
  */
 export const updateProfile = asyncHandler(
   async (req: Request, res: Response) => {
+    // Service handles field merging and validation
     const user = await updateProfileService(req.user!._id.toString(), req.body);
+
     sendSuccessResponse(res, {
       message: "Profile updated successfully",
       data: { user },
@@ -60,14 +72,16 @@ export const updateProfile = asyncHandler(
 );
 
 /**
- * @desc    Update User Status (for authenticated users)
+ * @desc    Update user availability or custom status string
  * @route   PUT /api/profile/update-status
- * @access  Private
+ * @access  Private/Authenticated
  */
 export const updateStatus = asyncHandler(
   async (req: Request, res: Response) => {
     const { status } = req.body;
+
     const user = await updateStatusService(req.user!._id.toString(), status);
+
     sendSuccessResponse(res, {
       message: "Status updated successfully",
       data: { user },

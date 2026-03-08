@@ -1,3 +1,8 @@
+/**
+ * User Profile Routes
+ * Self-service portal for authenticated users to manage
+ * their personal info, passwords, and account status.
+ */
 import express, { Router } from "express";
 import {
   getProfile,
@@ -19,14 +24,14 @@ const router: Router = express.Router();
 router.use(protect);
 
 /**
- * @desc    Get User Profile
+ * @desc    Fetch the authenticated user's profile data
  * @route   GET /api/profile
  * @access  Private
  */
 router.get("/", getProfile);
 
 /**
- * @desc    Change User Password (for authenticated users)
+ * @desc    Allow user to change their own password
  * @route   PUT /api/profile/change-password
  * @access  Private
  */
@@ -38,14 +43,14 @@ router.put(
 );
 
 /**
- * @desc    Update User Profile (for authenticated users)
+ * @desc    Update authenticated user's personal details
  * @route   PUT /api/profile/update
  * @access  Private
  */
 router.put("/update", parseFormData(), updateProfileValidator, updateProfile);
 
 /**
- * @desc    Update User Status (for authenticated users)
+ * @desc    Update user account status (Self-service)
  * @route   PUT /api/profile/status
  * @access  Private
  */

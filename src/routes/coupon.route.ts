@@ -1,3 +1,8 @@
+/**
+ * Coupon Management Routes
+ * Restricted to Administrators. Handles CRUD for discount
+ * promotional codes with advanced time-based expiry checks.
+ */
 import express, { Router } from "express";
 import {
   createCoupon,
@@ -29,31 +34,36 @@ router.use(allowedTo("admin"));
  * @route   POST /api/coupons
  * @access  Private/Admin
  */
+/**
+ * @desc    Generate a new discount coupon
+ * @route   POST /api/coupons
+ * @access  Private/Admin
+ */
 router.post("/", parseCouponFormData, createCouponValidator, createCoupon);
 
 /**
- * @desc    Get all coupons
+ * @desc    Retrieve a list of all active/expired coupons
  * @route   GET /api/coupons
  * @access  Private/Admin
  */
 router.get("/", getAllCouponsValidator, getAllCoupons);
 
 /**
- * @desc    Get coupon by ID
+ * @desc    Find a single coupon by MongoID
  * @route   GET /api/coupons/:id
  * @access  Private/Admin
  */
 router.get("/:id", couponIdValidator, getCoupon);
 
 /**
- * @desc    Update coupon by ID
+ * @desc    Modify coupon settings (expiry, percentage, etc.)
  * @route   PUT /api/coupons/:id
  * @access  Private/Admin
  */
 router.put("/:id", parseCouponFormData, updateCouponValidator, updateCoupon);
 
 /**
- * @desc    Delete coupon by ID
+ * @desc    Invalidate and remove a coupon code
  * @route   DELETE /api/coupons/:id
  * @access  Private/Admin
  */

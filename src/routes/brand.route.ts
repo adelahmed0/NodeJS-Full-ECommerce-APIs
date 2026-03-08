@@ -1,3 +1,8 @@
+/**
+ * Brand Routes
+ * Catalog of product manufacturers. Offers public viewing and
+ * restricted Admin management with automated image resizing.
+ */
 import express, { Router } from "express";
 import {
   createBrand,
@@ -24,6 +29,11 @@ import { UserRole } from "../models/user.model.js";
 
 const router: Router = express.Router();
 
+/**
+ * @desc    Add a new brand to the catalog
+ * @route   POST /api/brands
+ * @access  Private/Admin
+ */
 router.post(
   "/",
   protect,
@@ -34,9 +44,25 @@ router.post(
   createBrand,
 );
 
+/**
+ * @desc    Get all brands with pagination/filtering
+ * @route   GET /api/brands
+ * @access  Public
+ */
 router.get("/", getAllBrandsValidator, getAllBrands);
+
+/**
+ * @desc    Fetch a single brand by MongoID
+ * @route   GET /api/brands/:id
+ * @access  Public
+ */
 router.get("/:id", getBrandByIdValidator, getBrandById);
 
+/**
+ * @desc    Update an existing brand's details
+ * @route   PUT /api/brands/:id
+ * @access  Private/Admin
+ */
 router.put(
   "/:id",
   protect,
@@ -47,6 +73,11 @@ router.put(
   updateBrand,
 );
 
+/**
+ * @desc    Permanently delete a brand
+ * @route   DELETE /api/brands/:id
+ * @access  Private/Admin
+ */
 router.delete(
   "/:id",
   protect,

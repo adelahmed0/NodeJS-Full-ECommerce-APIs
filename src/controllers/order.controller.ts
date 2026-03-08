@@ -15,9 +15,10 @@ import { sendSuccessResponse } from "../utils/apiResponse.js";
 import * as factory from "./handlersFactory.controller.js";
 
 /**
- * @desc    Webhook to handle stripe payment
+ * @desc    Webhook to handle asynchronous Stripe payment notifications.
+ *          This endpoint is called by Stripe when a session is completed.
  * @route   POST /webhook
- * @access  Public
+ * @access  Public (Secured via signature verification)
  */
 export const webhookCheckout = asyncHandler(
   async (req: Request, res: Response) => {
@@ -26,8 +27,9 @@ export const webhookCheckout = asyncHandler(
     let event;
 
     try {
+      // Verify that the request actually came from Stripe
       event = stripe.webhooks.constructEvent(
-        req.body,
+        req.body, // Must be the raw body
         sig,
         process.env.STRIPE_WEBHOOK_SECRET!,
       );
@@ -36,8 +38,8 @@ export const webhookCheckout = asyncHandler(
       return;
     }
 
+    // Process the event: If checkout is successful, create the order in our DB
     if (event.type === "checkout.session.completed") {
-      // Create order
       await createCardOrderService(event.data.object);
     }
 
@@ -46,7 +48,7 @@ export const webhookCheckout = asyncHandler(
 );
 
 /**
- * @desc    create cash order
+ * @desc    Create a new cash-on-delivery order
  * @route   POST /api/orders/:cartId
  * @access  Protected/User
  */
@@ -55,6 +57,7 @@ export const createCashOrder = asyncHandler(
     const { cartId } = req.params;
     const { shippingAddress } = req.body;
 
+    // Service handles: cart retrieval, total price calculation, stock update, and cart clearing
     const order = await createCashOrderService(
       req.user!._id.toString(),
       cartId as string,
@@ -70,7 +73,7 @@ export const createCashOrder = asyncHandler(
 );
 
 /**
- * @desc    Get checkout session from stripe and send it as response
+ * @desc    Initialize a Stripe Checkout Session for card payments
  * @route   GET /api/orders/checkout-session/:cartId
  * @access  Protected/User
  */
@@ -79,9 +82,11 @@ export const checkoutSession = asyncHandler(
     const { cartId } = req.params;
     const { shippingAddress } = req.body;
 
+    // URLs for redirection after payment attempt
     const successUrl = `${req.protocol}://${req.get("host")}/orders`;
     const cancelUrl = `${req.protocol}://${req.get("host")}/cart`;
 
+    // Service communicates with Stripe API to create the session
     const session = await createStripeCheckoutSessionService(
       req.user!.email!,
       cartId as string,
@@ -98,14 +103,14 @@ export const checkoutSession = asyncHandler(
 );
 
 /**
- * @desc    Get all orders
+ * @desc    Fetch all orders (Admins see all, Users see only theirs via filter)
  * @route   GET /api/orders
  * @access  Protected/User-Admin
  */
 export const getAllOrders = factory.getAll(getAllOrdersService, "Orders");
 
 /**
- * @desc    Get specific order
+ * @desc    Fetch a specific order by ID
  * @route   GET /api/orders/:id
  * @access  Protected/User-Admin
  */
@@ -115,7 +120,7 @@ export const getSpecificOrder = factory.getOne(
 );
 
 /**
- * @desc    Update order to paid
+ * @desc    Update order payment status to 'Paid' manually (e.g., for Cash on Delivery)
  * @route   PUT /api/orders/:id/pay
  * @access  Protected/Admin-Manager
  */
@@ -131,7 +136,7 @@ export const updateOrderToPaid = asyncHandler(
 );
 
 /**
- * @desc    Update order to delivered
+ * @desc    Update order shipping status to 'Delivered'
  * @route   PUT /api/orders/:id/deliver
  * @access  Protected/Admin-Manager
  */
@@ -147,7 +152,7 @@ export const updateOrderToDelivered = asyncHandler(
 );
 
 /**
- * @desc    Update order status
+ * @desc    Generic status updater for an order (e.g., Canceled, Processing)
  * @route   PUT /api/orders/:id/status
  * @access  Protected/Admin-Manager
  */

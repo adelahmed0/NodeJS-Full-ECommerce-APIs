@@ -1,3 +1,8 @@
+/**
+ * Product Routes
+ * Core catalog management. Supports nested Review routing, public
+ * search/viewing, and Admin-only CRUD with multi-image processing.
+ */
 import express, { Router } from "express";
 import {
   createProduct,
@@ -24,6 +29,9 @@ import reviewRouter from "./review.route.js";
 
 const router: Router = express.Router();
 
+/**
+ * @desc    Nested routing for reviews belonging to a product
+ */
 router.use("/:productId/reviews", reviewRouter);
 
 const productUpload = uploadMixOfImages([
@@ -50,7 +58,17 @@ const resizeProductImages = resizeMixedImages(Product, "products", [
 
 router
   .route("/")
+  /**
+   * @desc    Search and list all products with filtering/sorting
+   * @route   GET /api/products
+   * @access  Public
+   */
   .get(getAllProductsValidator, getAllProducts)
+  /**
+   * @desc    Add a new product with multiple image uploads
+   * @route   POST /api/products
+   * @access  Private/Admin
+   */
   .post(
     protect,
     allowedTo(UserRole.ADMIN),
@@ -62,7 +80,17 @@ router
 
 router
   .route("/:id")
+  /**
+   * @desc    Get detailed specifications for one product
+   * @route   GET /api/products/:id
+   * @access  Public
+   */
   .get(getProductValidator, getProductById)
+  /**
+   * @desc    Update product catalog data
+   * @route   PUT /api/products/:id
+   * @access  Private/Admin
+   */
   .put(
     protect,
     allowedTo(UserRole.ADMIN),
@@ -71,6 +99,11 @@ router
     resizeProductImages,
     updateProduct,
   )
+  /**
+   * @desc    Remove a product from the database
+   * @route   DELETE /api/products/:id
+   * @access  Private/Admin
+   */
   .delete(
     protect,
     allowedTo(UserRole.ADMIN),

@@ -2,17 +2,24 @@ import { Model, UpdateQuery, PopulateOptions } from "mongoose";
 import ApiFeatures from "../utils/apiFeatures.js";
 
 /**
+ * Services Factory: Reusable data access layer logic.
+ * These functions produce standardized async functions for interacting with Mongoose models.
+ */
+
+/**
  * Factory function to create a new document
- * @param Model - Mongoose model
- * @param populationOpts - Optional population options
+ * @param Model - Mongoose model to create in
+ * @param populationOpts - Optional fields to populate in the returned document
  */
 export const createOne = <T>(
   Model: Model<T>,
   populationOpts?: string | PopulateOptions | (string | PopulateOptions)[],
 ) => {
   return async (body: any) => {
+    // 1) Create document in MongoDB
     const document = await Model.create(body);
 
+    // 2) If population is needed, refetch with populated fields
     if (populationOpts) {
       const populatedDoc = await Model.findById(document._id).populate(
         populationOpts as any,
@@ -27,29 +34,26 @@ export const createOne = <T>(
 /**
  * Factory function to delete a document by ID
  * @param Model - Mongoose model
- * @param populationOpts - Optional population options
+ * @param populationOpts - Optional fields to populate in the returned document
  */
 export const deleteOne = <T>(
   Model: Model<T>,
   populationOpts?: string | PopulateOptions | (string | PopulateOptions)[],
 ) => {
   return async (id: string) => {
-    // Find the document first to trigger deleteOne hook
-    const document = await Model.findById(id);
+    // 1) Find document first to check existence
+    let query = Model.findById(id);
+    if (populationOpts) {
+      query = query.populate(populationOpts as any);
+    }
+
+    const document = await query;
     if (!document) {
       return null;
     }
 
-    // Delete the document to trigger the deleteOne hook
+    // 2) Delete via instance method to trigger 'deleteOne' middleware hooks
     await document.deleteOne();
-
-    if (populationOpts) {
-      // Return the populated document before deletion
-      const populatedDoc = await Model.findById(document._id).populate(
-        populationOpts as any,
-      );
-      return populatedDoc;
-    }
 
     return document;
   };
@@ -58,25 +62,26 @@ export const deleteOne = <T>(
 /**
  * Factory function to update a document by ID
  * @param Model - Mongoose model
- * @param populationOpts - Optional population options
+ * @param populationOpts - Optional fields to populate in the returned document
  */
 export const updateOne = <T>(
   Model: Model<T>,
   populationOpts?: string | PopulateOptions | (string | PopulateOptions)[],
 ) => {
   return async (id: string, body: UpdateQuery<T>) => {
-    // Find the document first
+    // 1) Find document
     const document = await Model.findById(id);
     if (!document) {
       return null;
     }
 
-    // Update the document fields
+    // 2) Update fields manually
     Object.assign(document, body);
 
-    // Save to trigger post hooks
+    // 3) Save via instance method to trigger 'save' middleware hooks (like password hashing)
     await document.save();
 
+    // 4) Optional population for the response
     if (populationOpts) {
       const populatedDoc = await Model.findById(document._id).populate(
         populationOpts as any,
@@ -89,15 +94,16 @@ export const updateOne = <T>(
 };
 
 /**
- * Factory function to get a document by ID
+ * Factory function to get a single document by ID
  * @param Model - Mongoose model
- * @param populationOpts - Optional population options
+ * @param populationOpts - Fields to populate
  */
 export const getOne = <T>(
   Model: Model<T>,
   populationOpts?: string | PopulateOptions | (string | PopulateOptions)[],
 ) => {
   return async (id: string, filterObj: any = {}) => {
+    // Merge ID with optional filters (e.g., checking ownership)
     let query = Model.findOne({ _id: id, ...filterObj });
 
     if (populationOpts) {
@@ -110,10 +116,10 @@ export const getOne = <T>(
 };
 
 /**
- * Factory function to get all documents
+ * Factory function to fetch all documents with advanced query features
  * @param Model - Mongoose model
- * @param searchFields - Optional search fields
- * @param populationOpts - Optional population options
+ * @param searchFields - Fields included in the text search feature
+ * @param populationOpts - Fields to populate in the results
  */
 export const getAll = <T>(
   Model: Model<T>,
@@ -121,22 +127,25 @@ export const getAll = <T>(
   populationOpts?: string | PopulateOptions | (string | PopulateOptions)[],
 ) => {
   return async (queryString: any, filterObj: any = {}) => {
-    // Build query with all features
+    // 1) Initialize ApiFeatures with the base model query and the URL query string
     const apiFeatures = new ApiFeatures(Model.find(filterObj), queryString)
       .filter()
       .search(searchFields)
       .sort()
       .limitFields();
 
-    // Execute pagination separately to get total count
+    // 2) Execute pagination (calculates skip/limit)
     await apiFeatures.paginate();
 
+    // 3) Extract the final Mongoose query
     let query = apiFeatures.mongooseQuery;
 
+    // 4) Apply population if requested
     if (populationOpts) {
       query = query.populate(populationOpts as any);
     }
 
+    // 5) Execute the query
     const documents = await query;
 
     return {

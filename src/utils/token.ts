@@ -1,7 +1,10 @@
 import jwt, { SignOptions } from "jsonwebtoken";
 
 /**
- * Generic function to create any JWT token
+ * Utility to generate a signed JSON Web Token (JWT)
+ * @param payload Data to encode in the token (e.g., userId)
+ * @param secret Encryption key (defaults to JWT_SECRET env)
+ * @param options JWT options like expiration (defaults to JWT_EXPIRES_IN env)
  */
 export const createToken = (
   payload: any,
@@ -12,7 +15,10 @@ export const createToken = (
 ) => jwt.sign(payload, secret, options);
 
 /**
- * Generic function to verify any JWT token
+ * Utility to verify a JWT's integrity and decode its payload
+ * @param token The JWT string to verify
+ * @param secret The encryption key used to sign the token
+ * @returns Decoded payload if valid, throws error otherwise
  */
 export const verifyToken = (
   token: string,

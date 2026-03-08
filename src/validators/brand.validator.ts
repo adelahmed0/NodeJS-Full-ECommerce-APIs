@@ -1,13 +1,25 @@
+/**
+ * Brand Validators
+ * Defines validation rules for Brand-related operations, including
+ * unique name checks and image file validation.
+ */
 import { body, param, query, check } from "express-validator";
 import validatorMiddleware from "../middleware/validator.middleware.js";
 import Brand from "../models/brand.model.js";
 import slugify from "@sindresorhus/slugify";
 
+/**
+ * Validation rules for fetching a single brand by ID.
+ */
 export const getBrandByIdValidator = [
   param("id").isMongoId().withMessage("Invalid brand ID format").bail(),
   validatorMiddleware,
 ];
 
+/**
+ * Validation rules for creating a new brand.
+ * Includes unique name check, slug generation, and mandatory image upload.
+ */
 export const createBrandValidator = [
   body("name")
     .notEmpty()
@@ -37,6 +49,9 @@ export const createBrandValidator = [
   validatorMiddleware,
 ];
 
+/**
+ * Validation rules for listing brands with pagination.
+ */
 export const getAllBrandsValidator = [
   query("page")
     .optional()
@@ -51,6 +66,10 @@ export const getAllBrandsValidator = [
   validatorMiddleware,
 ];
 
+/**
+ * Validation rules for updating an existing brand.
+ * Handles partial updates and ensures names remain unique.
+ */
 export const updateBrandValidator = [
   param("id").isMongoId().withMessage("Invalid brand ID format").bail(),
   body("name")
@@ -85,6 +104,9 @@ export const updateBrandValidator = [
   validatorMiddleware,
 ];
 
+/**
+ * Validation rules for deleting a brand by ID.
+ */
 export const deleteBrandValidator = [
   param("id").isMongoId().withMessage("Invalid brand ID format").bail(),
   validatorMiddleware,

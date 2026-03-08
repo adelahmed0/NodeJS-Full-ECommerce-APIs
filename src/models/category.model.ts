@@ -2,7 +2,7 @@ import mongoose, { Schema, Document } from "mongoose";
 import { toJSONPlugin, imageURLPlugin } from "../helpers/mongoosePlugins.js";
 
 /**
- * Category Interface
+ * Category Interface representing the category structure
  */
 export interface ICategory extends Document {
   name: string;
@@ -12,6 +12,9 @@ export interface ICategory extends Document {
   updatedAt: Date;
 }
 
+/**
+ * Category Schema with validation and plugins
+ */
 const categorySchema = new Schema<ICategory>(
   {
     name: {
@@ -33,6 +36,7 @@ const categorySchema = new Schema<ICategory>(
   { timestamps: true },
 );
 
+// Apply plugins for cleaner JSON and image URL management
 categorySchema.plugin(toJSONPlugin);
 categorySchema.plugin(imageURLPlugin, {
   folderName: "categories",

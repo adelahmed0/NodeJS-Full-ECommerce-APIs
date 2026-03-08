@@ -11,7 +11,7 @@ import {
 } from "../services/cart.service.js";
 
 /**
- * @desc    Add product to cart
+ * @desc    Add a product to the user's shopping cart
  * @route   POST /api/cart
  * @access  Private/User
  */
@@ -19,6 +19,7 @@ export const addProductToCart = asyncHandler(
   async (req: Request, res: Response) => {
     const { productId, color, quantity } = req.body;
 
+    // Call service to handle cart logic (find/create cart, handle duplicates, update price)
     const cart = await addProductToCartService(
       req.user!._id.toString(),
       productId,
@@ -36,7 +37,7 @@ export const addProductToCart = asyncHandler(
 );
 
 /**
- * @desc    Get logged user cart
+ * @desc    Fetch the shopping cart for the currently logged-in user
  * @route   GET /api/cart
  * @access  Private/User
  */
@@ -47,6 +48,7 @@ export const getLoggedUserCart = asyncHandler(
     res.status(200).json({
       status: true,
       message: "Cart fetched successfully",
+      // Handle null cart if user hasn't created one yet
       numOfCartItems: cart ? cart.cartItems.length : 0,
       data: cart || { cartItems: [], totalPrice: 0 },
     });
@@ -54,7 +56,7 @@ export const getLoggedUserCart = asyncHandler(
 );
 
 /**
- * @desc    Remove specific item from cart
+ * @desc    Remove a specific item from the cart by its ID
  * @route   DELETE /api/cart/:itemId
  * @access  Private/User
  */
@@ -65,8 +67,8 @@ export const removeCartItem = asyncHandler(
       req.params.itemId as string,
     );
 
+    // If the last item was removed, the service might return an empty cart object
     if (cart.cartItems.length === 0) {
-      // Cart was deleted because it became empty
       res.status(200).json({
         status: true,
         message: "Cart item removed and cart is now empty",
@@ -86,7 +88,7 @@ export const removeCartItem = asyncHandler(
 );
 
 /**
- * @desc    Clear logged user cart
+ * @desc    Completely empty the user's shopping cart
  * @route   DELETE /api/cart
  * @access  Private/User
  */
@@ -100,7 +102,7 @@ export const clearCart = asyncHandler(async (req: Request, res: Response) => {
 });
 
 /**
- * @desc    Update specific cart item quantity
+ * @desc    Update the quantity of a specific product already in the cart
  * @route   PUT /api/cart/:itemId
  * @access  Private/User
  */
@@ -108,6 +110,7 @@ export const updateCartItemQuantity = asyncHandler(
   async (req: Request, res: Response) => {
     const { quantity } = req.body;
 
+    // Simple validation before calling service
     if (!quantity || quantity < 1) {
       throw new ApiError("Quantity must be greater than 0", 400);
     }
@@ -128,12 +131,12 @@ export const updateCartItemQuantity = asyncHandler(
 );
 
 /**
- * @desc    Apply coupon on cart
+ * @desc    Apply a discount coupon to the current cart
  * @route   PUT /api/cart/applyCoupon
  * @access  Private/User
  */
 export const applyCoupon = asyncHandler(async (req: Request, res: Response) => {
-  // Use the coupon object already fetched and validated in applyCouponValidator
+  // Use the coupon object already fetched and validated in previous middleware/validator
   const cart = await applyCouponService(req.user!._id.toString(), req.coupon!);
 
   res.status(200).json({

@@ -1,8 +1,14 @@
+/**
+ * Coupon Validators
+ * Validates promotional discount codes, ensuring proper
+ * formatting, discount ranges, and future expiry dates.
+ */
 import { body, param, query } from "express-validator";
 import validatorMiddleware from "../middleware/validator.middleware.js";
 
 /**
- * Create Coupon Validator
+ * Validation rules for generating a new coupon.
+ * Enforces alphanumeric names and validates that expiry dates are in the future.
  */
 export const createCouponValidator = [
   body("name")
@@ -63,7 +69,7 @@ export const createCouponValidator = [
 ];
 
 /**
- * Update Coupon Validator
+ * Validation rules for modifying an existing coupon.
  */
 export const updateCouponValidator = [
   param("id")
@@ -129,7 +135,7 @@ export const updateCouponValidator = [
 ];
 
 /**
- * Get All Coupons Validator
+ * Validation rules for listing and filtering coupons.
  */
 export const getAllCouponsValidator = [
   query("page")
@@ -162,7 +168,7 @@ export const getAllCouponsValidator = [
 ];
 
 /**
- * Get/Delete Coupon Validator
+ * Common validator for operations involving a single coupon ID.
  */
 export const couponIdValidator = [
   param("id")

@@ -1,3 +1,8 @@
+/**
+ * Category Routes
+ * Public access for catalog browsing; Restricted Admin-only access for data modifications.
+ * Includes nested routing for sub-categories.
+ */
 import express, { Router } from "express";
 import {
   createCategory,
@@ -25,8 +30,16 @@ import { UserRole } from "../models/user.model.js";
 
 const router: Router = express.Router();
 
+/**
+ * @desc    Nested routing for sub-categories under a specific category
+ */
 router.use("/:categoryId/sub-categories", subCategoryRouter);
 
+/**
+ * @desc    Create a new product category
+ * @route   POST /api/categories
+ * @access  Private/Admin
+ */
 router.post(
   "/",
   protect,
@@ -37,9 +50,25 @@ router.post(
   createCategory,
 );
 
+/**
+ * @desc    Fetch all categories with pagination/search
+ * @route   GET /api/categories
+ * @access  Public
+ */
 router.get("/", getAllCategoriesValidator, getAllCategories);
+
+/**
+ * @desc    Get a single category by its ID
+ * @route   GET /api/categories/:id
+ * @access  Public
+ */
 router.get("/:id", getCategoryByIdValidator, getCategoryById);
 
+/**
+ * @desc    Update an existing category's details
+ * @route   PUT /api/categories/:id
+ * @access  Private/Admin
+ */
 router.put(
   "/:id",
   protect,
@@ -49,6 +78,12 @@ router.put(
   resizeImage<ICategory>(Category, "category", "categories", "image", 600, 600),
   updateCategory,
 );
+
+/**
+ * @desc    Permanently delete a category
+ * @route   DELETE /api/categories/:id
+ * @access  Private/Admin
+ */
 router.delete(
   "/:id",
   protect,

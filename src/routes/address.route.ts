@@ -1,3 +1,8 @@
+/**
+ * User Address Routes
+ * Handles personal shipping information. Restricted to
+ * authenticated Users for managing aliases and default addresses.
+ */
 import express, { Router } from "express";
 import {
   addAddress,
@@ -29,17 +34,22 @@ router.use(allowedTo("user"));
  * @route   POST /api/addresses
  * @access  Private/User
  */
+/**
+ * @desc    Save a new shipping address
+ * @route   POST /api/addresses
+ * @access  Private/User
+ */
 router.post("/", parseAddressFormData, addAddressValidator, addAddress);
 
 /**
- * @desc    Get user addresses
+ * @desc    Fetch all saved addresses for the user
  * @route   GET /api/addresses
  * @access  Private/User
  */
 router.get("/", getAddressesValidator, getAddresses);
 
 /**
- * @desc    Update address
+ * @desc    Update existing address details
  * @route   PUT /api/addresses/:addressId
  * @access  Private/User
  */
@@ -51,17 +61,16 @@ router.put(
 );
 
 /**
- * @desc    Delete address
+ * @desc    Delete a specific address
  * @route   DELETE /api/addresses/:addressId
  * @access  Private/User
  */
 router.delete("/:addressId", addressIdValidator, deleteAddress);
 
 /**
- * @desc    Set default address
+ * @desc    Mark an address as the primary shipping location
  * @route   PATCH /api/addresses/:addressId/default
  * @access  Private/User
  */
 router.patch("/:addressId/default", addressIdValidator, setDefaultAddress);
-
 export default router;

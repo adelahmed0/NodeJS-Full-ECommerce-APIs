@@ -8,13 +8,21 @@ import path from "path";
 import { Request, Response, NextFunction } from "express";
 import { Model } from "mongoose";
 
+/**
+ * Interface for documents that contain image fields
+ */
 interface DocumentWithImage {
   image?: string;
 }
 
+/**
+ * Configure Multer storage and filters
+ */
 const multerOptions = () => {
+  // Store files in memory as Buffers for processing with Sharp
   const multerStorage = multer.memoryStorage();
 
+  // Only allow image mime types
   const multerFilter = (
     req: Request,
     file: Express.Multer.File,
@@ -35,21 +43,33 @@ const multerOptions = () => {
   return upload;
 };
 
+/**
+ * Middleware for uploading a single image
+ */
 export const uploadSingleImage = (fieldName: string) =>
   multerOptions().single(fieldName);
 
+/**
+ * Middleware for uploading multiple images across different fields
+ */
 export const uploadMixOfImages = (fields: multer.Field[]) =>
   multerOptions().fields(fields);
 
+/**
+ * Middleware to parse form-data without files
+ */
 export const parseFormData = () => multerOptions().none();
 
+/**
+ * Helper to delete old images from the filesystem when updating or deleting documents
+ */
 const deleteOldImage = async <T>(
   model: Model<T>,
   id: string,
   uploadPath: string,
   fieldName: string,
 ) => {
-  // Use .lean() to avoid imageURLPlugin transformation
+  // Use .lean() to get raw data and avoid automatic URL prepending from plugins
   const document = (await model.findById(id).lean()) as Record<
     string,
     unknown
@@ -59,16 +79,18 @@ const deleteOldImage = async <T>(
   if (!fieldValue) return;
 
   const deleteFile = (fileName: string) => {
-    // If the fileName is a URL, extract the actual file name
+    // Extract base filename if it's a full URL
     const actualFileName = fileName.split("/").pop();
     if (!actualFileName) return;
 
     const filePath = path.join(uploadPath, actualFileName);
+    // Sync delete if file exists
     if (fs.existsSync(filePath) && fs.lstatSync(filePath).isFile()) {
       fs.unlinkSync(filePath);
     }
   };
 
+  // Handle both single strings and arrays of image names
   if (typeof fieldValue === "string") {
     deleteFile(fieldValue);
   } else if (Array.isArray(fieldValue)) {
@@ -78,6 +100,9 @@ const deleteOldImage = async <T>(
   }
 };
 
+/**
+ * Middleware to resize and save a single uploaded image
+ */
 export const resizeImage = <T>(
   model: Model<T>,
   namePrefix: string,
@@ -90,12 +115,12 @@ export const resizeImage = <T>(
     if (req.file) {
       const uploadPath = `src/uploads/${folderName}`;
 
-      // Ensure directory exists
+      // Ensure target directory exists
       if (!fs.existsSync(uploadPath)) {
         fs.mkdirSync(uploadPath, { recursive: true });
       }
 
-      // If we are updating (id is present in params), delete the old image
+      // Cleanup: Delete old image if we are updating an existing document
       if (req.params.id) {
         await deleteOldImage(
           model,
@@ -105,6 +130,7 @@ export const resizeImage = <T>(
         );
       }
 
+      // Generate unique filename and process with Sharp
       const fileName = `${namePrefix}-${uuidv4()}-${Date.now()}.jpeg`;
       await sharp(req.file.buffer)
         .resize(width, height)
@@ -112,6 +138,7 @@ export const resizeImage = <T>(
         .jpeg({ quality: 90 })
         .toFile(`${uploadPath}/${fileName}`);
 
+      // Save processed filename to body for the DB controller
       (req.body as Record<string, string>)[fieldName] = fileName;
     }
     next();
@@ -126,6 +153,9 @@ export interface IFieldConfig {
   suffix?: string;
 }
 
+/**
+ * Middleware to resize and save multiple images from mixed fields
+ */
 export const resizeMixedImages = <T>(
   model: Model<T>,
   folderName: string,
@@ -140,7 +170,7 @@ export const resizeMixedImages = <T>(
 
     const uploadPath = `src/uploads/${folderName}`;
 
-    // Ensure directory exists
+    // Ensure target directory exists
     if (!fs.existsSync(uploadPath)) {
       fs.mkdirSync(uploadPath, { recursive: true });
     }
@@ -150,7 +180,7 @@ export const resizeMixedImages = <T>(
         const fieldFiles = files[config.fieldName];
         if (!fieldFiles || fieldFiles.length === 0) return;
 
-        // If we are updating (id is present in params), delete old image(s) for this field
+        // Cleanup old images before saving new ones
         if (req.params.id) {
           await deleteOldImage(
             model,
@@ -160,6 +190,7 @@ export const resizeMixedImages = <T>(
           );
         }
 
+        // Process arrays of files (e.g., product images gallery)
         if (config.isArray) {
           req.body[config.fieldName] = [];
           await Promise.all(
@@ -177,6 +208,7 @@ export const resizeMixedImages = <T>(
             }),
           );
         } else {
+          // Process single file fields (e.g., brand logo)
           const fileName = `${config.namePrefix}-${uuidv4()}-${Date.now()}${
             config.suffix ? `-${config.suffix}` : ""
           }.jpeg`;
@@ -194,6 +226,9 @@ export const resizeMixedImages = <T>(
     next();
   });
 
+/**
+ * Middleware to delete images associated with a document being deleted
+ */
 export const deleteImage = <T>(
   model: Model<T>,
   folderName: string,

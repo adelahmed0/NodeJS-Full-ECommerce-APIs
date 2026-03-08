@@ -1,3 +1,7 @@
+/**
+ * Coupon Controller
+ * Manages operations for discount coupons, including CRUD for promotional codes.
+ */
 import { Request, Response, RequestHandler } from "express";
 import asyncHandler from "express-async-handler";
 import { IApiResponse } from "../types/api.types.js";
@@ -14,51 +18,51 @@ import { sendSuccessResponse } from "../utils/apiResponse.js";
 import * as factory from "./handlersFactory.controller.js";
 
 /**
- * @desc    Create coupon
+ * @desc    Generate a new discount coupon
  * @route   POST /api/v1/coupons
  * @access  Private/Admin
  */
 export const createCoupon = factory.createOne<ICoupon, Partial<ICoupon>>(
-  createCouponService,
+  createCouponService, // Logic for coupon activation and expiry setup
   "Coupons",
 );
 
 /**
- * @desc    Get all coupons
+ * @desc    Retrieve all active coupons with pagination
  * @route   GET /api/v1/coupons
  * @access  Private/Admin
  */
 export const getAllCoupons = factory.getAll<ICoupon>(
-  getAllCouponsService,
+  getAllCouponsService, // Integrated with ApiFeatures sorting and searching
   "Coupon",
 );
 
 /**
- * @desc    Get coupon by ID
+ * @desc    Fetch details of a single coupon
  * @route   GET /api/v1/coupons/:id
  * @access  Private/Admin
  */
 export const getCoupon = factory.getOne<ICoupon>(
-  getCouponByIdService,
+  getCouponByIdService, // Single document retrieval by ID
   "Coupon",
 );
 
 /**
- * @desc    Update coupon by ID
+ * @desc    Modify coupon data (e.g., expiry date, name, or discount)
  * @route   PUT /api/v1/coupons/:id
  * @access  Private/Admin
  */
 export const updateCoupon = factory.updateOne<ICoupon, Partial<ICoupon>>(
-  updateCouponService,
+  updateCouponService, // Standard update through factory layer
   "Coupon",
 );
 
 /**
- * @desc    Delete coupon by ID
+ * @desc    Deactivate and delete a coupon
  * @route   DELETE /api/v1/coupons/:id
  * @access  Private/Admin
  */
 export const deleteCoupon = factory.deleteOne<ICoupon>(
-  deleteCouponService,
+  deleteCouponService, // Permanent removal from database
   "Coupon",
 );

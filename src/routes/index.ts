@@ -1,4 +1,9 @@
+/**
+ * Global Router Index
+ * Aggregates all modular route handlers and exposes them to the main application.
+ */
 import { Router } from "express";
+// Import all individual modular routes
 import categoryRoute from "./category.route.js";
 import subCategoryRoute from "./subCategory.route.js";
 import brandRoute from "./brand.route.js";
@@ -15,17 +20,26 @@ import orderRoute from "./order.route.js";
 
 const router = Router();
 
-// API Routes
+/**
+ * Main Router Index
+ * Mounts all specialized routes to their respective path prefixes.
+ */
+
+// 1) Public & Catalog Routes
 router.use("/categories", categoryRoute);
 router.use("/sub-categories", subCategoryRoute);
 router.use("/brands", brandRoute);
 router.use("/products", productRoute);
-router.use("/users", userRoute);
+
+// 2) Authentication & User Management
 router.use("/auth", authRoute);
+router.use("/users", userRoute);
 router.use("/profile", profileRoute);
+router.use("/addresses", addressRoute);
+
+// 3) Interactive & Transactional Routes
 router.use("/reviews", reviewRoute);
 router.use("/wishlist", wishlistRoute);
-router.use("/addresses", addressRoute);
 router.use("/coupons", couponRoute);
 router.use("/cart", cartRoute);
 router.use("/orders", orderRoute);

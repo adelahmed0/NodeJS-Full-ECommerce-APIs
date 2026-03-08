@@ -1,17 +1,25 @@
+/**
+ * Review Service
+ * Manages user product reviews and ratings, integrating with automated aggregation hooks.
+ */
 import Review, { IReview } from "../models/review.model.js";
 import * as factory from "./handlersFactory.service.js";
 
 /**
- * Create a new review
+ * Create a new product review
+ * @param body - Partial review data (ratings, comment, etc.)
+ * @param userId - ID of the authenticated user submitting the review
  */
 export const createReviewService = async (
   body: Partial<IReview>,
   userId: string,
 ): Promise<IReview> => {
+  // Merge user ID into payload to ensure ownership
   const reviewData = {
     ...body,
     user: userId,
   };
+  // Create and populate for and immediate rich-response
   return factory.createOne(Review, [
     { path: "user", select: "name email" },
     { path: "product", select: "title imageCover" },
@@ -19,7 +27,7 @@ export const createReviewService = async (
 };
 
 /**
- * Get all reviews with pagination and filter
+ * Fetch a list of reviews with nested user and product information
  */
 export const getAllReviewsService = factory.getAll(
   Review,
@@ -31,7 +39,7 @@ export const getAllReviewsService = factory.getAll(
 );
 
 /**
- * Get review by ID
+ * Fetch a full review document by its ID
  */
 export const getReviewByIdService = factory.getOne(Review, [
   { path: "user", select: "name email" },
@@ -39,12 +47,15 @@ export const getReviewByIdService = factory.getOne(Review, [
 ]);
 
 /**
- * Update review by ID
+ * Update an existing review record
+ * @param id - Document ID
+ * @param body - Update payload
  */
 export const updateReviewService = async (
   id: string,
   body: Partial<IReview>,
 ): Promise<IReview | null> => {
+  // Updates trigger validation and re-fetch for population
   return factory.updateOne(Review, [
     { path: "user", select: "name email" },
     { path: "product", select: "title imageCover" },
@@ -52,7 +63,7 @@ export const updateReviewService = async (
 };
 
 /**
- * Delete review by ID - Using Factory
+ * Delete a review and trigger automated rating re-calculations in the Product model.
  */
 export const deleteReviewService = factory.deleteOne(Review, [
   { path: "user", select: "name email" },

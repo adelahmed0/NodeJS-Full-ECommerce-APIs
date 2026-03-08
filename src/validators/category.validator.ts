@@ -1,13 +1,25 @@
+/**
+ * Category Validators
+ * Validation logic for product Categories, including slug generation
+ * and image asset verification.
+ */
 import { body, param, query, check } from "express-validator";
 import validatorMiddleware from "../middleware/validator.middleware.js";
 import Category from "../models/category.model.js";
 import slugify from "@sindresorhus/slugify";
 
+/**
+ * Validation rules for retrieving a category by ID.
+ */
 export const getCategoryByIdValidator = [
   param("id").isMongoId().withMessage("Invalid Category ID format").bail(),
   validatorMiddleware,
 ];
 
+/**
+ * Validation rules for creating a new category.
+ * Ensures the name is unique and an image is uploaded.
+ */
 export const createCategoryValidator = [
   body("name")
     .notEmpty()
@@ -37,6 +49,9 @@ export const createCategoryValidator = [
   validatorMiddleware,
 ];
 
+/**
+ * Validation rules for fetching categories with pagination.
+ */
 export const getAllCategoriesValidator = [
   query("page")
     .optional()
@@ -51,6 +66,9 @@ export const getAllCategoriesValidator = [
   validatorMiddleware,
 ];
 
+/**
+ * Validation rules for updating an existing category.
+ */
 export const updateCategoryValidator = [
   param("id").isMongoId().withMessage("Invalid Category ID format").bail(),
   body("name")
@@ -85,6 +103,9 @@ export const updateCategoryValidator = [
   validatorMiddleware,
 ];
 
+/**
+ * Validation rules for deleting a category.
+ */
 export const deleteCategoryValidator = [
   param("id").isMongoId().withMessage("Invalid Category ID format").bail(),
   validatorMiddleware,

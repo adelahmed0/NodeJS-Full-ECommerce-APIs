@@ -1,6 +1,9 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 import { toJSONPlugin } from "../helpers/mongoosePlugins.js";
 
+/**
+ * Order Status options
+ */
 export enum OrderStatus {
   PENDING = "pending",
   PROCESSING = "processing",
@@ -9,11 +12,17 @@ export enum OrderStatus {
   CANCELLED = "cancelled",
 }
 
+/**
+ * Supported payment methods
+ */
 export enum PaymentMethod {
   CASH = "cash",
   CARD = "card",
 }
 
+/**
+ * IOrder Interface for completed transactions
+ */
 export interface IOrder extends Document {
   user: Types.ObjectId;
   cartItems: {
@@ -39,13 +48,18 @@ export interface IOrder extends Document {
   status: OrderStatus;
 }
 
+/**
+ * Order Schema definition
+ */
 const orderSchema = new Schema<IOrder>(
   {
+    // Link to ordering User
     user: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: [true, "Order must belong to a user"],
     },
+    // Snapshot of items from the cart at time of order
     cartItems: [
       {
         product: {
@@ -57,6 +71,7 @@ const orderSchema = new Schema<IOrder>(
         price: Number,
       },
     ],
+    // Delivery destination
     shippingAddress: {
       details: String,
       phone: {
@@ -69,6 +84,7 @@ const orderSchema = new Schema<IOrder>(
       },
       postalCode: String,
     },
+    // Pricing Breakdown
     taxPrice: {
       type: Number,
       default: 0,
@@ -81,6 +97,7 @@ const orderSchema = new Schema<IOrder>(
       type: Number,
       default: 0,
     },
+    // Payment metadata
     paymentMethod: {
       type: String,
       enum: Object.values(PaymentMethod),
@@ -93,6 +110,7 @@ const orderSchema = new Schema<IOrder>(
     paidAt: {
       type: Date,
     },
+    // Delivery metadata
     isDelivered: {
       type: Boolean,
       default: false,
@@ -100,6 +118,7 @@ const orderSchema = new Schema<IOrder>(
     deliveredAt: {
       type: Date,
     },
+    // Order lifecycle tracking
     status: {
       type: String,
       enum: Object.values(OrderStatus),

@@ -1,3 +1,8 @@
+/**
+ * Order & Checkout Routes
+ * Handles user checkouts (Cash/Stripe) and order fulfillment.
+ * Admins/Managers manage payment and delivery status updates.
+ */
 import express, { Router } from "express";
 import {
   createCashOrder,
@@ -26,8 +31,23 @@ const parseOrderFormData = multer().none();
 
 router.use(protect);
 
-router.get("/checkout-session/:cartId", allowedTo("user"),parseOrderFormData, checkoutSession);
+/**
+ * @desc    Initiate a Stripe Checkout session for card payments
+ * @route   GET /api/orders/checkout-session/:cartId
+ * @access  Private/User
+ */
+router.get(
+  "/checkout-session/:cartId",
+  allowedTo("user"),
+  parseOrderFormData,
+  checkoutSession,
+);
 
+/**
+ * @desc    Submit a cash-on-delivery order
+ * @route   POST /api/orders/:cartId
+ * @access  Private/User
+ */
 router.post(
   "/:cartId",
   allowedTo("user"),
@@ -36,6 +56,11 @@ router.post(
   createCashOrder,
 );
 
+/**
+ * @desc    List orders (User sees only their own; Admin sees all)
+ * @route   GET /api/orders
+ * @access  Private/User-Admin
+ */
 router.get(
   "/",
   allowedTo("user", "admin"),
@@ -43,6 +68,11 @@ router.get(
   getAllOrders,
 );
 
+/**
+ * @desc    Fetch specific order details
+ * @route   GET /api/orders/:id
+ * @access  Private/User-Admin
+ */
 router.get(
   "/:id",
   allowedTo("user", "admin"),
@@ -51,6 +81,11 @@ router.get(
   getSpecificOrder,
 );
 
+/**
+ * @desc    Mark an order as paid (Manual processing)
+ * @route   PUT /api/orders/:id/pay
+ * @access  Private/Admin-Manager
+ */
 router.put(
   "/:id/pay",
   allowedTo("admin", "manager"),
@@ -58,6 +93,11 @@ router.put(
   updateOrderToPaid,
 );
 
+/**
+ * @desc    Mark an order as successfully delivered
+ * @route   PUT /api/orders/:id/deliver
+ * @access  Private/Admin-Manager
+ */
 router.put(
   "/:id/deliver",
   allowedTo("admin", "manager"),
@@ -65,6 +105,11 @@ router.put(
   updateOrderToDelivered,
 );
 
+/**
+ * @desc    Update general order status (e.g., Shipped)
+ * @route   PUT /api/orders/:id/status
+ * @access  Private/Admin-Manager
+ */
 router.put(
   "/:id/status",
   allowedTo("admin", "manager"),

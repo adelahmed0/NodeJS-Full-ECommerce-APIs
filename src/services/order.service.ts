@@ -9,6 +9,7 @@ import { NextFunction, Request, Response } from "express";
 import asyncHandler from "express-async-handler";
 import Stripe from "stripe";
 
+// Initialize Stripe with the private secret key
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2026-02-25.clover",
 });
@@ -21,10 +22,10 @@ interface ShippingAddress {
 }
 
 /**
- * @desc    Create cash order
- * @param   userId
- * @param   shippingAddress
- * @returns Success Order
+ * Handle the logic for creating an order with Cash on Delivery
+ * @param userId - ID of the user placing the order
+ * @param cartId - ID of the source shopping cart
+ * @param shippingAddress - Destination address details
  */
 export const createCashOrderService = async (
   userId: string,
@@ -33,25 +34,29 @@ export const createCashOrderService = async (
 ) => {
   const taxPrice = 0;
   const shippingPrice = 0;
-  //  1 Get cart depend on cartId
+
+  // 1) Retrieve the cart and verify its existence
   const cart = await Cart.findById(cartId);
   if (!cart) {
     throw new ApiError(`There is no such cart with id ${cartId}`, 404);
   }
-  //  2 Get order price depend on cart price "Check if coupon apply"
+
+  // 2) Determine the order price (prioritize discounted price if available)
   const cartPrice = cart.totalPriceAfterDiscount
     ? cart.totalPriceAfterDiscount
     : cart.totalPrice;
   const totalOrderPrice = cartPrice + taxPrice + shippingPrice;
-  //  3 Create order with default paymentMethodCash
+
+  // 3) Create the Order document (default payment method is 'cash')
   const order = await Order.create({
     user: new Types.ObjectId(userId),
     cartItems: cart.cartItems,
     shippingAddress,
     totalOrderPrice,
   });
-  //  4 After creating order, decrement product quantity, increment product sold
+
   if (order) {
+    // 4) Atomically decrement stock and increment 'sold' count for all ordered items
     const bulkOption = cart.cartItems.map((item) => ({
       updateOne: {
         filter: { _id: item.product },
@@ -59,10 +64,11 @@ export const createCashOrderService = async (
       },
     }));
     await Product.bulkWrite(bulkOption, {});
-    //  5 Clear cart depend on cartId
+
+    // 5) Clean up: Delete the cart as it has been successfully converted to an order
     await Cart.findByIdAndDelete(cartId);
 
-    // Populate order before returning
+    // Re-populate the order for the API response
     await order.populate([
       { path: "user", select: "name email phone" },
       {
@@ -74,6 +80,10 @@ export const createCashOrderService = async (
   return order;
 };
 
+/**
+ * Middleware to filter orders based on user role.
+ * Regular users only see their own orders, while admins see all.
+ */
 export const filterOrderForLoggedUser = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     if (req.user?.type === "user") {
@@ -82,11 +92,9 @@ export const filterOrderForLoggedUser = asyncHandler(
     next();
   },
 );
+
 /**
- * @desc    Get all orders
- * @param   req
- * @param   res
- * @returns Success Order
+ * Service to fetch all orders with specific projections and population
  */
 export const getAllOrdersService = factory.getAll<IOrder>(
   Order,
@@ -101,9 +109,7 @@ export const getAllOrdersService = factory.getAll<IOrder>(
 );
 
 /**
- * @desc    Get specific order
- * @param   id
- * @returns Success Order
+ * Service to fetch a single order by its ID
  */
 export const getSpecificOrderService = factory.getOne<IOrder>(Order, [
   { path: "user", select: "name email phone" },
@@ -114,9 +120,7 @@ export const getSpecificOrderService = factory.getOne<IOrder>(Order, [
 ]);
 
 /**
- * @desc    Update order to paid
- * @param   id
- * @returns Success Order
+ * Mark an order as 'Paid' and record the timestamp
  */
 export const updateOrderToPaidService = async (id: string) => {
   const order = await Order.findById(id);
@@ -132,9 +136,7 @@ export const updateOrderToPaidService = async (id: string) => {
 };
 
 /**
- * @desc    Update order to delivered
- * @param   id
- * @returns Success Order
+ * Mark an order as 'Delivered' and update its status
  */
 export const updateOrderToDeliveredService = async (id: string) => {
   const order = await Order.findById(id);
@@ -151,10 +153,9 @@ export const updateOrderToDeliveredService = async (id: string) => {
 };
 
 /**
- * @desc    Update order status
- * @param   id
- * @param   status
- * @returns Success Order
+ * Manually update the lifecycle status of an order
+ * @param id - Order ID
+ * @param status - New status string from OrderStatus enum
  */
 export const updateOrderStatusService = async (id: string, status: string) => {
   const order = await Order.findById(id);
@@ -162,23 +163,21 @@ export const updateOrderStatusService = async (id: string, status: string) => {
     throw new ApiError(`There is no such order with id ${id}`, 404);
   }
 
-  // If status is delivered, update isDelivered and deliveredAt
+  // Auto-fill delivery fields if status becomes 'Delivered'
   if (status === OrderStatus.DELIVERED) {
     order.isDelivered = true;
     order.deliveredAt = new Date(Date.now());
   }
 
-  // If status is paid, update isPaid and paidAt (optional, usually handled separately)
-  // However, here we just update the status field primarily
   order.status = status as OrderStatus;
 
   const updatedOrder = await order.save();
   return updatedOrder;
 };
 
-// @desc    Create Stripe checkout session
-// @route   GET /api/orders/checkout-session/:cartId
-// @access  Protected/User
+/**
+ * Setup a Stripe Checkout session to collect credit card info
+ */
 export const createStripeCheckoutSessionService = async (
   userEmail: string,
   cartId: string,
@@ -189,27 +188,26 @@ export const createStripeCheckoutSessionService = async (
   const taxPrice = 0;
   const shippingPrice = 0;
 
-  // 1. Get cart
+  // 1) Verify cart and source prices
   const cart = await Cart.findById(cartId).populate("cartItems.product");
   if (!cart) {
     throw new ApiError(`There is no such cart with id ${cartId}`, 404);
   }
 
-  // 2. Calculate total price
   const cartPrice = cart.totalPriceAfterDiscount
     ? cart.totalPriceAfterDiscount
     : cart.totalPrice;
   const totalOrderPrice = cartPrice + taxPrice + shippingPrice;
 
-  // 3. Create Stripe checkout session
+  // 2) Construct Stripe session items from our cart subdocuments
   const session = await stripe.checkout.sessions.create({
     line_items: cart.cartItems.map((item: any) => ({
       price_data: {
-        currency: "egp",
+        currency: "egp", // Egyptian Pound
         product_data: {
           name: item.product.title,
         },
-        unit_amount: item.price * 100,
+        unit_amount: item.price * 100, // Stripe expects amounts in cents
       },
       quantity: item.quantity,
     })),
@@ -217,26 +215,31 @@ export const createStripeCheckoutSessionService = async (
     success_url: successUrl,
     cancel_url: cancelUrl,
     customer_email: userEmail,
-    client_reference_id: cartId,
+    client_reference_id: cartId, // Used by webhook to find the cart later
     metadata: shippingAddress as unknown as Stripe.MetadataParam,
   });
   return session;
 };
 
+/**
+ * Create an order record after a successful Stripe payment
+ * (Typically called by the webhook)
+ * @param session - The completed Stripe checkout session object
+ */
 export const createCardOrderService = async (session: any) => {
   const cartId = session.client_reference_id;
   const shippingAddress = session.metadata;
   const orderPrice = session.amount_total / 100;
 
-  // 1) Get cart
+  // 1) Find the transient cart and the user
   const cart = await Cart.findById(cartId);
   const user = await User.findOne({ email: session.customer_email });
 
   if (!cart || !user) {
-    return;
+    return; // Exit silently (webhook will retry or fail based on HTTP code)
   }
 
-  // 2) Create order
+  // 2) Persist the new order as 'Paid' because credit card was processed
   const order = await Order.create({
     user: user._id,
     cartItems: cart.cartItems,
@@ -247,7 +250,7 @@ export const createCardOrderService = async (session: any) => {
     paymentMethod: "card",
   });
 
-  // 3) After creating order, decrement product quantity, increment product sold
+  // 3) Finalize stock updates and inventory cleanup
   if (order) {
     const bulkOption = cart.cartItems.map((item) => ({
       updateOne: {
@@ -257,7 +260,7 @@ export const createCardOrderService = async (session: any) => {
     }));
     await Product.bulkWrite(bulkOption, {});
 
-    // 4) Clear cart
+    // Delete the cart
     await Cart.findByIdAndDelete(cartId);
   }
 };

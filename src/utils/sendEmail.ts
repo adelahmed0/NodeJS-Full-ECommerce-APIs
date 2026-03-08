@@ -1,20 +1,21 @@
 import nodemailer, { Transporter } from "nodemailer";
 
 /**
- * Interface for email options
+ * Interface for email delivery options
  */
 interface EmailOptions {
-  email: string;
-  subject: string;
-  message: string;
-  html?: string;
+  email: string; // Recipient email address
+  subject: string; // Email subject line
+  message: string; // Plain text message body
+  html?: string; // Optional HTML content
 }
 
 /**
- * Utility to send emails using nodemailer with Resend SMTP
+ * Utility to send emails via SMTP (configured for Resend by default)
+ * Requires EMAIL_HOST, EMAIL_PORT, EMAIL_USER, and EMAIL_PASS environment variables.
  */
 const sendEmail = async (options: EmailOptions): Promise<void> => {
-  // 1) Create transporter
+  // 1) Configure the SMTP transporter
   const transporter: Transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST,
     port: Number(process.env.EMAIL_PORT),
@@ -25,16 +26,17 @@ const sendEmail = async (options: EmailOptions): Promise<void> => {
     },
   });
 
-  // 2) Define email options
+  // 2) Construct the mail object
   const mailOptions = {
-    from: `E-Commerce App <onboarding@resend.dev>`, // Resend requires a verified domain or their default onboarding email
+    // Dynamic 'from' address (note: Resend requires verified domains)
+    from: `E-Commerce App <onboarding@resend.dev>`,
     to: options.email,
     subject: options.subject,
     text: options.message,
     html: options.html,
   };
 
-  // 3) Send email
+  // 3) Execute the delivery
   await transporter.sendMail(mailOptions);
 };
 

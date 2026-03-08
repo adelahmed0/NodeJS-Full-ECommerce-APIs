@@ -1,10 +1,15 @@
+/**
+ * Review Validators
+ * Validation logic for product reviews, ensuring users can only
+ * review products once and verifying ownership for modifications.
+ */
 import { body, param, query } from "express-validator";
 import validatorMiddleware from "../middleware/validator.middleware.js";
 import Product from "../models/product.model.js";
 import Review from "../models/review.model.js";
 
 /**
- * Check if product exists
+ * Validates that a product ID exists in the database.
  */
 const checkProductExists = async (productId: string) => {
   const product = await Product.findById(productId);
@@ -15,7 +20,7 @@ const checkProductExists = async (productId: string) => {
 };
 
 /**
- * Check if user already reviewed this product
+ * Prevents multiple reviews for the same product by the same user.
  */
 const checkDuplicateReview = async (productId: string, { req }: any) => {
   // Skip check for update operations
@@ -34,6 +39,10 @@ const checkDuplicateReview = async (productId: string, { req }: any) => {
   return true;
 };
 
+/**
+ * Validation rules for submitting a new review.
+ * Verifies product existence and prevents duplicate reviews.
+ */
 export const createReviewValidator = [
   body("title")
     .optional()
@@ -67,6 +76,9 @@ export const createReviewValidator = [
   validatorMiddleware,
 ];
 
+/**
+ * Validation rules for listing reviews based on product, user, or rating.
+ */
 export const getAllReviewsValidator = [
   param("productId")
     .optional()
@@ -108,6 +120,9 @@ export const getAllReviewsValidator = [
   validatorMiddleware,
 ];
 
+/**
+ * Validation for fetching a specific review document.
+ */
 export const getReviewValidator = [
   param("id").isMongoId().withMessage("Invalid review ID format").bail(),
   param("productId")
@@ -131,6 +146,10 @@ export const getReviewValidator = [
   validatorMiddleware,
 ];
 
+/**
+ * Validation rules for updating a review.
+ * Includes authorship/ownership verification to prevent unauthorized edits.
+ */
 export const updateReviewValidator = [
   param("id")
     .isMongoId()
@@ -172,6 +191,10 @@ export const updateReviewValidator = [
   validatorMiddleware,
 ];
 
+/**
+ * Validation rules for deleting a review.
+ * Ensures only the original author or an admin can perform deletion.
+ */
 export const deleteReviewValidator = [
   param("id")
     .isMongoId()

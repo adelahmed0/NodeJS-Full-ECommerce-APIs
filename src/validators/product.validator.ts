@@ -1,3 +1,8 @@
+/**
+ * Product Validators
+ * Comprehensive validation rules for product management, including
+ * multi-level category membership checks and file upload verification.
+ */
 import { body, param, query, check, Meta } from "express-validator";
 import validatorMiddleware from "../middleware/validator.middleware.js";
 import Category from "../models/category.model.js";
@@ -6,6 +11,10 @@ import Brand from "../models/brand.model.js";
 import Product from "../models/product.model.js";
 import slugify from "@sindresorhus/slugify";
 
+/**
+ * Internal helper to validate that a list of subcategories exist
+ * and actually belong to the product's primary category.
+ */
 const validateSubcategories = async (
   subCategoriesIds: string[],
   { req }: Meta,
@@ -59,6 +68,10 @@ const validateSubcategories = async (
   return true;
 };
 
+/**
+ * Validation rules for creating a new product.
+ * Covers basic info, price validation, category/brand existence, and image requirements.
+ */
 export const createProductValidator = [
   body("title")
     .notEmpty()
@@ -181,6 +194,9 @@ export const createProductValidator = [
   validatorMiddleware,
 ];
 
+/**
+ * Validation rules for listing products with pagination.
+ */
 export const getAllProductsValidator = [
   query("page")
     .optional()
@@ -195,11 +211,18 @@ export const getAllProductsValidator = [
   validatorMiddleware,
 ];
 
+/**
+ * Validation for fetching a single product by its MongoID.
+ */
 export const getProductValidator = [
   param("id").isMongoId().withMessage("Invalid product ID format").bail(),
   validatorMiddleware,
 ];
 
+/**
+ * Validation rules for updating product details.
+ * Ensures data consistency for partial updates (e.g. price vs discount price).
+ */
 export const updateProductValidator = [
   param("id").isMongoId().withMessage("Invalid product ID format").bail(),
   body("title")
@@ -299,6 +322,9 @@ export const updateProductValidator = [
   validatorMiddleware,
 ];
 
+/**
+ * Validation for product deletion.
+ */
 export const deleteProductValidator = [
   param("id").isMongoId().withMessage("Invalid product ID format").bail(),
   validatorMiddleware,

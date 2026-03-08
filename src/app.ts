@@ -1,53 +1,64 @@
+// Standard Express and core node modules
 import express, { Application, Request, Response, NextFunction } from "express";
+// Security and performance middleware
 import helmet from "helmet";
 import compression from "compression";
+// Request rate limiting, cross-origin resource sharing, and logging
 import { rateLimit } from "express-rate-limit";
 import cors from "cors";
 import morgan from "morgan";
 import path from "path";
 import { fileURLToPath } from "url";
 
+// Helper to handle ESM directory paths
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Application routes and global utilities
 import routes from "./routes/index.js";
-
 import { ApiError } from "./utils/apiError.js";
 import globalError from "./middleware/globalError.middleware.js";
 
+// Terminal styling and specific controller for webhooks
 import chalk from "chalk";
-
 import { webhookCheckout } from "./controllers/order.controller.js";
 
 const app: Application = express();
 const api = process.env.API_PREFIX || "/api";
 
+// 1) GLOBAL MIDDLEWARES
+// Set security HTTP headers
 app.use(helmet());
+// Compress response bodies for performance
 app.use(compression());
 
-// Global Rate Limiting
+// Global Rate Limiting: Prevent brute-force and DDoS
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  limit: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
-  standardHeaders: "draft-7", // set `RateLimit` and `RateLimit-Policy` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  windowMs: 15 * 60 * 1000, // 15 minutes window
+  limit: 100, // Max 100 requests per IP
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
   message: "Too many requests, please try again later.",
 });
-
 app.use(`${api}`, limiter);
 
-// Checkout webhook
+// 2) WEBHOOKS
+// Stripe Checkout webhook - needs raw body before express.json()
 app.post(
   "/webhook",
   express.raw({ type: "application/json" }),
   webhookCheckout,
 );
 
+// 3) BODY PARSERS
+// Parse query strings and JSON/URL-encoded data
 app.set("query parser", "extended");
 app.use(express.json());
+// Serve static files from the uploads directory
 app.use(express.static(path.join(__dirname, "uploads")));
 app.use(express.urlencoded({ extended: true, limit: "10kb" }));
 
+// 4) LOGGING (Development only)
 if (process.env.NODE_ENV === "development") {
   app.use(
     morgan((tokens, req, res) => {
@@ -56,7 +67,7 @@ if (process.env.NODE_ENV === "development") {
       const url = tokens.url(req, res);
       const responseTime = tokens["response-time"](req, res);
 
-      // 1. Color for HTTP Method
+      // Color coding for terminal logs
       const methodColors: Record<string, any> = {
         GET: chalk.green.bold,
         POST: chalk.yellow.bold,
@@ -66,7 +77,6 @@ if (process.env.NODE_ENV === "development") {
       };
       const methodColor = methodColors[method || ""] || chalk.white.bold;
 
-      // 2. Color for Status Code
       let statusColor = chalk.green;
       if (status >= 500) statusColor = chalk.red.bold;
       else if (status >= 400) statusColor = chalk.red;
@@ -84,6 +94,7 @@ if (process.env.NODE_ENV === "development") {
   );
 }
 
+// 5) CORS CONFIGURATION
 app.use(
   cors({
     origin: "*",
@@ -93,15 +104,17 @@ app.use(
   }),
 );
 
-// Routes
+// 6) MOUNT ROUTES
 app.use(`${api}`, routes);
 
-// Handle unhandled routes
+// 7) 404 HANDLER
+// Fallback for any route not matched by the routers above
 app.all(/(.*)/, (req: Request, res: Response, next: NextFunction) => {
   next(new ApiError(`Can't find this route: ${req.originalUrl}`, 400));
 });
 
-// Global error handling middleware
+// 8) GLOBAL ERROR HANDLING
+// Middleware to catch all errors passed to next()
 app.use(globalError);
 
 export default app;

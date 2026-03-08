@@ -42,5 +42,4 @@ export const updateSubCategoryService = async (
 /**
  * Delete subCategory by ID
  */
-
 export const deleteSubCategoryService = factory.deleteOne(SubCategory);

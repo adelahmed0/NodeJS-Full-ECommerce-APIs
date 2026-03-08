@@ -1,8 +1,16 @@
+/**
+ * Profile Validators
+ * Handles validation for user-initiated profile changes,
+ * such as updating personal info or changing passwords.
+ */
 import { body } from "express-validator";
 import slugify from "@sindresorhus/slugify";
 import User from "../models/user.model.js";
 import validatorMiddleware from "../middleware/validator.middleware.js";
 
+/**
+ * Validation rules for changing the authenticated user's password.
+ */
 export const changePasswordValidator = [
   body("currentPassword")
     .notEmpty()
@@ -32,6 +40,10 @@ export const changePasswordValidator = [
   validatorMiddleware,
 ];
 
+/**
+ * Validation rules for updating general profile information (name, email, phone).
+ * Performs duplication checks if the email is being modified.
+ */
 export const updateProfileValidator = [
   body("name")
     .optional()
@@ -74,6 +86,9 @@ export const updateProfileValidator = [
   validatorMiddleware,
 ];
 
+/**
+ * Validation rules for toggling user account status.
+ */
 export const updateStatusValidator = [
   body("status")
     .notEmpty()

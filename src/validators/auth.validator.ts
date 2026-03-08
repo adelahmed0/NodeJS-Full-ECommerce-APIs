@@ -1,8 +1,16 @@
+/**
+ * Authentication Validators
+ * Handles validation for user registration, login, and password recovery flows.
+ */
 import { body } from "express-validator";
 import slugify from "@sindresorhus/slugify";
 import User from "../models/user.model.js";
 import validatorMiddleware from "../middleware/validator.middleware.js";
 
+/**
+ * Validation rules for user signup.
+ * Checks for unique email and matching passwords.
+ */
 export const signupValidator = [
   body("name")
     .notEmpty()
@@ -57,6 +65,9 @@ export const signupValidator = [
   validatorMiddleware,
 ];
 
+/**
+ * Validation rules for user login.
+ */
 export const loginValidator = [
   body("email")
     .notEmpty()
@@ -75,6 +86,9 @@ export const loginValidator = [
   validatorMiddleware,
 ];
 
+/**
+ * Validation rules for initiating the forgot password process.
+ */
 export const forgotPasswordValidator = [
   body("email")
     .notEmpty()
@@ -86,6 +100,9 @@ export const forgotPasswordValidator = [
   validatorMiddleware,
 ];
 
+/**
+ * Validation rules for verifying the 6-digit reset code.
+ */
 export const verifyResetCodeValidator = [
   body("resetCode")
     .notEmpty()
@@ -97,6 +114,9 @@ export const verifyResetCodeValidator = [
   validatorMiddleware,
 ];
 
+/**
+ * Validation rules for resetting the password after code verification.
+ */
 export const resetPasswordValidator = [
   body("email")
     .notEmpty()

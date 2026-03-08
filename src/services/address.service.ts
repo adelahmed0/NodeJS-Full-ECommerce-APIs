@@ -3,7 +3,9 @@ import User, { IUser } from "../models/user.model.js";
 import { Types } from "mongoose";
 
 /**
- * Add Address to User
+ * Add a new address to the user's address list
+ * @param userId - ID of the user owning the address
+ * @param addressData - Details of the new address
  */
 export const addAddressService = async (
   userId: string,
@@ -15,12 +17,16 @@ export const addAddressService = async (
     postalCode: string;
   },
 ) => {
+  // Generate a new unique ID for this address within the array
   const newAddress = {
     id: new Types.ObjectId(),
     ...addressData,
   };
 
-  // Use $addToSet to add address only if it doesn't exist
+  /**
+   * Use $addToSet to add the address only if it's unique.
+   * Note: In MongoDB arrays of subdocuments, $addToSet checks for exact structure match.
+   */
   const user = await User.findByIdAndUpdate(
     userId,
     { $addToSet: { addresses: newAddress } },
@@ -31,7 +37,7 @@ export const addAddressService = async (
     throw new ApiError("User not found", 404);
   }
 
-  // Check if the address was actually added (wasn't already in addresses)
+  // Double check if the address was added (useful for subdocument uniqueness checks)
   const wasAdded = user.addresses.some((addr) => addr.id.equals(newAddress.id));
 
   if (!wasAdded) {
@@ -42,7 +48,9 @@ export const addAddressService = async (
 };
 
 /**
- * Get User Addresses (with pagination and filtering)
+ * Retrieve user addresses with pagination and manual filtering
+ * @param userId - ID of the user
+ * @param options - Filtering and pagination options
  */
 export const getAddressesService = async (
   userId: string,
@@ -55,6 +63,7 @@ export const getAddressesService = async (
 ) => {
   const { page = 1, limit = 10, city, alias } = options;
 
+  // Fetch only the addresses field to optimize performance
   const user = await User.findById(userId).select("addresses");
   if (!user) {
     throw new ApiError("User not found", 404);
@@ -62,7 +71,7 @@ export const getAddressesService = async (
 
   let addresses = user.addresses;
 
-  // Apply filters
+  // 1) Apply manual filters (since addresses are in an array subdocument)
   if (city) {
     addresses = addresses.filter((addr) =>
       addr.city.toLowerCase().includes(city.toLowerCase()),
@@ -75,7 +84,7 @@ export const getAddressesService = async (
     );
   }
 
-  // Calculate pagination
+  // 2) Calculate pagination metadata manually for the filtered array
   const total_count = addresses.length;
   const last_page = Math.ceil(total_count / limit);
   const offset = (page - 1) * limit;
@@ -93,7 +102,10 @@ export const getAddressesService = async (
 };
 
 /**
- * Update Address
+ * Update an existing address by its subdocument ID
+ * @param userId - Owner ID
+ * @param addressId - Subdocument ID
+ * @param addressData - Fields to update
  */
 export const updateAddressService = async (
   userId: string,
@@ -111,6 +123,7 @@ export const updateAddressService = async (
     throw new ApiError("User not found", 404);
   }
 
+  // Find the index of the address to update
   const addressIndex = user.addresses.findIndex(
     (addr) => addr.id.toString() === addressId,
   );
@@ -119,15 +132,19 @@ export const updateAddressService = async (
     throw new ApiError("Address not found", 404);
   }
 
-  // Update address fields
+  // Merge updates into the subdocument
   Object.assign(user.addresses[addressIndex], addressData);
+
+  // Persist changes
   await user.save();
 
   return user.addresses[addressIndex];
 };
 
 /**
- * Delete Address
+ * Remove an address from the user's list
+ * @param userId - Owner ID
+ * @param addressId - Subdocument ID to remove
  */
 export const deleteAddressService = async (
   userId: string,
@@ -135,7 +152,7 @@ export const deleteAddressService = async (
 ) => {
   const addressObjectId = new Types.ObjectId(addressId);
 
-  // Use $pull to remove address from user addresses array
+  // Use $pull operator to remove the object matching the ID from the array
   const user = await User.findByIdAndUpdate(
     userId,
     { $pull: { addresses: { id: addressObjectId } } },
@@ -146,7 +163,7 @@ export const deleteAddressService = async (
     throw new ApiError("User not found", 404);
   }
 
-  // Check if address was actually removed
+  // Check if document was modified
   const wasRemoved = !user.addresses.some((addr) =>
     addr.id.equals(addressObjectId),
   );
@@ -158,7 +175,9 @@ export const deleteAddressService = async (
 };
 
 /**
- * Set Default Address
+ * Set an address as default by moving it to the front of the array
+ * @param userId - Owner ID
+ * @param addressId - Subdocument ID
  */
 export const setDefaultAddressService = async (
   userId: string,
@@ -177,9 +196,10 @@ export const setDefaultAddressService = async (
     throw new ApiError("Address not found", 404);
   }
 
-  // Move the address to the beginning of the array (make it default)
+  // Reorder array: extract default and put it at index 0
   const [defaultAddress] = user.addresses.splice(addressIndex, 1);
   user.addresses.unshift(defaultAddress);
+
   await user.save();
 
   return defaultAddress;

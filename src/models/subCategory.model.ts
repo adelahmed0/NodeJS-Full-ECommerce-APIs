@@ -1,6 +1,9 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 import { toJSONPlugin } from "../helpers/mongoosePlugins.js";
 
+/**
+ * Sub-Category Interface
+ */
 export interface ISubCategory extends Document {
   name: string;
   slug: string;
@@ -9,6 +12,9 @@ export interface ISubCategory extends Document {
   updatedAt: Date;
 }
 
+/**
+ * Sub-Category Schema linked to a parent Category
+ */
 const subCategorySchema = new Schema<ISubCategory>(
   {
     name: {
@@ -23,6 +29,7 @@ const subCategorySchema = new Schema<ISubCategory>(
       type: String,
       lowercase: true,
     },
+    // Reference to parent Category
     category: {
       type: Types.ObjectId,
       ref: "Category",

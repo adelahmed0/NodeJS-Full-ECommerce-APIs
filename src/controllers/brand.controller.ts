@@ -1,3 +1,7 @@
+/**
+ * Brand Controller
+ * Handles all requests related to brand management including creation, listing, updates, and deletion.
+ */
 import { Request, Response, RequestHandler } from "express";
 import asyncHandler from "express-async-handler";
 import { IApiResponse, IPaginatedResponse } from "../types/api.types.js";
@@ -17,51 +21,51 @@ import {
 import * as factory from "./handlersFactory.controller.js";
 
 /**
- * @desc    Create brand
+ * @desc    Create a new brand in the store catalog
  * @route   POST /api/brands
  * @access  Private/Admin
  */
 export const createBrand = factory.createOne<
   IBrand,
   { name: string } & Partial<IBrand>
->(createBrandService, "Brand");
+>(createBrandService, "Brand"); // Logic for initial brand creation
 
 /**
- * @desc    Get all brands
+ * @desc    Fetch a paginated list of all active brands
  * @route   GET /api/brands
  * @access  Public
  */
 export const getAllBrands = factory.getAll<IBrand>(
-  getAllBrandsService,
+  getAllBrandsService, // Handles standardized query features (sort, filter, etc.)
   "Brands",
 );
 
 /**
- * @desc    Get brand by ID
+ * @desc    Fetch a individual brand document by its unique ID
  * @route   GET /api/brands/:id
  * @access  Public
  */
 export const getBrandById = factory.getOne<IBrand>(
-  getBrandByIdService,
+  getBrandByIdService, // Encapsulates Mongoose findById logic
   "Brand",
 );
 
 /**
- * @desc    Update brand by ID
+ * @desc    Update a brand's information (name, logo, etc.)
  * @route   PUT /api/brands/:id
  * @access  Private/Admin
  */
 export const updateBrand = factory.updateOne<IBrand, Partial<IBrand>>(
-  updateBrandService,
+  updateBrandService, // Managed via factory for consistent error handling
   "Brand",
 );
 
 /**
- * @desc    Delete brand by ID - Using Factory
+ * @desc    Permanently delete a brand from the database
  * @route   DELETE /api/brands/:id
  * @access  Private/Admin
  */
 export const deleteBrand = factory.deleteOne<IBrand>(
-  deleteBrandService,
+  deleteBrandService, // Atomic removal via service layer
   "Brand",
 );

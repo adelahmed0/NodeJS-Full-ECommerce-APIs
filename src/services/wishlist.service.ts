@@ -3,7 +3,8 @@ import User, { IUser } from "../models/user.model.js";
 import { Types } from "mongoose";
 
 /**
- * Add Product to Wishlist
+ * Add a product to the user's wishlist array.
+ * Uses $addToSet to ensure uniqueness at the database level.
  */
 export const addProductToWishlistService = async (
   userId: string,
@@ -11,7 +12,7 @@ export const addProductToWishlistService = async (
 ) => {
   const productObjectId = new Types.ObjectId(productId);
 
-  // Use $addToSet to add product to wishlist only if it doesn't exist
+  // 1) Update the user document by pushing the product ID to the wishlist array
   const user = await User.findByIdAndUpdate(
     userId,
     { $addToSet: { wishlist: productObjectId } },
@@ -22,7 +23,7 @@ export const addProductToWishlistService = async (
     throw new ApiError("User not found", 404);
   }
 
-  // Check if the product was actually added (wasn't already in wishlist)
+  // 2) Verify if the item was already there (some drivers don't throw error on $addToSet duplicate)
   const wasAdded = user.wishlist.some((id) => id.equals(productObjectId));
   if (!wasAdded) {
     throw new ApiError("Product already in wishlist", 400);
@@ -32,7 +33,8 @@ export const addProductToWishlistService = async (
 };
 
 /**
- * Remove Product from Wishlist
+ * Remove a specific product from the wishlist array.
+ * Uses $pull to atomically remove the item.
  */
 export const removeFromWishlistService = async (
   userId: string,
@@ -40,7 +42,7 @@ export const removeFromWishlistService = async (
 ) => {
   const productObjectId = new Types.ObjectId(productId);
 
-  // Use $pull to remove product from wishlist
+  // 1) Update the user document by pulling the product ID
   const user = await User.findByIdAndUpdate(
     userId,
     { $pull: { wishlist: productObjectId } },
@@ -51,7 +53,7 @@ export const removeFromWishlistService = async (
     throw new ApiError("User not found", 404);
   }
 
-  // Check if the product was actually removed (was in wishlist)
+  // 2) Verify removal (if it wasn't in list, $pull does nothing)
   const wasRemoved = !user.wishlist.some((id) => id.equals(productObjectId));
   if (!wasRemoved) {
     throw new ApiError("Product not found in wishlist", 400);
@@ -61,7 +63,7 @@ export const removeFromWishlistService = async (
 };
 
 /**
- * Check if product is in user wishlist
+ * Check if a specific product currently exists in the user's wishlist.
  */
 export const checkProductInWishlistService = async (
   userId: string,
@@ -73,13 +75,15 @@ export const checkProductInWishlistService = async (
   }
 
   const productObjectId = new Types.ObjectId(productId);
+  // Manual check against the array in memory
   const isInWishlist = user.wishlist.some((id) => id.equals(productObjectId));
 
   return isInWishlist;
 };
 
 /**
- * Get User Wishlist (with pagination)
+ * Fetch the user's wishlist with full product details and manual pagination.
+ * This function handles population and offset calculations since wishlist is a sub-array.
  */
 export const getWishlistService = async (
   userId: string,
@@ -88,6 +92,7 @@ export const getWishlistService = async (
 ) => {
   const skip = (page - 1) * limit;
 
+  // 1) Retrieve user and populate the wishlist array with relevant product fields
   const user = await User.findById(userId).populate({
     path: "wishlist",
     select:
@@ -105,7 +110,7 @@ export const getWishlistService = async (
     options: {
       skip,
       limit,
-      sort: { createdAt: -1 },
+      sort: { createdAt: -1 }, // Sort by most recent additions
     },
   });
 
@@ -113,9 +118,12 @@ export const getWishlistService = async (
     throw new ApiError("User not found", 404);
   }
 
-  // Get total count for pagination
-  const totalCount = await User.findById(userId).select("wishlist").lean();
-  const total_count = totalCount?.wishlist.length || 0;
+  // 2) Get total count of wishlist items for pagination metadata
+  // We use lean() and select only 'wishlist' to keep the query performance-friendly
+  const totalCountResult = await User.findById(userId)
+    .select("wishlist")
+    .lean();
+  const total_count = totalCountResult?.wishlist.length || 0;
 
   return {
     wishlist: user.wishlist,
@@ -127,7 +135,7 @@ export const getWishlistService = async (
 };
 
 /**
- * Clear Wishlist
+ * Empty the user's wishlist entirely.
  */
 export const clearWishlistService = async (userId: string) => {
   const user = await User.findByIdAndUpdate(
