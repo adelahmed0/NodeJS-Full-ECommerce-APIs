@@ -1,8 +1,5 @@
-/**
- * Authentication Routes
- * Public entry points for user Signup, Login, and secure Password Recovery.
- */
 import express, { Router } from "express";
+import { rateLimit } from "express-rate-limit";
 import {
   signupValidator,
   loginValidator,
@@ -22,18 +19,32 @@ import { parseFormData } from "../middleware/uploadImage.middleware.js";
 const router: Router = express.Router();
 
 /**
+ * Authentication Rate Limiter: Prevent automated brute-force attacks on login and password reset.
+ */
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes window
+  limit: 5, // Maximum 5 attempts per IP per 15 minutes
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  message: {
+    status: "fail",
+    message: "Too many attempts, please try again after 15 minutes.",
+  },
+});
+
+/**
  * @desc    Register a new user account
  * @route   POST /api/auth/signup
  * @access  Public
  */
-router.post("/signup", parseFormData(), signupValidator, signup);
+router.post("/signup", authLimiter, parseFormData(), signupValidator, signup);
 
 /**
  * @desc    Login and receive a JWT
  * @route   POST /api/auth/login
  * @access  Public
  */
-router.post("/login", parseFormData(), loginValidator, login);
+router.post("/login", authLimiter, parseFormData(), loginValidator, login);
 /**
  * @desc    Initiate password recovery by sending a reset code to email
  * @route   POST /api/auth/forgot-password
@@ -41,6 +52,7 @@ router.post("/login", parseFormData(), loginValidator, login);
  */
 router.post(
   "/forgot-password",
+  authLimiter,
   parseFormData(),
   forgotPasswordValidator,
   forgotPassword,
@@ -52,6 +64,7 @@ router.post(
  */
 router.post(
   "/verify-reset-code",
+  authLimiter,
   parseFormData(),
   verifyResetCodeValidator,
   verifyResetCode,
@@ -63,6 +76,7 @@ router.post(
  */
 router.put(
   "/reset-password",
+  authLimiter,
   parseFormData(),
   resetPasswordValidator,
   resetPassword,

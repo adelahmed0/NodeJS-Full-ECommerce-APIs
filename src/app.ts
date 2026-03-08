@@ -53,6 +53,7 @@ app.post(
 // 3) BODY PARSERS
 // Parse query strings and JSON/URL-encoded data
 app.set("query parser", "extended");
+// Increase body size limit to 20kb to accommodate Stripe checkout session data
 app.use(express.json({ limit: "20kb" }));
 // Serve static files from the uploads directory
 app.use(express.static(path.join(__dirname, "uploads")));
