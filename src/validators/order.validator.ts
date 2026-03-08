@@ -13,20 +13,17 @@ import { OrderStatus } from "../models/order.model.js";
  */
 export const createCashOrderValidator = [
   param("cartId").isMongoId().withMessage("Invalid cart ID format"),
-  body("details").optional(),
-  body("phone").notEmpty().withMessage("Phone number is required for shipping"),
-  body("city").notEmpty().withMessage("City is required for shipping"),
-  body("postalCode").optional(),
-  // Group fields into shippingAddress object for the controller/service
-  (req: any, res: any, next: any) => {
-    req.body.shippingAddress = {
-      details: req.body.details,
-      phone: req.body.phone,
-      city: req.body.city,
-      postalCode: req.body.postalCode,
-    };
-    next();
-  },
+
+  // 1) Validate fields inside shippingAddress object (for form-data or JSON)
+  body("shippingAddress.phone")
+    .notEmpty()
+    .withMessage("Phone number is required for shipping"),
+  body("shippingAddress.city")
+    .notEmpty()
+    .withMessage("City is required for shipping"),
+  body("shippingAddress.details").optional(),
+  body("shippingAddress.postalCode").optional(),
+
   validatorMiddleware,
 ];
 
@@ -66,5 +63,13 @@ export const updateOrderStatusValidator = [
     .withMessage(
       `Invalid status value. Must be one of: ${Object.values(OrderStatus).join(", ")}`,
     ),
+  validatorMiddleware,
+];
+
+/**
+ * Validation for cancelling an order.
+ */
+export const cancelOrderValidator = [
+  param("id").isMongoId().withMessage("Invalid order ID format"),
   validatorMiddleware,
 ];

@@ -1,7 +1,7 @@
 /**
  * Order & Checkout Routes
  * Handles user checkouts (Cash/Stripe) and order fulfillment.
- * Admins/Managers manage payment and delivery status updates.
+ * @access  Private/Admin
  */
 import express, { Router } from "express";
 import {
@@ -22,6 +22,7 @@ import {
   updateOrderToDeliveredValidator,
   updateOrderToPaidValidator,
   updateOrderStatusValidator,
+  cancelOrderValidator,
 } from "../validators/order.validator.js";
 import multer from "multer";
 
@@ -86,7 +87,7 @@ router.get(
 /**
  * @desc    Mark an order as paid (Manual processing)
  * @route   PUT /api/orders/:id/pay
- * @access  Private/Admin-Manager
+ * @access  Private/Admin
  */
 router.put(
   "/:id/pay",
@@ -98,7 +99,7 @@ router.put(
 /**
  * @desc    Mark an order as successfully delivered
  * @route   PUT /api/orders/:id/deliver
- * @access  Private/Admin-Manager
+ * @access  Private/Admin
  */
 router.put(
   "/:id/deliver",
@@ -110,7 +111,7 @@ router.put(
 /**
  * @desc    Update general order status (e.g., Shipped)
  * @route   PUT /api/orders/:id/status
- * @access  Private/Admin-Manager
+ * @access  Private/Admin
  */
 router.put(
   "/:id/status",
@@ -125,6 +126,11 @@ router.put(
  * @route   PUT /api/orders/:id/cancel
  * @access  Private/Admin
  */
-router.put("/:id/cancel", allowedTo("admin"), cancelOrder);
+router.put(
+  "/:id/cancel",
+  allowedTo("admin"),
+  cancelOrderValidator,
+  cancelOrder,
+);
 
 export default router;
