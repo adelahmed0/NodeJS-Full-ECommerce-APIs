@@ -10,6 +10,7 @@ import {
   createStripeCheckoutSessionService,
   stripe,
   createCardOrderService,
+  cancelOrderService,
 } from "../services/order.service.js";
 import { sendSuccessResponse } from "../utils/apiResponse.js";
 import * as factory from "./handlersFactory.controller.js";
@@ -167,3 +168,16 @@ export const updateOrderStatus = asyncHandler(
     });
   },
 );
+/**
+ * @desc    Cancel an order (e.g., if user changed mind or payment failed)
+ * @route   PUT /api/orders/:id/cancel
+ * @access  Protected/Admin-Manager
+ */
+export const cancelOrder = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const order = await cancelOrderService(id as string);
+  sendSuccessResponse(res, {
+    message: "Order cancelled successfully and stock restored",
+    data: order,
+  });
+});

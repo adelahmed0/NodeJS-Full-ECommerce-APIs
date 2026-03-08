@@ -139,7 +139,7 @@ export const getSpecificOrderService = factory.getOne<IOrder>(Order, [
 ]);
 
 /**
- * Mark an order as 'Paid' and record the timestamp
+ * Mark an order as 'Paid', record the timestamp, and move to 'processing' status
  */
 export const updateOrderToPaidService = async (id: string) => {
   const order = await Order.findById(id);
@@ -149,6 +149,11 @@ export const updateOrderToPaidService = async (id: string) => {
 
   order.isPaid = true;
   order.paidAt = new Date(Date.now());
+  order.status = OrderStatus.PROCESSING;
+  order.statusHistory?.push({
+    status: OrderStatus.PROCESSING,
+    timestamp: new Date(),
+  });
 
   const updatedOrder = await order.save();
   return updatedOrder;
@@ -186,6 +191,11 @@ export const updateOrderStatusService = async (id: string, status: string) => {
     throw new ApiError(`There is no such order with id ${id}`, 404);
   }
 
+  // Prevent updates to cancelled orders
+  if (order.status === OrderStatus.CANCELLED) {
+    throw new ApiError("Cannot update status of a cancelled order", 400);
+  }
+
   // Auto-fill delivery fields if status becomes 'Delivered'
   if (status === OrderStatus.DELIVERED) {
     order.isDelivered = true;
@@ -195,6 +205,44 @@ export const updateOrderStatusService = async (id: string, status: string) => {
   order.status = status as OrderStatus;
   order.statusHistory?.push({
     status: status as OrderStatus,
+    timestamp: new Date(),
+  });
+
+  const updatedOrder = await order.save();
+  return updatedOrder;
+};
+
+/**
+ * Cancel an order and restore product stock
+ * @param id - Order ID
+ */
+export const cancelOrderService = async (id: string) => {
+  const order = await Order.findById(id);
+  if (!order) {
+    throw new ApiError(`There is no such order with id ${id}`, 404);
+  }
+
+  if (order.status === OrderStatus.CANCELLED) {
+    throw new ApiError("Order is already cancelled", 400);
+  }
+
+  if (order.status === OrderStatus.DELIVERED) {
+    throw new ApiError("Cannot cancel a delivered order", 400);
+  }
+
+  // 1) Restore stock: Atomically increment quantity and decrement sold
+  const bulkOption = order.cartItems.map((item) => ({
+    updateOne: {
+      filter: { _id: item.product },
+      update: { $inc: { quantity: +item.quantity, sold: -item.quantity } },
+    },
+  }));
+  await Product.bulkWrite(bulkOption, {});
+
+  // 2) Update order status
+  order.status = OrderStatus.CANCELLED;
+  order.statusHistory?.push({
+    status: OrderStatus.CANCELLED,
     timestamp: new Date(),
   });
 
@@ -288,7 +336,11 @@ export const createCardOrderService = async (session: any) => {
     isPaid: true,
     paidAt: new Date(),
     paymentMethod: "card",
-    statusHistory: [{ status: OrderStatus.PENDING }],
+    status: OrderStatus.PROCESSING, // Explicitly set to processing after payment
+    statusHistory: [
+      { status: OrderStatus.PENDING, timestamp: new Date() },
+      { status: OrderStatus.PROCESSING, timestamp: new Date() },
+    ],
   });
 
   // 3) Finalize stock updates and inventory cleanup

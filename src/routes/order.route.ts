@@ -12,6 +12,7 @@ import {
   updateOrderToPaid,
   updateOrderStatus,
   checkoutSession,
+  cancelOrder,
 } from "../controllers/order.controller.js";
 import { protect, allowedTo } from "../middleware/auth.middleware.js";
 import { filterOrderForLoggedUser } from "../services/order.service.js";
@@ -89,7 +90,7 @@ router.get(
  */
 router.put(
   "/:id/pay",
-  allowedTo("admin", "manager"),
+  allowedTo("admin"),
   updateOrderToPaidValidator,
   updateOrderToPaid,
 );
@@ -101,7 +102,7 @@ router.put(
  */
 router.put(
   "/:id/deliver",
-  allowedTo("admin", "manager"),
+  allowedTo("admin"),
   updateOrderToDeliveredValidator,
   updateOrderToDelivered,
 );
@@ -113,10 +114,17 @@ router.put(
  */
 router.put(
   "/:id/status",
-  allowedTo("admin", "manager"),
+  allowedTo("admin"),
   parseOrderFormData,
   updateOrderStatusValidator,
   updateOrderStatus,
 );
+
+/**
+ * @desc    Cancel an order and restore stock
+ * @route   PUT /api/orders/:id/cancel
+ * @access  Private/Admin
+ */
+router.put("/:id/cancel", allowedTo("admin"), cancelOrder);
 
 export default router;
