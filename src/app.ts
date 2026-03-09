@@ -3,6 +3,7 @@ import express, { Application, Request, Response, NextFunction } from "express";
 // Security and performance middleware
 import helmet from "helmet";
 import compression from "compression";
+import hpp from "hpp";
 // Request rate limiting, cross-origin resource sharing, and logging
 import { rateLimit } from "express-rate-limit";
 import cors from "cors";
@@ -58,6 +59,19 @@ app.use(express.json({ limit: "20kb" }));
 // Serve static files from the uploads directory
 app.use(express.static(path.join(__dirname, "uploads")));
 app.use(express.urlencoded({ extended: true, limit: "20kb" }));
+
+// Prevent HTTP Parameter Pollution
+app.use(
+  hpp({
+    whitelist: [
+      "price",
+      "sold",
+      "quantity",
+      "ratingsAverage",
+      "ratingsQuantity",
+    ],
+  }),
+);
 
 // 4) LOGGING (Development only)
 if (process.env.NODE_ENV === "development") {
