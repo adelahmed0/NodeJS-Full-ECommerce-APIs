@@ -8,6 +8,7 @@ import hpp from "hpp";
 import { rateLimit } from "express-rate-limit";
 import cors from "cors";
 import morgan from "morgan";
+import mongoSanitize from "express-mongo-sanitize";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -59,6 +60,9 @@ app.use(express.json({ limit: "20kb" }));
 // Serve static files from the uploads directory
 app.use(express.static(path.join(__dirname, "uploads")));
 app.use(express.urlencoded({ extended: true, limit: "20kb" }));
+
+// To remove data using these defaults:
+app.use(mongoSanitize());
 
 // Prevent HTTP Parameter Pollution
 app.use(
