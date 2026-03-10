@@ -94,7 +94,12 @@ app.use(express.json({ limit: "20kb" }));
 app.use(express.urlencoded({ extended: true, limit: "20kb" }));
 
 // Data Sanitization against NoSQL query injection
-app.use(mongoSanitize());
+app.use((req: Request, res: Response, next: NextFunction) => {
+  mongoSanitize.sanitize(req.body);
+  mongoSanitize.sanitize(req.query);
+  mongoSanitize.sanitize(req.params);
+  next();
+});
 
 // Prevent HTTP Parameter Pollution
 app.use(
