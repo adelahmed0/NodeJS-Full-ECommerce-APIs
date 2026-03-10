@@ -87,10 +87,7 @@ const userSchema = new Schema<IUser>(
       default: UserStatus.ACTIVE,
     },
     // Reference to Product model for the wishlist feature
-    wishlist: {
-      type: [{ type: Types.ObjectId, ref: "Product" }],
-      select: false,
-    },
+    wishlist: [{ type: Types.ObjectId, ref: "Product" }],
     // Sub-document for user shipping/billing addresses
     addresses: {
       type: [
@@ -131,7 +128,6 @@ const userSchema = new Schema<IUser>(
           },
         },
       ],
-      select: false,
     },
   },
   {
