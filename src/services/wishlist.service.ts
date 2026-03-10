@@ -17,7 +17,7 @@ export const addProductToWishlistService = async (
     userId,
     { $addToSet: { wishlist: productObjectId } },
     { new: true, runValidators: true },
-  );
+  ).select("+wishlist");
 
   if (!user) {
     throw new ApiError("User not found", 404);
@@ -47,7 +47,7 @@ export const removeFromWishlistService = async (
     userId,
     { $pull: { wishlist: productObjectId } },
     { new: true, runValidators: true },
-  );
+  ).select("+wishlist");
 
   if (!user) {
     throw new ApiError("User not found", 404);
@@ -69,7 +69,7 @@ export const checkProductInWishlistService = async (
   userId: string,
   productId: string,
 ) => {
-  const user = await User.findById(userId);
+  const user = await User.findById(userId).select("+wishlist");
   if (!user) {
     throw new ApiError("User not found", 404);
   }
@@ -93,26 +93,28 @@ export const getWishlistService = async (
   const skip = (page - 1) * limit;
 
   // 1) Retrieve user and populate the wishlist array with relevant product fields
-  const user = await User.findById(userId).populate({
-    path: "wishlist",
-    select:
-      "title description price priceAfterDiscount imageCover images colors ratingsAverage ratingsQuantity category brand slug",
-    populate: [
-      {
-        path: "category",
-        select: "name slug",
+  const user = await User.findById(userId)
+    .select("+wishlist")
+    .populate({
+      path: "wishlist",
+      select:
+        "title description price priceAfterDiscount imageCover images colors ratingsAverage ratingsQuantity category brand slug",
+      populate: [
+        {
+          path: "category",
+          select: "name slug",
+        },
+        {
+          path: "brand",
+          select: "name slug",
+        },
+      ],
+      options: {
+        skip,
+        limit,
+        sort: { createdAt: -1 }, // Sort by most recent additions
       },
-      {
-        path: "brand",
-        select: "name slug",
-      },
-    ],
-    options: {
-      skip,
-      limit,
-      sort: { createdAt: -1 }, // Sort by most recent additions
-    },
-  });
+    });
 
   if (!user) {
     throw new ApiError("User not found", 404);
@@ -142,7 +144,7 @@ export const clearWishlistService = async (userId: string) => {
     userId,
     { $set: { wishlist: [] } },
     { new: true, runValidators: true },
-  );
+  ).select("+wishlist");
 
   if (!user) {
     throw new ApiError("User not found", 404);
