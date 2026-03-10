@@ -10,6 +10,7 @@ import cors from "cors";
 import morgan from "morgan";
 import chalk from "chalk";
 import mongoSanitize from "express-mongo-sanitize";
+import { xss } from "express-xss-sanitizer";
 
 // Application routes and global utilities
 import routes from "./routes/index.js";
@@ -100,6 +101,9 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   mongoSanitize.sanitize(req.params);
   next();
 });
+
+// Data Sanitization against XSS
+app.use(xss());
 
 // Prevent HTTP Parameter Pollution
 app.use(
