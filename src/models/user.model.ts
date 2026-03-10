@@ -87,46 +87,52 @@ const userSchema = new Schema<IUser>(
       default: UserStatus.ACTIVE,
     },
     // Reference to Product model for the wishlist feature
-    wishlist: [{ type: Types.ObjectId, ref: "Product" }],
+    wishlist: {
+      type: [{ type: Types.ObjectId, ref: "Product" }],
+      select: false,
+    },
     // Sub-document for user shipping/billing addresses
-    addresses: [
-      {
-        id: { type: Types.ObjectId, default: () => new Types.ObjectId() },
-        alias: {
-          type: String,
-          required: [true, "Address alias is required"],
-          trim: true,
-          minlength: [2, "Alias too short"],
-          maxlength: [50, "Alias too long"],
+    addresses: {
+      type: [
+        {
+          id: { type: Types.ObjectId, default: () => new Types.ObjectId() },
+          alias: {
+            type: String,
+            required: [true, "Address alias is required"],
+            trim: true,
+            minlength: [2, "Alias too short"],
+            maxlength: [50, "Alias too long"],
+          },
+          details: {
+            type: String,
+            required: [true, "Address details are required"],
+            trim: true,
+            minlength: [10, "Details too short"],
+            maxlength: [200, "Details too long"],
+          },
+          phone: {
+            type: String,
+            required: [true, "Phone number is required"],
+            trim: true,
+          },
+          city: {
+            type: String,
+            required: [true, "City is required"],
+            trim: true,
+            minlength: [2, "City name too short"],
+            maxlength: [50, "City name too long"],
+          },
+          postalCode: {
+            type: String,
+            required: [true, "Postal code is required"],
+            trim: true,
+            minlength: [3, "Postal code too short"],
+            maxlength: [10, "Postal code too long"],
+          },
         },
-        details: {
-          type: String,
-          required: [true, "Address details are required"],
-          trim: true,
-          minlength: [10, "Details too short"],
-          maxlength: [200, "Details too long"],
-        },
-        phone: {
-          type: String,
-          required: [true, "Phone number is required"],
-          trim: true,
-        },
-        city: {
-          type: String,
-          required: [true, "City is required"],
-          trim: true,
-          minlength: [2, "City name too short"],
-          maxlength: [50, "City name too long"],
-        },
-        postalCode: {
-          type: String,
-          required: [true, "Postal code is required"],
-          trim: true,
-          minlength: [3, "Postal code too short"],
-          maxlength: [10, "Postal code too long"],
-        },
-      },
-    ],
+      ],
+      select: false,
+    },
   },
   {
     // Auto-manage createdAt and updatedAt fields

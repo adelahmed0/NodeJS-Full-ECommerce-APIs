@@ -31,7 +31,7 @@ export const addAddressService = async (
     userId,
     { $addToSet: { addresses: newAddress } },
     { new: true, runValidators: true },
-  );
+  ).select("+addresses");
 
   if (!user) {
     throw new ApiError("User not found", 404);
@@ -64,7 +64,7 @@ export const getAddressesService = async (
   const { page = 1, limit = 10, city, alias } = options;
 
   // Fetch only the addresses field to optimize performance
-  const user = await User.findById(userId).select("addresses");
+  const user = await User.findById(userId).select("+addresses");
   if (!user) {
     throw new ApiError("User not found", 404);
   }
@@ -118,7 +118,7 @@ export const updateAddressService = async (
     postalCode?: string;
   },
 ) => {
-  const user = await User.findById(userId);
+  const user = await User.findById(userId).select("+addresses");
   if (!user) {
     throw new ApiError("User not found", 404);
   }
@@ -157,7 +157,7 @@ export const deleteAddressService = async (
     userId,
     { $pull: { addresses: { id: addressObjectId } } },
     { new: true, runValidators: true },
-  );
+  ).select("+addresses");
 
   if (!user) {
     throw new ApiError("User not found", 404);
@@ -183,7 +183,7 @@ export const setDefaultAddressService = async (
   userId: string,
   addressId: string,
 ) => {
-  const user = await User.findById(userId);
+  const user = await User.findById(userId).select("+addresses");
   if (!user) {
     throw new ApiError("User not found", 404);
   }
